@@ -1,0 +1,49 @@
+```{r initBioQC}
+library(RColorBrewer)
+library(BioQC)
+library(ggplot2)
+library(reshape2)
+gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
+gmt <- readGmt(gmtFile)
+```
+
+```{r}
+testEset = function(eset) {
+  bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="Gene symbol")
+  # experimentData(eset)
+  bioqcResFil <- filterPmat(bioqcRes, 1E-6)
+  bioqcAbsLogRes <- absLog10p(bioqcResFil)
+  return(bioqcAbsLogRes)
+}
+
+```
+
+```{r}
+load("/homebasel/biocomp/sturmg/projects/GEO_BioQC/GDS_GPL570/GDS651.Rdata")
+bioqcAbsLogRes = testEset(eset)
+```
+
+```{r}
+heatmap(bioqcAbsLogRes, Colv=NA, Rowv=TRUE,
+        cexRow=0.85,
+        col=rev(brewer.pal(7, "RdBu")),
+        labCol=1:ncol(bioqcAbsLogRes))
+```
+
+```{r}
+hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
+mat.melted = melt(bioqcAbsLogRes)
+ggplot(data=mat.melted, aes(x=Var2, y=Var1, fill=value)) + geom_tile() +
+  coord_equal() +
+  scale_fill_gradientn(colours = hm.palette(100)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+dogPCA = prcomp(t(exprs(eset)))
+expVar <- function(pcaRes, n) {vars <- pcaRes$sdev^2; (vars/sum(vars))[n]}
+biplot(dogPCA, col=c("#335555dd", "transparent"), cex=1.15,
+       xlab=sprintf("Principal component 1 (%1.2f%%)", expVar(dogPCA,1)*100),
+       ylab=sprintf("Principal component 1 (%1.2f%%)", expVar(dogPCA,2)*100))
+
+```
