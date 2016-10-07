@@ -32,6 +32,7 @@ testEset = function(eset) {
   # experimentData(eset)
   bioqcResFil <- filterPmat(bioqcRes, 1E-6)
   bioqcAbsLogRes <- absLog10p(bioqcResFil)
+  write.table(bioqcRes, file=paste(outputBasename, "_bioqc_res.tab", sep=""))
   return(bioqcAbsLogRes)
 }
 
