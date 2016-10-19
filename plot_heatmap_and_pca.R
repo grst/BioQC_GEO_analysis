@@ -1,15 +1,14 @@
 #!Rscript
 
-# GDS4882
-#        GDS2526
-#        GDS3315
-#        GDS4551
-#        GDS3481
-#        GDS3290
-#        GDS4074
-#        GDS2453
-#        GDS3836
-#        GDS4252
+########
+# USAGE:
+#   Rscript plot_heatmap_and_pca.R <eset.Rdata> <OutputBasename>
+# where eset.Rdata contains a biobase ExpressionSet. 
+#
+# The study applies BioQC on the expression set and saves a heatmap of
+# the BioQC scores as pdf, the raw BioQC scores as table and a PCA-plot
+# of the samples as pdf. 
+########
 
 args = commandArgs(trailingOnly = TRUE)
 esetFile = args[1]
@@ -27,6 +26,7 @@ gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="
 gmt <- readGmt(gmtFile)
 load(esetFile)
 
+#Funciton to Apply BioQC to ExpressionSet
 testEset = function(eset) {
   bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="Gene symbol")
   # experimentData(eset)
@@ -36,6 +36,7 @@ testEset = function(eset) {
   return(bioqcAbsLogRes)
 }
 
+# run BioQC
 bioqcAbsLogRes = testEset(eset)
 
 # do heatmap

@@ -1,10 +1,5 @@
-```{r}
- file = "GDS1973" #40
-# file = "GDS1989" #42
-#file = 'GDS2250' # 73
-# file = "GDS2470" #91
-file = "GDS1062"
-```
+Proof of concept: Applying BioQC to GEO studies
+===============================================
 
 ```{r}
 library(RColorBrewer)
@@ -15,14 +10,35 @@ gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="
 gmt <- readGmt(gmtFile)
 ```
 
+Choose file to open...
 ```{r}
-esetFile = sprintf("/homebasel/biocomp/sturmg/projects/GEO_BioQC/GDS_tissue/%s.Rdata", file)
+file = "GDS1973" #40
+# file = "GDS1989" #42
+#file = 'GDS2250' # 73
+# file = "GDS2470" #91
+file = "GDS1096"
+```
+
+Function will run BioQC on ExpressionSet
+```{r}
+testEset = function(eset) {
+  bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="Gene symbol")
+  # experimentData(eset)
+  bioqcResFil <- filterPmat(bioqcRes, 1E-6)
+  bioqcAbsLogRes <- absLog10p(bioqcResFil)
+  return(bioqcAbsLogRes)
+}
+```
+
+Load Expressionset and run BioQC
+```{r}
+esetFile = sprintf("/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_tissue/%s.Rdata", file)
 load(esetFile)
 bioqcAbsLogRes = testEset(eset)
 ```
 
+Do Heatmap
 ```{r}
-# do heatmap
 hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
 mat.melted = melt(bioqcAbsLogRes)
 print(sprintf("writing to %s", outputBasename))
@@ -33,8 +49,8 @@ ggplot(data=mat.melted, aes(x=Var2, y=Var1, fill=value)) + geom_tile() +
   ggtitle(basename(esetFile))
 ```
 
+Do PCA
 ```{r}
-# do PCA
 pca = prcomp(t(exprs(eset)))
 expVar <- function(pcaRes, n) {vars <- pcaRes$sdev^2; (vars/sum(vars))[n]}
 biplot(pca, col=c("#335555dd", "transparent"), cex=1.15,

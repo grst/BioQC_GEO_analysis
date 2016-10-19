@@ -41,6 +41,13 @@ detectContamZ = function(bioqcAbsLogRes) {
 
 ```
 
+
+Double Z-test based
+(more than n times the average/median in one tissue and 
+less than n times the average/median in another tissue)
+```{r}
+```
+
 Enrichment based. Define a tissue as enriched. If a sample is enriched in a non-enriched tissue, 
 define it as contamined. 
 ```{r}

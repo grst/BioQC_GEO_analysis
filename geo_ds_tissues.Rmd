@@ -1,0 +1,12 @@
+Apply BioQC on samples with tissues annotated
+=============================================
+
+Of ~4500 GEO-Datasets, 1183 have a tissue type annoated. 
+We will first get an overview over the abundance of the respective tissues, so that we can choose the top $n$ tissues on which we can then perform the contamination analysis. 
+
+```{r}
+
+```
+
+We then intend to merge all samples from one tissue into an expression set and then apply BioQC each of them. 
+
