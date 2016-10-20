@@ -1,12 +1,51 @@
 Apply BioQC on samples with tissues annotated
 =============================================
 
-Of ~4500 GEO-Datasets, 1183 have a tissue type annoated. 
-We will first get an overview over the abundance of the respective tissues, so that we can choose the top $n$ tissues on which we can then perform the contamination analysis. 
+```{r load_libries}
+library(pylr)
+library(parallel)
+eset.path = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_all"
+studies = Sys.glob(file.path(eset.path, "*.Rdata"))
+```
 
+1. We download all GDS from GEO using chunksub
+2. We have a look at the available attributes in the pData(eset)
+
+```{r}
+getAttributes = function(study) { 
+  load(study)
+  return(list(colnames(pData(eset))))
+}
+r = unlist(mcmapply(getTissues, studies, mc.cores=40))
+c = count(r)
+c = c[with(c, order(-freq)),]
+write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/results/geo_gds_attributes.tsv")
+```
+
+3. We will now get an overview over the abundance of the respective tissues, so that we can choose the top $n$ tissues on which we can then perform the contamination analysis. 
+
+```{r}
+getTissues = function(study) {
+  load(study)
+  if("tissue" %in% colnames(pData(eset))) {
+    return(list(lapply(pData(eset)$tissue, as.character)))
+  } else {
+    print(paste(basename(study), "does not contain any tissue annotation. "))
+    return(list(c("no_tissue_annotation")))
+  }
+}
+r = unlist(mcmapply(getTissues, studies, mc.cores=40))
+c = count(r)
+c = c[with(c, order(-freq)),]
+write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/results/geo_gds_tissues.tsv")
+```
+
+4. We now merge all samples from one tissue into one expression set. We can then run BioQC on this Expression set and identify contamined examples. 
+
+Let's have a try with liver
 ```{r}
 
 ```
 
-We then intend to merge all samples from one tissue into an expression set and then apply BioQC each of them. 
+
 
