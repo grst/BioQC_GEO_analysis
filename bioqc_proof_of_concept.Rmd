@@ -16,7 +16,7 @@ file = "GDS1973" #40
 # file = "GDS1989" #42
 #file = 'GDS2250' # 73
 # file = "GDS2470" #91
-file = "GDS3244"
+file = "GDS5298"
 ```
 
 Function will run BioQC on ExpressionSet
@@ -32,7 +32,7 @@ testEset = function(eset) {
 
 Load Expressionset and run BioQC
 ```{r}
-esetFile = sprintf("/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_tissue/%s.Rdata", file)
+esetFile = sprintf("/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_all/%s.Rdata", file)
 load(esetFile)
 bioqcAbsLogRes = testEset(eset)
 ```

@@ -4,8 +4,10 @@ Apply BioQC on samples with tissues annotated
 ```{r load_libries}
 library(pylr)
 library(parallel)
-eset.path = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_all"
-studies = Sys.glob(file.path(eset.path, "*.Rdata"))
+library(tools)
+eset.path = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_all/%s.Rdata"
+bioqc.res.path = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_all/plots/%s_bioqc_res.tab"
+studies = sapply(Sys.glob(sprintf(eset.path, "*")), function(x) {return (file_path_sans_ext(basename(x)))})
 ```
 
 1. We download all GDS from GEO using chunksub
@@ -13,10 +15,10 @@ studies = Sys.glob(file.path(eset.path, "*.Rdata"))
 
 ```{r}
 getAttributes = function(study) { 
-  load(study)
+  load(sprintf(eset.path, study))
   return(list(colnames(pData(eset))))
 }
-r = unlist(mcmapply(getTissues, studies, mc.cores=40))
+r = unlist(mcmapply(getAttributes, studies, mc.cores=40))
 c = count(r)
 c = c[with(c, order(-freq)),]
 write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/results/geo_gds_attributes.tsv")
@@ -26,7 +28,7 @@ write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_anal
 
 ```{r}
 getTissues = function(study) {
-  load(study)
+  load(sprintf(eset.path, study))
   if("tissue" %in% colnames(pData(eset))) {
     return(list(lapply(pData(eset)$tissue, as.character)))
   } else {
@@ -44,8 +46,37 @@ write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_anal
 
 Let's have a try with liver
 ```{r}
-
+bioQCLiver = function(study) {
+  load(sprintf(eset.path, study))
+  cols = which(pData(eset)$tissue == 'liver')
+  bioqcRes = read.table(sprintf(bioqc.res.path, study)) 
+  return(bioqcRes[,cols, drop=FALSE])
+}
+r = mcmapply(bioQCLiver, studies, mc.cores=40)
+bioqcResLiver = do.call(cbind, r)
 ```
+
+```{r}
+norm01 = function(x){
+   (x-min(x))/(max(x)-min(x))
+}
+```
+
+```{r}
+bioqcResFil <- filterPmat(bioqcResLiver, 1E-6)
+colnames(bioqcResFil) = sapply(colnames(bioqcResFil), basename)
+bioqcAbsLogRes <- as.matrix(absLog10p(bioqcResFil))
+bioqcAbsLogResNorm = apply(bioqcAbsLogRes, 2, norm01)
+hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
+mat.melted = melt(bioqcAbsLogResNorm)
+ggplot(data=mat.melted, aes(x=Var2, y=Var1, fill=value)) + geom_tile() +
+  coord_equal() +
+  scale_fill_gradientn(colours = hm.palette(100)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle(basename(esetFile))
+```
+
+
 
 
 
