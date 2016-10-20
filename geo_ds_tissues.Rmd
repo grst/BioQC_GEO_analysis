@@ -5,6 +5,7 @@ Apply BioQC on samples with tissues annotated
 library(pylr)
 library(parallel)
 library(tools)
+source("lib.R")
 eset.path = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_all/%s.Rdata"
 bioqc.res.path = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/data/GDS_all/plots/%s_bioqc_res.tab"
 studies = sapply(Sys.glob(sprintf(eset.path, "*")), function(x) {return (file_path_sans_ext(basename(x)))})
@@ -20,8 +21,8 @@ getAttributes = function(study) {
 }
 r = unlist(mcmapply(getAttributes, studies, mc.cores=40))
 c = count(r)
-c = c[with(c, order(-freq)),]
-write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/results/geo_gds_attributes.tsv")
+attributes = c[with(c, order(-freq)),]
+write.table(attributes, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/results/geo_gds_attributes.tsv")
 ```
 
 3. We will now get an overview over the abundance of the respective tissues, so that we can choose the top $n$ tissues on which we can then perform the contamination analysis. 
@@ -30,7 +31,7 @@ write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_anal
 getTissues = function(study) {
   load(sprintf(eset.path, study))
   if("tissue" %in% colnames(pData(eset))) {
-    return(list(lapply(pData(eset)$tissue, as.character)))
+    return(list(lapply(lapply(pData(eset)$tissue, as.character), tolower)))
   } else {
     print(paste(basename(study), "does not contain any tissue annotation. "))
     return(list(c("no_tissue_annotation")))
@@ -38,42 +39,70 @@ getTissues = function(study) {
 }
 r = unlist(mcmapply(getTissues, studies, mc.cores=40))
 c = count(r)
-c = c[with(c, order(-freq)),]
-write.table(c, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/results/geo_gds_tissues.tsv")
+tissues = c[with(c, order(-freq)),]
+write.table(tissues, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/results/geo_gds_tissues.tsv")
 ```
 
-4. We now merge all samples from one tissue into one expression set. We can then run BioQC on this Expression set and identify contamined examples. 
+4. We now merge all samples from one tissue into one expression set.
+We can then run BioQC on this Expression set and identify contamined examples. 
 
 Let's have a try with liver
 ```{r}
-bioQCLiver = function(study) {
+# init samplesPerTissue list. 
+#
+# We create a list (used as dictionary) to store a dataframe 
+# for each tissue that will contain the respective BioQC results. 
+tissueList = as.character(tissues[,1])
+gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
+gmt <- readGmt(gmtFile)
+emptySignatureDf = data.frame(row.names=names(gmt))
+samplesPerTissue = rep(list(edf), length(tissueList))
+names(samplesPerTissue) = tissueList
+
+# extract tissue specific results
+#
+# Go through all studies in parallel. Return a list 
+# tissue -> DataFrame(resultsForTissue) for each 
+# study. 
+bioQCTissue = function(study) {
   load(sprintf(eset.path, study))
-  cols = which(pData(eset)$tissue == 'liver')
-  bioqcRes = read.table(sprintf(bioqc.res.path, study)) 
-  return(bioqcRes[,cols, drop=FALSE])
+  bioqcRes = read.table(sprintf(bioqc.res.path, study))
+  if ("tissue" %in% colnames(pData(eset))) {
+    study.tissues = unique(sapply(sapply(pData(eset)$tissue, as.character), tolower))
+    getTissueBioqcRes = function(tissue) {
+      cols = which(pData(eset)$tissue == tissue)
+      res = bioqcRes[, cols, drop=FALSE]
+      colnames(res) = sapply(colnames(res), function(x) {return(paste(study, x, sep="."))})
+      return(res)
+    }
+    return(sapply(study.tissues, getTissueBioqcRes))
+  } 
 }
-r = mcmapply(bioQCLiver, studies, mc.cores=40)
-bioqcResLiver = do.call(cbind, r)
+r.per.study = mcmapply(bioQCTissue, studies, mc.cores=40)
+
+# reduce the per-study results into the samplesPerTissue list. 
+for(study in r.per.study) {
+  for(tissue in names(study)) {
+    samplesPerTissue[[tissue]] = cbind(samplesPerTissue[[tissue]], study[[tissue]])
+  }  
+}
 ```
 
-```{r}
-norm01 = function(x){
-   (x-min(x))/(max(x)-min(x))
-}
-```
 
+Make a heatmap for each tissue. 
 ```{r}
-bioqcResFil <- filterPmat(bioqcResLiver, 1E-6)
-colnames(bioqcResFil) = sapply(colnames(bioqcResFil), basename)
-bioqcAbsLogRes <- as.matrix(absLog10p(bioqcResFil))
-bioqcAbsLogResNorm = apply(bioqcAbsLogRes, 2, norm01)
-hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
-mat.melted = melt(bioqcAbsLogResNorm)
-ggplot(data=mat.melted, aes(x=Var2, y=Var1, fill=value)) + geom_tile() +
-  coord_equal() +
-  scale_fill_gradientn(colours = hm.palette(100)) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  ggtitle(basename(esetFile))
+for (tissue in tissueList) {
+  print(tissue)
+  bioqcResFil <- filterPmat(samplesPerTissue[[tissue]], 1E-6)
+  if(ncol(bioqcResFil) > 20 && nrow(bioqcResFil) > 1) {  
+    bioqcAbsLogRes <- as.matrix(absLog10p(bioqcResFil))
+    bioqcAbsLogResNorm = apply(bioqcAbsLogRes, 2, norm01)
+    pdf(file=sprintf("results/heatmaps/%s.pdf", make.names(tissue, unique=TRUE)), width=100, height=15)
+    print(bioqcHeatmap(bioqcAbsLogResNorm, title=tissue))
+    dev.off()
+  }  
+}
+
 ```
 
 

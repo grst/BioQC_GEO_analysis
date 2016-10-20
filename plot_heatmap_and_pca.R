@@ -2,12 +2,11 @@
 
 ########
 # USAGE:
-#   Rscript plot_heatmap_and_pca.R <eset.Rdata> <OutputBasename>
+#   Rscript plot_heatmap_and_pca.R <bioqc_res.ta> <OutputBasename>
 # where eset.Rdata contains a biobase ExpressionSet. 
 #
 # The study applies BioQC on the expression set and saves a heatmap of
-# the BioQC scores as pdf, the raw BioQC scores as table and a PCA-plot
-# of the samples as pdf. 
+# the BioQC scores and a PCA Plot of the samples as pdf. 
 ########
 
 args = commandArgs(trailingOnly = TRUE)
@@ -18,10 +17,8 @@ outputBasename = args[2]
 #qoutputBasename = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/plots/GDS4074"
 
   
-library(RColorBrewer)
 library(BioQC)
-library(ggplot2)
-library(reshape2)
+source("lib.R")
 gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
 gmt <- readGmt(gmtFile)
 load(esetFile)
@@ -32,7 +29,7 @@ testEset = function(eset) {
   # experimentData(eset)
   bioqcResFil <- filterPmat(bioqcRes, 1E-6)
   bioqcAbsLogRes <- absLog10p(bioqcResFil)
-  write.table(bioqcRes, file=paste(outputBasename, "_bioqc_res.tab", sep=""))
+  # write.table(bioqcRes, file=paste(outputBasename, "_bioqc_res.tab", sep=""))
   return(bioqcAbsLogRes)
 }
 
@@ -40,24 +37,12 @@ testEset = function(eset) {
 bioqcAbsLogRes = testEset(eset)
 
 # do heatmap
-hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
-mat.melted = melt(bioqcAbsLogRes)
 print(sprintf("writing to %s", outputBasename))
 pdf(paste(outputBasename, "_heatmap.pdf", sep=""))
-ggplot(data=mat.melted, aes(x=Var2, y=Var1, fill=value)) + geom_tile() +
-  coord_equal() +
-  scale_fill_gradientn(colours = hm.palette(100)) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  ggtitle(basename(esetFile))
+bioqcHeatmap(bioqcAbsLogRes, title=basename(esetFile))
 dev.off()
 
-
 # do PCA
-pca = prcomp(t(exprs(eset)))
-expVar <- function(pcaRes, n) {vars <- pcaRes$sdev^2; (vars/sum(vars))[n]}
 pdf(paste(outputBasename, "_pca.pdf", sep=""))
-biplot(pca, col=c("#335555dd", "transparent"), cex=1.15,
-       xlab=sprintf("Principal component 1 (%1.2f%%)", expVar(pca,1)*100),
-       ylab=sprintf("Principal component 1 (%1.2f%%)", expVar(pca,2)*100),
-       main=basename(esetFile))
+esetPca(eset, title=basename(esetFile))
 dev.off()
