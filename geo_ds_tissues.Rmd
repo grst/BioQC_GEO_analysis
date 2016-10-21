@@ -105,7 +105,29 @@ for (tissue in tissueList) {
 
 ```
 
+Which are the highest scoring signatures for each tissue?
+```{r}
+my.tissues = c("bone marrow", "liver", "kidney", "lung", "colon", "jejunum")
+for (tissue in my.tissues) {
+  tissue.scores = samplesPerTissue[[tissue]]
+  # filter for significant samples (filter for cols, not rows in that case)
+  tissue.scores.fil = t(filterPmat(t(tissue.scores), 1E-6))
+  tissue.scores.fil.log = absLog10p(tissue.scores.fil)
+  
+  sig.ranks = apply(tissue.scores.fil.log, 2, function(x) {return(rank(x, ties.method="first"))})
+  ### TODO this is wrong!! the max(x) is applied on the row, not the column. 
+  sig.counts = data.frame(sapply(1:10, function(i) {apply(sig.ranks, 1, function(x){sum(x == max(x)-i+1)})}))
+  # get the top 5 tissues that score #1
+  top5 = data.frame(sig.counts[order(sig.counts[,1], decreasing=TRUE)[1:5], 1, drop=FALSE])
+  # prepare for plotting
+  top5['signature'] = rownames(top5)
+  top5.molten = melt(top5, id.vars="signature", value.name="count", variable.name="rank" )
+  # plot bar chart 
+  print(ggplot(top5.molten, aes(x=rank, y=count, fill=signature)) +
+          geom_bar(aes(fill=signature), stat="identity", position="dodge") +
+          ggtitle(tissue))
+}
 
-
+```
 
 
