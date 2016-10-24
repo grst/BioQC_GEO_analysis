@@ -46,3 +46,9 @@ bioqcHeatmap = function(bioqc_res, title) {
             theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
             ggtitle(title)
 }
+
+
+#' Collapse multiple signatures that belong to the same tissue into one. 
+collapseSignatures = function(table, sig_list, method=max) {
+  
+}
