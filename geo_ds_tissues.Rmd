@@ -46,7 +46,6 @@ write.table(tissues, file="/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GE
 4. We now merge all samples from one tissue into one expression set.
 We can then run BioQC on this Expression set and identify contamined examples. 
 
-Let's have a try with liver
 ```{r}
 # init samplesPerTissue list. 
 #
@@ -122,7 +121,7 @@ for (tissue in tissueList) {
 
 ```
 
-Which are the highest scoring signatures for each tissue?
+Which are the (second/third/...) highest scoring signatures for each tissue?
 ```{r}
 my.tissues = c("bone marrow", "liver", "kidney", "lung", "colon", "jejunum")
 
@@ -145,7 +144,6 @@ for (tissue in my.tissues) {
   tissue.scores.fil.log = absLog10p(tissue.scores.fil)
   
   sig.ranks = apply(tissue.scores.fil.log, 2, function(x) {return(rank(x, ties.method="first"))})
-  ### TODO this is wrong!! the max(x) is applied on the row, not the column. 
   sig.counts = data.frame(sapply(1:10, function(i) {
       apply(sig.ranks, 1, function(x){sum(x == nrow(sig.ranks)-i+1)})
     }))
@@ -157,8 +155,24 @@ for (tissue in my.tissues) {
 
 ```
 
-Heatmap of filtered scores
-> bioqcHeatmap(absLog10p(filterPmat(tissue.scores.fil, 1E-6)), title="jej")
+Which tissue signatures are enriched in a certain tissue, even though the signatures show no/little overlap? 
+This could show that certain cell types are abundant in multiple tissues. 
+-> make a boxplot for the top5 enriched signatures (by median)
+```{r}
+tissue = "kidney"
+tissue.scores = samplesPerTissue[[tissue]]
+tissue.scores.log = absLog10p(tissue.scores)
+top5.ids = order(apply(tissue.scores.log, 1, median), decreasing=TRUE)[1:5]
+top5 = tissue.scores.log[top5.ids, ]
+top5['signature'] = rownames(top5)
+top5.molten = melt(top5, id.vars="signature", value.name="score", variable.name="study")
+ylim1 = boxplot.stats(top5.molten$score)$stats[c(1,5)]
+ggplot(top5.molten, aes(x=signature, y=score)) + geom_boxplot() + coord_cartesian(ylim = ylim1*2)
+
+```
+
+
+
 
 
 

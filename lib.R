@@ -1,7 +1,3 @@
-library(RColorBrewer)
-library(ggplot2)
-library(reshape2)
-
 ###################
 # Library for BioQC GEO analysis. 
 # 
@@ -14,37 +10,7 @@ library(reshape2)
 #'
 #' @param x A vector.
 norm01 = function(x){
-       (x-min(x))/(max(x)-min(x))
-}
-
-
-#' Perform and Plot a PCA of an ExpressionSet
-#' 
-#' @param eset An ExpressionSet
-esetPca = function(eset, title) {
-    pca = prcomp(t(exprs(eset)))
-    expVar <- function(pcaRes, n) {vars <- pcaRes$sdev^2; (vars/sum(vars))[n]}
-    biplot(pca, col=c("#335555dd", "transparent"), cex=1.15,
-            xlab=sprintf("Principal component 1 (%1.2f%%)", expVar(pca,1)*100),
-            ylab=sprintf("Principal component 1 (%1.2f%%)", expVar(pca,2)*100),
-            main=title)
-}
-
-
-#' Create a heatmap from a Matrix
-#'
-#' The matrix contains samples as columns and
-#' tissue signatures as rows. 
-#'
-#' @param bioqc_res A Matrix containing the (transformed) p-values. 
-bioqcHeatmap = function(bioqc_res, title) {
-    hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
-    mat.melted = melt(bioqc_res)
-    ggplot(data=mat.melted, aes(x=Var2, y=Var1, fill=value)) + geom_tile() +
-            coord_equal() +
-            scale_fill_gradientn(colours = hm.palette(100)) +
-            theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-            ggtitle(title)
+  (x-min(x))/(max(x)-min(x))
 }
 
 
@@ -61,9 +27,9 @@ bioqcHeatmap = function(bioqc_res, title) {
 #' @param new.name new row name for the collapsed rows. 
 #' @param method function to be applied to each column. Defaults to max.  
 collapseSignatures = function(table, sig.list, new.name, method=max) {
-    row.collapsed = apply(table[sig.list, ], 2, method)
-    row.collapsed.df = data.frame(t(unlist(row.collapsed)))
-    rownames(row.collapsed.df) = c(new.name)
-    table.collapsed = rbind(table, row.collapsed.df)
-    return(table.collapsed[-which(rownames(table.collapsed) %in% sig.list), ,drop=FALSE])
+  row.collapsed = apply(table[sig.list, ], 2, method)
+  row.collapsed.df = data.frame(t(unlist(row.collapsed)))
+  rownames(row.collapsed.df) = c(new.name)
+  table.collapsed = rbind(table, row.collapsed.df)
+  return(table.collapsed[-which(rownames(table.collapsed) %in% sig.list), ,drop=FALSE])
 }
