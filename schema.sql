@@ -5,7 +5,8 @@ create table tissues(id varchar(80) not null primary key);
 create table samples(id varchar(10) not null primary key,
     series varchar(10) references series(id),
     tissue varchar(80) references tissues(id),
-    organism varchar(80) null);
+    organism varchar(80) null,
+    tissue_orig text);
 
 create table signatures(id varchar(80) not null primary key, gene_symbols text null);
 
