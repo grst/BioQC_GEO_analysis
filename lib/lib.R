@@ -33,3 +33,61 @@ collapseSignatures = function(table, sig.list, new.name, method=max) {
   table.collapsed = rbind(table, row.collapsed.df)
   return(table.collapsed[-which(rownames(table.collapsed) %in% sig.list), ,drop=FALSE])
 }
+
+#' Compute the BioQC baseline score based on the overlap of two signatures
+#'
+#' @param sig.of.origin signature (name) of the annotated tissue of origin 
+#' @param sig.other signature (name) to be tested against
+getBaselineScore = function(sig.of.origin, sig.other) {
+  
+}
+
+#' Choose the most enriched signature for a given tissue
+#' 
+#' @param table.column column of the table with BioQc score
+#' @param sig.list list of the signature names that are associated with the tissue
+chooseSignature = function(table.column, sig.list, method=max) {
+  sig.vals = table.column[rownames(table.column) %in% sig.list,,drop=F]
+  return(rownames(sig.vals[sig.vals[,1,drop=F] == max(sig.vals[,1,drop=F]),,drop=F])[1])
+}
+
+#' Retrieve Gene Symbols for BioQC
+#' 
+#' @param eset
+#' @return eset with addtional BioqcGeneSymbol column. 
+attachGeneSymbols = function(eset) {
+  library(ribiosAnnotation)
+### We focus on GeneExpression Data atm
+#   # Unfortunately, the anntation of Gene symbols is not consistent within 
+#   # GEO Series. These names should cover most of it, though
+#   gene.symbols = c("Gene symbol", 
+#                    "Gene Symbol",
+#                    "GENE_SYMBOL",
+#                    "Gene_symbol", 
+#                    "GeneSymbol",
+#                    "geneSymbol",
+#                    "G_Symbol",
+#                    "Symbol",
+#                    "SYMBOL",
+#                    "Gene.Symbol",
+#                    "GENE")
+  annotation = annotateProbesets(fData(eset)$ID, orthologue=TRUE)
+  gene.symbol.col = annotation[,"GeneSymbol",drop=FALSE]
+  colnames(gene.symbol.col) = c("BioqcGeneSymbol")
+  fData(eset) = cbind(fData(eset), gene.symbol.col)
+  return(eset)
+}
+
+#' Extract the tissue name from sample annotation 
+#'
+#'
+extractTissue = function(pdata.row) {
+  if("tissue" %in% colnames(pdata.row)) {
+    return(pdata.row$tissue)
+  } else {
+    pat = "tissue: (.*)"
+    return(tolower(sub(pat, "\\1", tissue.row[grepl(pat, tissue.row)])[1]))
+  } 
+}
+
+

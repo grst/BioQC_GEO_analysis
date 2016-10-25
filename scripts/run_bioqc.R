@@ -15,22 +15,29 @@ library(tools)
 args = commandArgs(trailingOnly = TRUE)
 esetFile = args[1]
 outputPath = args[2]
-geo_id = file_path_sans_ext(basename(esetFile))
-print(geo_id)
+geo.id = file_path_sans_ext(basename(esetFile))
+print(geo.id)
 
-outFile = file.path(outPath, paste(geoID, "_bioqc_res.tab", sep=""))
+outFile = file.path(outPath, paste(geo.id, "_bioqc_res.tab", sep=""))
 
-#esetFile = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/GDS_GPL570/GDS4074.Rdata"
-#outFile = "/homebasel/biocomp/sturmg/projects/GEO_BioQC/BioQC_GEO_analysis/plots/GDS4074"
+# get the first colname of the list that is in fData
+col.name = gene.symbols[which(gene.symbols %in% colnames(fData(eset)))[1]]
 
-library(BioQC)
+if(is.na(col.name)) {
+  print(sprintf("%s: Study does not provide Gene Symbols.", geo.id))
+} else{
+  library(BioQC)
+  
+  # do BioQC analysis and save pValues to table 
+  gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
+  gmt <- readGmt(gmtFile)
+  load(esetFile)
+  
+  #run BioQC
+  bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="BioqcGeneSymbol")
+  
+  #save result to table
+  write.table(bioqcRes, file=outFile)
+}
 
-gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
-gmt <- readGmt(gmtFile)
-load(esetFile)
 
-#run BioQC
-bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="Gene symbol")
-
-#save result to table
-write.table(bioqcRes, file=outFile)
