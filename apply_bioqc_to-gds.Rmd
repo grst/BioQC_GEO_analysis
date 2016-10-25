@@ -1,5 +1,6 @@
 Proof of concept: Applying BioQC to GEO studies
 ===============================================
+Simply plot a GDS GEO Study as heatmap and PCA 
 
 ```{r}
 library(RColorBrewer)
@@ -16,7 +17,7 @@ file = "GDS1973" #40
 # file = "GDS1989" #42
 #file = 'GDS2250' # 73
 # file = "GDS2470" #91
-file = "GDS771"
+file = "GDS3141"
 ```
 
 Function will run BioQC on ExpressionSet
