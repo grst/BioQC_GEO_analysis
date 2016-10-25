@@ -1,6 +1,7 @@
 library(RColorBrewer)
 library(ggplot2)
 library(reshape2)
+library(circlize)
 
 #########
 # Library of reusable plotting function for
@@ -39,7 +40,7 @@ bioqcHeatmap = function(bioqc_res, title) {
 
 #' Create a migration chart from a matrix. 
 #' 
-#' 
+#' matrix(c(5,3,0, 1,5,2, 4,4,0), nrow=3, byrow=T)
 contamMigrationChart = function(matrix) {
-  
+  chordDiagram(melt(matrix))
 }
