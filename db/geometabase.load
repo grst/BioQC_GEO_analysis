@@ -1,0 +1,12 @@
+/**
+ * Configuration file for pgloader.io to load the
+ * GEOmetabase sqlite into our postgreSQL database
+ */
+
+load database  
+     from 'GEOmetadb.sqlite'  
+     into postgresql://sturmg:sturmg@localhost:5433/bioqc
+ 
+ with include drop, create tables, create indexes, reset sequences  
+ 
+  set work_mem to '16MB', maintenance_work_mem to '512 MB'; 

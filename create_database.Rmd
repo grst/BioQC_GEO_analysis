@@ -1,0 +1,21 @@
+Create and Fill Database
+========================================================
+
+create the databaes... 
+
+```{r}
+source("../lib/db.R")
+source("../lib/lib.R")
+source("../lib/geo_annotation.R")
+```
+
+
+## Tissues
+```{r}
+dbAppendDf("tissues", unique(geo_annotation.tissueMap["tissue"]))
+dbSendUpdate(mydb, "insert into tissues values('other')")
+```
+
+## Samples
+
+

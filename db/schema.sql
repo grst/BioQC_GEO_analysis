@@ -1,19 +1,28 @@
-create table series(id varchar(10) not null primary key, geo_acc varchar(10) not null);
+/** Table Series: holds experimentData and Series Accession Number **/
+drop table if exists series cascade;
+create table series(id varchar(10) not null primary key);
 
+/** Table Tissues: holds manually selected tissues **/
+drop table if exists tissues cascade;
 create table tissues(id varchar(80) not null primary key);
 
+drop table if exists samples cascade;
 create table samples(id varchar(10) not null primary key,
     series varchar(10) references series(id),
+    platform varchar(10),
     tissue varchar(80) references tissues(id),
     organism varchar(80) null,
     tissue_orig text);
 
+drop table if exists signatures cascade;
 create table signatures(id varchar(80) not null primary key, gene_symbols text null);
 
+drop table if exists rel_tissues_signatures cascade;
 create table rel_tissues_signatures(tissue varchar(80) references tissues(id),
     signature varchar(80) references signatures(id),
     primary key(tissue, signature));
 
+drop table if exists bioqc_res cascade;
 create table bioqc_res(sample varchar(10) not null primary key references samples(id),
     "Adipose_NGS_RNASEQATLAS_0.6_3" float,
     "Adrenal_NGS_RNASEQATLAS_0.6_3" float,

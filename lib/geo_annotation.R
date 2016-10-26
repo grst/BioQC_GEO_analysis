@@ -3,6 +3,8 @@
 #' Information retrieved from the GEO needs to be preprocessed
 #' and santized before we send it into our database. 
 
+geo_annotation.tissueMap = read.csv("lib/res/map_tissue_annotation.csv", strip.white=TRUE, stringsAsFactors=FALSE)
+
 
 #' Retrieve Gene Symbols for BioQC
 #' 
@@ -33,7 +35,12 @@ attachGeneSymbols = function(eset) {
 
 #' Extract the tissue name from sample annotation 
 #'
-#'
+#' In GEO Series, tissue information can be found
+#' in one of the characteristics_ch?? columns starting
+#' with "tissue: ..." 
+#' We simply search all columns for this pattern. 
+#' 
+#' @param pdata.row row of pData(eset)
 extractTissue = function(pdata.row) {
   if("tissue" %in% colnames(pdata.row)) {
     return(pdata.row$tissue)
@@ -43,11 +50,23 @@ extractTissue = function(pdata.row) {
   } 
 }
 
-#' 
+#' Map the often very specific tissue annotation from GEO
+#' to one tissue type, e.g. liver. 
 #'
-#'
+#' @param tissue.orig tissue annotation as found in the GEO
+#'    Series and retrieved by \code{\link{extractTissue}}
 sanitizeTissue = function(tissue.orig) {
-  
+  if(tissue.orig %in% geo_annotation.tissueMap$annotation) {
+    geo_annotation.tissueMap[geo_annotation.tissueMap[,'annotation'] == tissue.orig,'tissue']    
+  } else {
+    return("other")
+  }
+}
+
+geoIdFromPath = function(path) {
+  pat = "((GSE|GDS)\\d+)(_\\d+)?.Rdata"  
+  id = sub(pat, "\\1", basename(path))
+  return(id)
 }
 
 
