@@ -1,3 +1,0 @@
-liver   Liver_NGS_RNASEQATLAS_0.6_3 Liver_NR_0.7_3  Liver_fetal_NR_0.7_3
-kidney  Kidney_NGS_RNASEQATLAS_0.6_3    Kidney_NR_0.7_3 Kidney_Renal_Cortex_NR_0.7_3    Kidney_Renal_Medulla_NR_0.7_3
-
