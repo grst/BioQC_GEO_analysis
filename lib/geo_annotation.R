@@ -11,21 +11,6 @@ geo_annotation.tissueMap = read.csv("lib/res/map_tissue_annotation.csv", strip.w
 #' @param eset
 #' @return eset with addtional BioqcGeneSymbol column. 
 attachGeneSymbols = function(eset) {
-  library(ribiosAnnotation)
-  ### We focus on GeneExpression Data atm
-  #   # Unfortunately, the anntation of Gene symbols is not consistent within 
-  #   # GEO Series. These names should cover most of it, though
-  #   gene.symbols = c("Gene symbol", 
-  #                    "Gene Symbol",
-  #                    "GENE_SYMBOL",
-  #                    "Gene_symbol", 
-  #                    "GeneSymbol",
-  #                    "geneSymbol",
-  #                    "G_Symbol",
-  #                    "Symbol",
-  #                    "SYMBOL",
-  #                    "Gene.Symbol",
-  #                    "GENE")
   annotation = annotateProbesets(fData(eset)$ID, orthologue=TRUE)
   gene.symbol.col = annotation[,"GeneSymbol",drop=FALSE]
   colnames(gene.symbol.col) = c("BioqcGeneSymbol")
@@ -36,18 +21,17 @@ attachGeneSymbols = function(eset) {
 #' Extract the tissue name from sample annotation 
 #'
 #' In GEO Series, tissue information can be found
-#' in one of the characteristics_ch?? columns starting
-#' with "tissue: ..." 
-#' We simply search all columns for this pattern. 
+#' in one of the characteristics_ch1 column.  
 #' 
-#' @param pdata.row row of pData(eset)
-extractTissue = function(pdata.row) {
-  if("tissue" %in% colnames(pdata.row)) {
-    return(pdata.row$tissue)
-  } else {
-    pat = "tissue: (.*)"
-    return(tolower(sub(pat, "\\1", pdata.row[grepl(pat, pdata.row)])[1]))
-  } 
+#' @param characteristics_ch1 column content
+extractTissue = function(characteristics) {
+  characteristics = unlist(strsplit(characteristics, split=";"))
+  for(char in characteristics) {
+    char = trim(char)
+    if(substring(char, 0, 7) == "tissue:"){
+      return(trim(substring(char, 8)))
+    }
+  }
 }
 
 #' Map the often very specific tissue annotation from GEO

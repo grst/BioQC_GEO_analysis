@@ -13,6 +13,9 @@ norm01 = function(x){
   (x-min(x))/(max(x)-min(x))
 }
 
+#' Trim leading and trailing whitespace
+trim = function (x) gsub("^\\s+|\\s+$", "", x)
+
 
 #' Collapse multiple signatures that belong to the same tissue into one.
 #' 

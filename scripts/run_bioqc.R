@@ -1,43 +1,59 @@
-#!Rscript
+#!/bin/env Rscript 
 
-########
+#############
 # USAGE:
-#   Rscript run_bioqc.R <esetName.Rdata> <outputPath>
-# where esetName.Rdata contains a biobase ExpressionSet with variable
-# name eset. outputPath will be appended with <esetName_bioqc_res.tab>
+#   run_bioqc.R <outputDir> <chunkFile> 
+# where chunkFile is a file containing paths to Rdata objects storing
+# ExpressionSets, one file per line. The ExpressionSet in the Rdata object
+# must be named 'eset'. 
 #
-# The script applies BioQC to the ExpressionSet and stores the
-# raw p-values as a data table.
-########
+# The script runs BioQC on each expression set and stores the raw 
+# p-values as data tables. 
+#############
+
 
 library(tools)
+library(Biobase)
+library(BioQC)
+library(ribiosAnnotation)
+source("lib/lib.R")
+source("lib/geo_annotation.R")
 
-args = commandArgs(trailingOnly = TRUE)
-esetFile = args[1]
-outputPath = args[2]
-geo.id = file_path_sans_ext(basename(esetFile))
-print(geo.id)
+# options(error = quote({
+#   dump.frames("ribios.dump", to.file = TRUE)
+#   quit(save = "no", status = 1L)
+# }))
 
-outFile = file.path(outPath, paste(geo.id, "_bioqc_res.tab", sep=""))
+args = commandArgs(trailingOnly=TRUE)
 
-# get the first colname of the list that is in fData
-col.name = gene.symbols[which(gene.symbols %in% colnames(fData(eset)))[1]]
+chunkFile = args[2]
+outDir = args[1]
+outPath = file.path(outDir, "%s_bioqc_res.tab")
+esetFiles = readLines(chunkFile)
 
-if(is.na(col.name)) {
-  print(sprintf("%s: Study does not provide Gene Symbols.", geo.id))
-} else{
-  library(BioQC)
-  
-  # do BioQC analysis and save pValues to table 
-  gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
-  gmt <- readGmt(gmtFile)
+gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
+gmt <- readGmt(gmtFile)
+
+runFile = function(esetFile) {
   load(esetFile)
-  
+  eset = attachGeneSymbols(eset)
   #run BioQC
   bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="BioqcGeneSymbol")
-  
-  #save result to table
-  write.table(bioqcRes, file=outFile)
+  return(bioqcRes)
+}
+
+for (esetFile in esetFiles) {
+  print(sprintf("Working on %s", esetFile))
+  tryCatch ({
+    res = runFile(esetFile)
+    outFile = sprintf(outPath, tools::file_path_sans_ext(basename(esetFile)))
+    print(sprintf("Writing to %s", outFile))
+    write.table(res, file=outFile)
+  }, 
+  error=function(cond) {
+    print(sprintf("%s failed: ", esetFile))
+    message(cond)
+  })
 }
 
 
