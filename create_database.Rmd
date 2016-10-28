@@ -4,11 +4,39 @@ Create and Fill Database
 create the databaes... 
 
 ```{r}
-source("../lib/db.R")
-source("../lib/lib.R")
-source("../lib/geo_annotation.R")
+source("lib/db.R")
+source("lib/lib.R")
+source("lib/geo_annotation.R")
+library(testthat)
 ```
 
+## Convert GEOMetadb
+There is a shell script `db/sqlite_to_psql.sh` that converts the sqlite database into a postgresql database. 
+
+We first need to provide a list of tables: 
+```{r}
+gdb = dbConnect(SQLite(), "db/GEOmetadb.sqlite")
+tables = dbListTables(gdb)
+writeLines(tables, file("db/tables.txt"))
+```
+
+Truncate previous data (uncomment corresponding line): 
+```{r}
+for(table in tables) {
+#    dbSendUpdate(mydb, sprintf("truncate %s cascade", tolower(table)))
+}
+```
+
+Then, we run the shell script to import the data.
+Now, check for consistency, i.e. do all tables have the same number of rows? 
+```{r}
+# check for consistency 
+for(table in tables[9:9]) {
+  count.query = sprintf("select count(*) from %s", table)
+  print(count.query)
+  expect_equal(dbGetQuery(gdb, count.query)[[1]], dbGetQuery(mydb, tolower(count.query))[[1]])
+}
+```
 
 ## Tissues
 ```{r}
@@ -16,6 +44,23 @@ dbAppendDf("tissues", unique(geo_annotation.tissueMap["tissue"]))
 dbSendUpdate(mydb, "insert into tissues values('other')")
 ```
 
-## Samples
+## Extended sample meta information
+The meta information is already provided by GEOmetabase. However, we want to add additional metadata 
+in a separate table, e.g extracted tissue annotation. 
+```{r}
+tissue.raw = dbGetQuery(mydb, "select id, characteristics_ch1 from gsm where characteristics_ch1 like '%tissue: %'")
+tissues.extracted = sapply(tissue.raw[,"characteristics_ch1"], extractTissue)
+tissues = sapply(tissues.extracted, sanitizeTissue)
+table = cbind(id=tissue.raw$id, tissue=tissues, tissue_orig=tissues.extracted )
+```
+
+## Load BioQC data into the database
+```{r}
+bqcFiles = Sys.glob("/data64/bi/data/GEO_all/tmp/gse_microarray_bioqc/*_bioqc_res.tab")
+
+loadFile = function(bqcFile) { 
+    bioqcRes = read.table(bqcFile)
+}
 
 
+```
