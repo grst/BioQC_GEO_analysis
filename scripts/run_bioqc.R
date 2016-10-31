@@ -16,8 +16,10 @@ library(tools)
 library(Biobase)
 library(BioQC)
 library(ribiosAnnotation)
+library(assertthat)
 source("lib/lib.R")
 source("lib/geo_annotation.R")
+source("lib/db.R")
 
 # options(error = quote({
 #   dump.frames("ribios.dump", to.file = TRUE)
@@ -36,23 +38,29 @@ gmt <- readGmt(gmtFile)
 
 runFile = function(esetFile) {
   load(esetFile)
-  eset = attachGeneSymbols(eset)
+  assert_that(length(levels(as.factor(pData(eset)$platform_id))) == 1)
+  platform.id = as.character(pData(eset)[1, 'platform_id'])
+  eset = attachGeneSymbols(eset, platform.id=platform.id)
   #run BioQC
-  bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="BioqcGeneSymbol")
-  return(bioqcRes)
+  if(!all(is.na(fData(eset)$BioqcGeneSymbol))) {
+      bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="BioqcGeneSymbol")
+      return(bioqcRes)
+  } else {
+      stop("Gene Symbols could not be annotated.")
+  }
 }
 
 for (esetFile in esetFiles) {
-  print(sprintf("Working on %s", esetFile))
+  print(sprintf("%s started.", esetFile))
   tryCatch ({
     res = runFile(esetFile)
     outFile = sprintf(outPath, tools::file_path_sans_ext(basename(esetFile)))
-    print(sprintf("Writing to %s", outFile))
     write.table(res, file=outFile)
+    print(sprintf("%s written to: %s", esetFile, outFile))
   }, 
   error=function(cond) {
     print(sprintf("%s failed: ", esetFile))
-    message(cond)
+    print(cond)
   })
 }
 

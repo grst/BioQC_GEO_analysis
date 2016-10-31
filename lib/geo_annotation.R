@@ -3,19 +3,37 @@
 #' Information retrieved from the GEO needs to be preprocessed
 #' and santized before we send it into our database. 
 
+library(assertthat)
+library(ribiosAnnotation)
+library(ribiosUtils)
 geo_annotation.tissueMap = read.csv("lib/res/map_tissue_annotation.csv", strip.white=TRUE, stringsAsFactors=FALSE)
 
 
 #' Retrieve Gene Symbols for BioQC
 #' 
 #' @param eset
+#' @param platform.id
 #' @return eset with addtional BioqcGeneSymbol column. 
-attachGeneSymbols = function(eset) {
-  annotation = annotateProbesets(fData(eset)$ID, orthologue=TRUE)
-  gene.symbol.col = annotation[,"GeneSymbol",drop=FALSE]
-  colnames(gene.symbol.col) = c("BioqcGeneSymbol")
-  fData(eset) = cbind(fData(eset), gene.symbol.col)
-  return(eset)
+attachGeneSymbols = function(eset, platform.id=NULL) {
+  annotation.package = dbGetQuery(mydb, "select bioc_package from gpl where gpl = ?", platform.id)
+  if(nrow(annotation.package) > 0 && !is.na(annotation.package[1,1])) {
+    assert_that(nrow(annotation.package) == 1)
+    package.name = sprintf("%s.db", annotation.package[1,1])
+    require(package.name, character.only=TRUE)
+    fdata = fData(eset)
+    gene.ids = select(get(package.name), keys=as.character(fdata$ID), columns=c("ENTREZID"), keytype="PROBEID")
+    # returns a 1:many mapping. Use matchColumn to resolve that
+    gene.ids.matched = matchColumn(fdata$ID, gene.ids, "PROBEID", multi=FALSE)
+    ortholog.res = annotateHumanOrthologs(gene.ids.matched$ENTREZID)
+    gene.symbols.orth = matchColumn(gene.ids.matched$ENTREZID, ortholog.res, "OrigGeneID", multi=FALSE)
+    # save back to fData
+    fdata = cbind(fdata, data.frame(BioqcGeneSymbol=gene.symbols.orth$GeneSymbol))
+    fData(eset) = fdata
+    return(eset)
+  } else {
+    # return all NA's if cannot annotate. 
+    return cbind(fData(eset), rep(NA, ncol(fData(eset))))
+  } 
 }
 
 #' Extract the tissue name from sample annotation 
@@ -32,6 +50,7 @@ extractTissue = function(characteristics) {
       return(trim(substring(char, 8)))
     }
   }
+  return("no_tissue_annotated")
 }
 
 #' Map the often very specific tissue annotation from GEO
