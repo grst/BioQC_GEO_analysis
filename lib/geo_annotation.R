@@ -3,9 +3,10 @@
 #' Information retrieved from the GEO needs to be preprocessed
 #' and santized before we send it into our database. 
 
-library(assertthat)
-library(ribiosAnnotation)
-library(ribiosUtils)
+stopifnot(suppressPackageStartupMessages(require(assertthat)))
+stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
+stopifnot(suppressPackageStartupMessages(require(ribiosUtils)))
+
 geo_annotation.tissueMap = read.csv("lib/res/map_tissue_annotation.csv", strip.white=TRUE, stringsAsFactors=FALSE)
 
 
@@ -19,7 +20,7 @@ attachGeneSymbols = function(eset, platform.id=NULL) {
   if(nrow(annotation.package) > 0 && !is.na(annotation.package[1,1])) {
     assert_that(nrow(annotation.package) == 1)
     package.name = sprintf("%s.db", annotation.package[1,1])
-    require(package.name, character.only=TRUE)
+    stopifnot(suppressPackageStartupMessages(require(package.name, character.only=TRUE)))
     fdata = fData(eset)
     gene.ids = select(get(package.name), keys=as.character(fdata$ID), columns=c("ENTREZID"), keytype="PROBEID")
     # returns a 1:many mapping. Use matchColumn to resolve that
@@ -31,8 +32,7 @@ attachGeneSymbols = function(eset, platform.id=NULL) {
     fData(eset) = fdata
     return(eset)
   } else {
-    # return all NA's if cannot annotate. 
-    return cbind(fData(eset), rep(NA, ncol(fData(eset))))
+    stop(sprintf("Platform ID not found in database: %s", platform.id))
   } 
 }
 

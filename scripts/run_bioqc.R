@@ -12,11 +12,11 @@
 #############
 
 
-library(tools)
-library(Biobase)
-library(BioQC)
-library(ribiosAnnotation)
-library(assertthat)
+stopifnot(suppressPackageStartupMessages(require(tools)))
+stopifnot(suppressPackageStartupMessages(require(Biobase)))
+stopifnot(suppressPackageStartupMessages(require(BioQC)))
+stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
+stopifnot(suppressPackageStartupMessages(require(assertthat)))
 source("lib/lib.R")
 source("lib/geo_annotation.R")
 source("lib/db.R")
