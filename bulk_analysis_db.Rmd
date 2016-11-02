@@ -5,9 +5,15 @@ In this file, run BioQC on all samples that have the required metadata
 to perform a meaningful contamination analysis: annotated tissue and
 annotated gene symbols. 
 
+```{r}
+library(BioQC)
+source("lib/plots.R")
+source("lib/db.R")
+```
+
+
 First, we retrieve a list of the corresponding studies from the database: 
 ```{r}
-source("lib/db.R")
 gse = dbGetQuery(mydb, "select distinct gse_gsm.gse from gse_gsm
                         join bioqc_gsm bgsm on bgsm.gsm = gse_gsm.gsm
                         join gse_gpl on gse_gpl.gse = gse_gsm.gse
@@ -16,4 +22,79 @@ gse = dbGetQuery(mydb, "select distinct gse_gsm.gse from gse_gsm
 writeLines(gse$gse, file("results/gse_identifiers_bulk_analysis.txt"))
 ```
 
+We then run BioQC on these studies on the HPC using *chunksub*. The results live 
+in `/data64/bi/data/GEO_all/tmp/bioqc/bioqc_annotation_tissue` and have been 
+imported into the database using `scripts/bioqc2db.R`. 
 
+To get an overview, we want to replicate the heatmaps for each tissue that we created in `bulk_analysis_gds.Rmd`. 
+```{r}
+tissues = dbGetQuery(mydb, "select * from bioqc_tissues where id != 'other'")
+
+getTissueSamples = function(tissue, limit=-1) {
+  # get all samples belonging to one tissue and filter for siginifant 
+  # signatures in one sql query! 
+  query = "
+  with bioqc_res_filtered as (
+      select bioqc_res.*, bioqc_gsm.tissue 
+      from bioqc_res
+      join bioqc_gsm on bioqc_gsm.gsm = bioqc_res.gsm
+      join gsm on gsm.gsm = bioqc_res.gsm
+      where tissue = ? and
+      organism_ch1 = 'Homo sapiens'
+  ),
+  gsm_rand as (
+      select gsm from (select distinct gsm from bioqc_res_filtered) as gsm_distinct
+      %s
+  )
+  select * from gsm_rand join 
+  bioqc_res_filtered on gsm_rand.gsm = bioqc_res_filtered.gsm
+  where signature in (
+      select distinct signature
+      from bioqc_res_filtered   
+      where pvalue < 1e-8
+  )"
+  if(limit > 0) {
+    query = sprintf(query, sprintf("order by random() limit %d", limit))
+  } else {
+    query = sprintf(query, "")
+  }
+  data = dbGetQuery(mydb, query, tissue)
+  data = data.frame(data, pvalue.log=absLog10p(data[,"pvalue"]))
+  return(data)
+}
+
+for(tissue in tissues$id) {
+  data = getTissueSamples(tissue, 300)
+  print(tissue)
+  hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
+  data$gsm = factor(data$gsm, levels=sample(unique(data$gsm)))  
+  the.plot = ggplot(data=data, aes(x=gsm, y=signature, fill=pvalue.log)) + geom_tile() +
+    coord_equal() +
+    scale_fill_gradientn(colours = hm.palette(100)) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    ggtitle(tissue)
+  pdf(file=sprintf("results/heatmaps_db/%s.pdf", tissue), width=100, height=15)
+  print(the.plot)
+  dev.off()
+}
+```
+
+
+Now, detect samples we defined as contamined:
+* highly siginificant BioQC scores (min score per sample >6)
+* signature outside 'expected' signature that is at least 4 higher than the highest score in expected signatures. 
+* (outlier in study)
+```{r} 
+
+with significant_samples as (
+    select distinct gsm from bioqc_res where pvalue < 1e6
+)
+select * from bioqc_res r
+join significant_samples ss on ss.gsm = r.gsm 
+join bioqc_gsm on bioqc_gsm.gsm = r.gsm 
+join bioqc_tissues_signatures bts on bts.tissue = bioqc_gsm.tissue
+join bioqc_res r2 on r.gsm = r2.gsm and r.gse = r2.gse and r2.signature = bts.signature
+where r2.pvalue / r.pvalue > 10000 and 
+bioqc_gsm.tissue = 'adipose' limit 10
+
+```

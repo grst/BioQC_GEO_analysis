@@ -4,7 +4,7 @@ Brain_NGS_RNASEQATLAS_0.6_3;brain
 Breast_NGS_RNASEQATLAS_0.6_3;breast
 Colon_NGS_RNASEQATLAS_0.6_3;colon
 Heart_NGS_RNASEQATLAS_0.6_3;heart
-Hypothalamus_NGS_RNASEQATLAS_0.6_3;
+Hypothalamus_NGS_RNASEQATLAS_0.6_3;brain
 Kidney_NGS_RNASEQATLAS_0.6_3;kidney
 Liver_NGS_RNASEQATLAS_0.6_3;liver
 Lung_NGS_RNASEQATLAS_0.6_3;lung
@@ -15,14 +15,14 @@ Skeletal_Muscle_NGS_RNASEQATLAS_0.6_3;skeletal muscle
 Spleen_NGS_RNASEQATLAS_0.6_3;spleen
 Testis_NGS_RNASEQATLAS_0.6_3;
 Thyroid_NGS_RNASEQATLAS_0.6_3;
-WBC_NGS_RNASEQATLAS_0.6_3;
+WBC_NGS_RNASEQATLAS_0.6_3;blood
 Adipose_NR_0.7_3;adipose
 Adipose_brown_NR_0.7_3;adipose
 Adipose_omental_NR_0.7_3;adipose
 Adipose_white_NR_0.7_3;adipose
 Adrenal_Cortex_NR_0.7_3;
 Adrenal_Gland_NR_0.7_3;
-Artery_coronary_NR_0.7_3;
+Artery_coronary_NR_0.7_3;heart
 Blood_NR_0.7_3;blood
 Bone_NR_0.7_3;
 Bone_Marrow_NR_0.7_3;bone marrow
@@ -33,7 +33,7 @@ Brain_Cerebellum_NR_0.7_3;brain
 Brain_Cerebellum_peduncles_NR_0.7_3;brain
 Brain_Cortex_NR_0.7_3;brain
 Brain_Cortex_cingulate_NR_0.7_3;brain
-Brain_Cortex_prefrontal_NR_0.7_3;prefrontal cortex brain
+Brain_Cortex_prefrontal_NR_0.7_3;brain
 Brain_Globus_pallidus_NR_0.7_3;brain
 Brain_Hippocampus_NR_0.7_3;brain
 Brain_Hypothalamus_NR_0.7_3;brain
@@ -47,7 +47,7 @@ Brain_parietal_lobe_NR_0.7_3;brain
 Brain_stem_Medulla_oblongata_NR_0.7_3;brain
 Brain_stem_Pons_NR_0.7_3;brain
 Brain_temporal_lobe_NR_0.7_3;brain
-Bronchi_NR_0.7_3;
+Bronchi_NR_0.7_3;lung
 Ciliary_body_NR_0.7_3;
 Cornea_NR_0.7_3;
 Dendritic_cell_lymphoid_NR_0.7_3;
@@ -59,18 +59,18 @@ Endothelial_Cells_NR_0.7_3;
 Epidermis_NR_0.7_3;
 Epidermis_tongue_NR_0.7_3;
 Epithelial_bronchial_NR_0.7_3;
-Microglia_NR_0.7_3;
-Monocytes_NR_0.7_3;
+Microglia_NR_0.7_3;brain
+Monocytes_NR_0.7_3;blood
 Epithelial_retinal_pigment_NR_0.7_3;
-Erythrocyte_progenitor_NR_0.7_3;
-Erythroid_cells_NR_0.7_3;
+Erythrocyte_progenitor_NR_0.7_3;blood
+Erythroid_cells_NR_0.7_3;blood
 Eyecup_NR_0.7_3;
 Ganglion_cervical_sup_NR_0.7_3;
 Ganglion_ciliary_NR_0.7_3;
 Ganglion_root_dorsal_NR_0.7_3;
 Ganglion_trigeminal_NR_0.7_3;
-Granulocyte_INFL_NR_0.7_3;
-Granulocyte_progenitor_NR_0.7_3;
+Granulocyte_INFL_NR_0.7_3;blood
+Granulocyte_progenitor_NR_0.7_3;blood
 Hemopoietic_stem_cells_NR_0.7_3;
 Intestine_Appendix_NR_0.7_3;
 Intestine_Colon_NR_0.7_3;colon
@@ -86,34 +86,34 @@ Liver_fetal_NR_0.7_3;liver
 Lung_NR_0.7_3;lung
 Lung_fetal_NR_0.7_3;lung
 Lymph_Node_NR_0.7_3;
-Lymphoblast_B_NR_0.7_3;
-Lymphocyte_B_FOLL_NR_0.7_3;
-Lymphocytes_B_MZ_NR_0.7_3;
-Lymphocytes_B_PB_NR_0.7_3;
-Lymphocytes_NK_NR_0.7_3;
-Lymphocytes_NK_PB_NR_0.7_3;
-Lymphocytes_T_CTC_PB_NR_0.7_3;
-Lymphocytes_T_FOXP3_NR_0.7_3;
-Lymphocytes_T_H_NR_0.7_3;
-Lymphocytes_T_PB_NR_0.7_3;
-Lymphocytes_T_Thymus_CD4_NR_0.7_3;
-Lymphocytes_T_Thymus_CD4_CD8_NR_0.7_3;
-Lymphocytes_T_Thymus_CD8_NR_0.7_3;
-Macrophage_BM_NR_0.7_3;
-Macrophage_PB_NR_0.7_3;
-Mammary_NR_0.7_3;
-Mast_cell_PB_NR_0.7_3;
+Lymphoblast_B_NR_0.7_3;blood
+Lymphocyte_B_FOLL_NR_0.7_3;blood
+Lymphocytes_B_MZ_NR_0.7_3;blood
+Lymphocytes_B_PB_NR_0.7_3;blood
+Lymphocytes_NK_NR_0.7_3;blood
+Lymphocytes_NK_PB_NR_0.7_3;blood
+Lymphocytes_T_CTC_PB_NR_0.7_3;blood
+Lymphocytes_T_FOXP3_NR_0.7_3;blood
+Lymphocytes_T_H_NR_0.7_3;blood
+Lymphocytes_T_PB_NR_0.7_3;blood
+Lymphocytes_T_Thymus_CD4_NR_0.7_3;blood
+Lymphocytes_T_Thymus_CD4_CD8_NR_0.7_3;blood
+Lymphocytes_T_Thymus_CD8_NR_0.7_3;blood
+Macrophage_BM_NR_0.7_3;blood
+Macrophage_PB_NR_0.7_3;blood
+Mammary_NR_0.7_3;breast
+Mast_cell_PB_NR_0.7_3;blood
 Muscle_cardiac_NR_0.7_3;heart
 Muscle_cardiac_atrium_NR_0.7_3;heart
 Muscle_cardiac_ventricle_NR_0.7_3;heart
 Muscle_skeletal_NR_0.7_3;skeletal muscle
 Muscle_skeletal_tongue_NR_0.7_3;skeletal muscle
 Muscle_smooth_NR_0.7_3;skeletal muscle
-Myeloblast_NR_0.7_3;
-Myeloid_progenitor_NR_0.7_3;
+Myeloblast_NR_0.7_3;bone marrow
+Myeloid_progenitor_NR_0.7_3;bone marrow
 Nervous_AV_Node_NR_0.7_3;
-Nipple_NR_0.7_3;
-Nodose_nucleus_NR_0.7_3;
+Nipple_NR_0.7_3;breast
+Nodose_nucleus_NR_0.7_3;brain
 Oral_mucosa_NR_0.7_3;
 Osteoblast_NR_0.7_3;
 Osteoclast_NR_0.7_3;
@@ -128,7 +128,7 @@ Retina_NR_0.7_3;
 Salivary_Gland_NR_0.7_3;
 Saphenous_vein_NR_0.7_3;
 Skin_NR_0.7_3;skin
-Spinal_cord_NR_0.7_3;
+Spinal_cord_NR_0.7_3;brain
 Spleen_NR_0.7_3;spleen
 Stomach_NR_0.7_3;
 Stomach_cardiac_NR_0.7_3;
@@ -143,7 +143,7 @@ Thymus_NR_0.7_3;
 Thyroid_NR_0.7_3;
 Thyroid_fetal_NR_0.7_3;
 Tonsils_NR_0.7_3;
-Trachea_NR_0.7_3;
+Trachea_NR_0.7_3;lung
 Umbilical_cord_NR_0.7_3;
 Urethra_NR_0.7_3;
 Urinary_Bladder_NR_0.7_3;
