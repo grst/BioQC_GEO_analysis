@@ -72,6 +72,7 @@ dbAppendDf("bioqc_tissues", unique(geo_annotation.tissueMap["tissue"]))
 dbSendUpdate(mydb, "insert into bioqc_tissues values('other')")
 ```
 
+
 ### Signatures
 
 Import the list of BioQC signatures from the gmt file shipped with the BioQC package. 
@@ -86,6 +87,7 @@ gmt.table = do.call(rbind.data.frame, gmt.table)
 dbAppendDf("bioqc_signatures", gmt.table)
 ```
 
+
 ### Extended sample meta information
 
 The meta information is already provided by GEOmetabase. However, we want to add additional metadata 
@@ -95,6 +97,18 @@ tissue.raw = dbGetQuery(mydb, "select gsm, characteristics_ch1 from gsm where ch
 tissues = lapply(lapply(tissue.raw$characteristics_ch1, extractTissue), sanitizeTissue)
 table = cbind(gsm=tissue.raw$gsm, tissue=tissues, tissue_orig=tissues.extracted)
 dbAppendDf("bioqc_gsm", table)
+```
+
+
+### Map signatures to tissues
+
+To decide about contaminations, we need to know to which tissue each siganture belongs. 
+We annotated this in a csv file and now load it into the database. 
+```{r}
+sig.tissue.map = read.table("lib/res/map_signature_tissue.csv", sep=";")
+sig.tissue.map = sig.tissue.map[sig.tissue.map$V2!="",]
+sig.tissue.map = sig.tissue.map[,c(2,1)]
+dbAppendDf("bioqc_tissues_signatures", sig.tissue.map)
 ```
 
 
