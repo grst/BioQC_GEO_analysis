@@ -67,7 +67,7 @@ sanitizeTissue = function(tissue.orig) {
 }
 
 geoIdFromPath = function(path) {
-  pat = "((GSE|GDS)\\d+)(_\\d+)?.Rdata"  
+  pat = "((GSE|GDS)\\d+)(_\\d+)?(.*).(.*)"  
   id = sub(pat, "\\1", basename(path))
   return(id)
 }
