@@ -76,14 +76,4 @@ dbAppendDf("bioqc_gsm", table)
 ```
 
 ## Load BioQC data into the database
-```{r}
-bqcFiles = Sys.glob("/data64/bi/data/GEO_all/tmp/gse_microarray_bioqc/*_bioqc_res.tab")
-
-for(bqcFile in bqcFiles) {
-  bioqcRes = data.table(read.table(bqcFile), keep.rownames=TRUE)
-  res.molten = melt(bioqcRes, id.vars="rn")
-  setcolorder(res.molten, c(2,1,3))
-  dbAppendDf("bioqc_res", res.molten)
-}
-
-```
+-> separate R script for that. 

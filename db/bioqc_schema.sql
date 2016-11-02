@@ -22,8 +22,9 @@ create table bioqc_tissues_signatures(tissue varchar(80) references bioqc_tissue
     primary key(tissue, signature));
 
 drop table if exists bioqc_res cascade;
-create table bioqc_res(gsm varchar(10) not null references gsm(gsm),
+create table bioqc_res(gse varchar(10) not null references gse(gse), 
+    gsm varchar(10) not null references gsm(gsm),
     signature varchar(80) references bioqc_signatures(id),
     pvalue double precision,
-    primary key(gsm, signature));
+    primary key(gse, gsm, signature));
 
