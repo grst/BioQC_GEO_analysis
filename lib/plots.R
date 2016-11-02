@@ -1,7 +1,7 @@
-library(RColorBrewer)
-library(ggplot2)
-library(reshape2)
-library(circlize)
+stopifnot(suppressPackageStartupMessages(require(RColorBrewer)))
+stopifnot(suppressPackageStartupMessages(require(ggplot2)))
+stopifnot(suppressPackageStartupMessages(require(reshape2)))
+stopifnot(suppressPackageStartupMessages(require(circlize)))
 
 #########
 # Library of reusable plotting function for
