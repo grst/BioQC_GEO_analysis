@@ -1,6 +1,9 @@
 Apply BioQC on samples with tissues annotated
 =============================================
 
+This is our first bulk analysis running BioQC on all GEO datasets (GDS) 
+that have a tissue annotated. 
+
 ```{r load_libries}
 library(pylr)
 library(parallel)

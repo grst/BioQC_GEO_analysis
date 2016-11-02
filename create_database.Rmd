@@ -1,7 +1,11 @@
 Create and Fill Database
-========================================================
+========================
 
-create the databaes... 
+We store Meta information fo GEO samples and BioQC results in 
+a postgreSQL database. In this document, we initalize the
+database with the metadata. 
+
+The sql schemata can be found in `db/*.sql`. 
 
 ```{r}
 source("lib/db.R")
@@ -12,8 +16,13 @@ library(testthat)
 library(data.table)
 ```
 
-## Convert GEOMetadb
+Convert GEOMetadb
+-----------------
+
+[GEOMetabase](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html) 
+is an sqlite database containing all the meta information also stored in the ExpressionSets. 
 There is a shell script `db/sqlite_to_psql.sh` that converts the sqlite database into a postgresql database. 
+A nasty file system/kernel bug lead to random skipping of rows, which I had to find a workaround to. 
 
 We first need to provide a list of tables: 
 ```{r}
@@ -29,6 +38,9 @@ for(table in tables) {
 }
 ```
 
+Then, we run the shell script `db/sqlite_to_psql` to import the data. All corresponding steps are documented in the shell script. 
+It involves charset conversion and workarounds around the filesystem bug. 
+The following chunk can be used to find what rows have been skipped in the gsm table and debug the conversion process. 
 ```{r}
 in.sqlite = dbGetQuery(gdb, "select gsm from gsm order by gsm")
 in.psql = dbGetQuery(mydb, "select gsm from gsm order by gsm")
@@ -36,7 +48,6 @@ writeLines(in.sqlite[[1]], file("db/in.sqlite.txt"))
 writeLines(in.sqlite[[1]], file("db/in.psql.txt"))
 ```
 
-Then, we run the shell script to import the data.
 Now, check for consistency, i.e. do all tables have the same number of rows? 
 ```{r}
 # check for consistency 
@@ -47,13 +58,23 @@ for(table in tables) {
 }
 ```
 
-## Tissues
+
+Insert inital data
+------------------
+
+### Tissues
+
+The tissue table is a.t.m essintially a list of tissues that we curated. 
+For these tissues we created a map from the original GEO annotation to a 
+unified tissue name that we can work with. 
 ```{r}
 dbAppendDf("bioqc_tissues", unique(geo_annotation.tissueMap["tissue"]))
 dbSendUpdate(mydb, "insert into bioqc_tissues values('other')")
 ```
 
-## Signatures
+### Signatures
+
+Import the list of BioQC signatures from the gmt file shipped with the BioQC package. 
 ```{r}
 library(BioQC)
 gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
@@ -65,7 +86,8 @@ gmt.table = do.call(rbind.data.frame, gmt.table)
 dbAppendDf("bioqc_signatures", gmt.table)
 ```
 
-## Extended sample meta information
+### Extended sample meta information
+
 The meta information is already provided by GEOmetabase. However, we want to add additional metadata 
 in a separate table, e.g extracted tissue annotation. 
 ```{r}
@@ -75,5 +97,11 @@ table = cbind(gsm=tissue.raw$gsm, tissue=tissues, tissue_orig=tissues.extracted)
 dbAppendDf("bioqc_gsm", table)
 ```
 
-## Load BioQC data into the database
--> separate R script for that. 
+
+Load BioQC data into the database
+---------------------------------
+
+We now need to fill the table with the BioQC results. There is a separate R script for that:
+`scripts/bioqc2db.R`
+
+

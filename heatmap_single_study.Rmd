@@ -1,5 +1,6 @@
 Proof of concept: Applying BioQC to GEO studies
 ===============================================
+
 Simply plot a GDS GEO Study as heatmap and PCA 
 
 ```{r}

@@ -1,3 +1,10 @@
+Automatically detect contaimined samples
+========================================
+
+Sandbox for testing different methods for identifying  
+contamination automatically. 
+
+
 ```{r}
 
 

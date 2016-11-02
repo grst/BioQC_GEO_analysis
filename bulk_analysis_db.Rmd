@@ -1,0 +1,19 @@
+Analyse GEO Samples for contamination
+=====================================
+
+In this file, run BioQC on all samples that have the required metadata
+to perform a meaningful contamination analysis: annotated tissue and
+annotated gene symbols. 
+
+First, we retrieve a list of the corresponding studies from the database: 
+```{r}
+source("lib/db.R")
+gse = dbGetQuery(mydb, "select distinct gse_gsm.gse from gse_gsm
+                        join bioqc_gsm bgsm on bgsm.gsm = gse_gsm.gsm
+                        join gse_gpl on gse_gpl.gse = gse_gsm.gse
+                        join gpl on gpl.gpl = gse_gpl.gpl
+                        where bgsm.tissue != 'other' and gpl.bioc_package is not NULL and gpl.bioc_package != '';")
+writeLines(gse$gse, file("results/gse_identifiers_bulk_analysis.txt"))
+```
+
+
