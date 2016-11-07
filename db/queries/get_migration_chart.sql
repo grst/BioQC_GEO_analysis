@@ -5,14 +5,14 @@ with contamined_samples as (
 ),
 migration as (
 	select cs.*,
-	case when count_exp = (
+	case when count_exp = ( -- meets the criterion for contamined (exceeds ALL expected signatures)
 		select count(*) from bioqc_tissues_signatures bts2
 		where bts2.tissue = cs.tissue)
 	then case when bts.tissue is not null
 		then bts.tissue
 		else 'other'
 		end
-	else cs.tissue
+	else cs.tissue -- if not, the destination tissue = tissue of origin  
 	end as destination_tissue from contamined_samples cs
 	left join bioqc_tissues_signatures bts on bts.signature = cs.signature
 )

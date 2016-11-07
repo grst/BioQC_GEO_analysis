@@ -24,6 +24,11 @@ join bioqc_res r2 on r.gsm = r2.gsm and r.gse = r2.gse and r2.signature = bts.si
 
 -- the expected signatures are likely to meet that threshold. Filter them out. 
 where r.signature not in (select signature from bioqc_tissues_signatures where tissue = bioqc_gsm.tissue) 
+--- 
+--- TODO
+----
+and TRUE -- select for significant samples here, if enrichment-ratio < 6
+---
 and r2.pvalue / r.pvalue > 1e6
 
 
