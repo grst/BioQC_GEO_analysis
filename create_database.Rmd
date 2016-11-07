@@ -93,6 +93,7 @@ dbAppendDf("bioqc_signatures", gmt.table)
 The meta information is already provided by GEOmetabase. However, we want to add additional metadata 
 in a separate table, e.g extracted tissue annotation. 
 ```{r}
+extractTissue = function(x) {extractFromList(x, 'tissue:')}
 tissue.raw = dbGetQuery(mydb, "select gsm, characteristics_ch1 from gsm where characteristics_ch1 like '%tissue: %'")
 tissues = lapply(lapply(tissue.raw$characteristics_ch1, extractTissue), sanitizeTissue)
 table = cbind(gsm=tissue.raw$gsm, tissue=tissues, tissue_orig=tissues.extracted)

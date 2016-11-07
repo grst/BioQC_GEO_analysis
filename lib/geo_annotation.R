@@ -42,15 +42,16 @@ attachGeneSymbols = function(eset, platform.id=NULL) {
 #' in one of the characteristics_ch1 column.  
 #' 
 #' @param characteristics_ch1 column content
-extractTissue = function(characteristics) {
+#' @param fieldName 
+extractFromList = function(characteristics, fieldName='tissue:') {
   characteristics = unlist(strsplit(characteristics, split=";"))
   for(char in characteristics) {
     char = trim(char)
-    if(substring(char, 0, 7) == "tissue:"){
-      return(trim(substring(char, 8)))
+    if(tolower(substring(char, 0, length(fieldName))) == tolower(fieldName)){
+      return(trim(substring(char, length(fieldName)+1)))
     }
   }
-  return("no_tissue_annotated")
+  return("<not_annotated>")
 }
 
 #' Map the often very specific tissue annotation from GEO
@@ -59,6 +60,7 @@ extractTissue = function(characteristics) {
 #' @param tissue.orig tissue annotation as found in the GEO
 #'    Series and retrieved by \code{\link{extractTissue}}
 sanitizeTissue = function(tissue.orig) {
+  tissue.orig = tolower(tissue.orig)
   if(tissue.orig %in% geo_annotation.tissueMap$annotation) {
     geo_annotation.tissueMap[geo_annotation.tissueMap[,'annotation'] == tissue.orig,'tissue']    
   } else {
