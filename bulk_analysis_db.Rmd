@@ -82,19 +82,15 @@ for(tissue in tissues$id) {
 
 Now, detect samples we defined as contamined:
 * highly siginificant BioQC scores (min score per sample >6)
-* signature outside 'expected' signature that is at least 4 higher than the highest score in expected signatures. 
+* signature outside 'expected' signature that is at least 6 higher than the highest score in expected signatures. 
 * (outlier in study)
+
+We can do this entirely in sql. We first need to create a materialized view for performance reasons. 
+This is done with the query `db/queries/mk_extended_bioqc_res_table2.sql`. The cut-offs can be specified there. 
+
+Second, we retrieve the information we need for the migration chart from that temporary table. 
 ```{r} 
-
-with significant_samples as (
-    select distinct gsm from bioqc_res where pvalue < 1e6
-)
-select * from bioqc_res r
-join significant_samples ss on ss.gsm = r.gsm 
-join bioqc_gsm on bioqc_gsm.gsm = r.gsm 
-join bioqc_tissues_signatures bts on bts.tissue = bioqc_gsm.tissue
-join bioqc_res r2 on r.gsm = r2.gsm and r.gse = r2.gse and r2.signature = bts.signature
-where r2.pvalue / r.pvalue > 10000 and 
-bioqc_gsm.tissue = 'adipose' limit 10
-
+query = readLines(file("db/queries/get_migration_chart.sql"))
+migration = dbGetQuery(mydb, paste(query, collapse="\n"))
+chordDiagram(migration)
 ```
