@@ -1,27 +1,24 @@
-with significant_samples as (
-    select distinct gsm from bioqc_res where pvalue < 1e6
-) -- all samples that have at least one score >6
-select 	r.*, 
-		bioqc_gsm.tissue, 
-		bts.signature as exp_sig, 
-		r2.pvalue as exp_sig_pval,
-		log(10, cast(r2.pvalue / r.pvalue as numeric)) as enrichment_ratio 
-from bioqc_res r
-join significant_samples ss on ss.gsm = r.gsm       -- fast filtering for siginifcant samples
-join bioqc_gsm on bioqc_gsm.gsm = r.gsm             -- get tissue annotation
+-- using exist, needing the whole result table
+select * from bioqc_res_extended br
+where tissue = 'adipose' and 
+not exists (
+	select * from bioqc_res_extended br2
+	where br.gse = br2.gse and br.gsm = br2.gsm and br.signature = br2.signature and enrichment_ratio < 8
+)
 
--- get all signatures related to tissue ("expected signatures")
-join bioqc_tissues_signatures bts on bts.tissue = bioqc_gsm.tissue  
+-- using group by having count, works on filtered table, but not as flexible. 
+select gse, gsm, tissue, signature, min(enrichment_ratio) from bioqc_res_ext2 bre
+where tissue = 'adipose'
+group by gse, gsm, tissue, signature
+having count(exp_sig) = (select count(*) from bioqc_tissues_signatures where tissue = bre.tissue)
 
--- get pvalues of expected signatures. Match them to the respective sample.  
-join bioqc_res r2 on r.gsm = r2.gsm and r.gse = r2.gse and r2.signature = bts.signature 
-
--- this is the threshold by which the alternate signature must exceed the expected ones. 
-where (r2.pvalue / r.pvalue) > 1e8
-
--- the expected signatures are likely to meet that threshold. Filter them out. 
-and r.signature not in (select signature from bioqc_tissues_signatures where tissue = bioqc_gsm.tissue) 
-
--- choose the tissue.
-and bioqc_gsm.tissue = 'placenta'
-
+-- for migration chart with destination_tissue
+with contamined_samples as (
+    select gse, gsm, tissue, signature, min(enrichment_ratio) from bioqc_res_ext2 bre
+    where tissue='adipose'
+    group by gse, gsm, tissue, signature
+    having count(exp_sig) = (select count(*) from bioqc_tissues_signatures where tissue = bre.tissue)
+) 
+select cs.*, case when bts.tissue is not null then bts.tissue else 'other' end as destination_tissue from contamined_samples cs
+left join bioqc_tissues_signatures bts on bts.signature = cs.signature
+order by tissue 
