@@ -95,7 +95,8 @@ in a separate table, e.g extracted tissue annotation.
 ```{r}
 extractTissue = function(x) {extractFromList(x, 'tissue:')}
 tissue.raw = dbGetQuery(mydb, "select gsm, characteristics_ch1 from gsm where characteristics_ch1 like '%tissue: %'")
-tissues = lapply(lapply(tissue.raw$characteristics_ch1, extractTissue), sanitizeTissue)
+tissues.extracted = lapply(tissue.raw$characteristics_ch1, extractTissue)
+tissues = lapply(tissues.extracted, sanitizeTissue)
 table = cbind(gsm=tissue.raw$gsm, tissue=tissues, tissue_orig=tissues.extracted)
 dbAppendDf("bioqc_gsm", table)
 ```
@@ -111,6 +112,7 @@ sig.tissue.map = sig.tissue.map[sig.tissue.map$V2!="",]
 sig.tissue.map = sig.tissue.map[,c(2,1)]
 dbAppendDf("bioqc_tissues_signatures", sig.tissue.map)
 ```
+
 
 
 Load BioQC data into the database

@@ -7,6 +7,7 @@ annotated gene symbols.
 
 ```{r}
 library(BioQC)
+library(rworldmap)
 source("lib/plots.R")
 source("lib/db.R")
 ```
@@ -27,6 +28,7 @@ in `/data64/bi/data/GEO_all/tmp/bioqc/bioqc_annotation_tissue` and have been
 imported into the database using `scripts/bioqc2db.R`. 
 
 To get an overview, we want to replicate the heatmaps for each tissue that we created in `bulk_analysis_gds.Rmd`. 
+
 ```{r}
 tissues = dbGetQuery(mydb, "select * from bioqc_tissues where id != 'other'")
 
@@ -85,12 +87,82 @@ Now, detect samples we defined as contamined:
 * signature outside 'expected' signature that is at least 6 higher than the highest score in expected signatures. 
 * (outlier in study)
 
-We can do this entirely in sql. We first need to create a materialized view for performance reasons. 
-This is done with the query `db/queries/mk_extended_bioqc_res_table2.sql`. The cut-offs can be specified there. 
+We can find contamined studies with SQL only. 
+To speed up things, we create a temporary table (rather a materialized view, but that's 
+not available on our old postgres server) filtering for samples, where a non-expected
+signature exceeds all expected signatures by a certain threshold (BioQC score > 6, aka. 'enrichment-ratio'). This table is created in `db/queries/mk-extended_bioqc_res_table2.sql`. 
+
+We create a view `contamined_samples` that contains all contamined samples in `db/queries/get_contamined_samples.sql`. 
 
 Second, we retrieve the information we need for the migration chart from that temporary table. 
 ```{r} 
-query = readLines(file("db/queries/get_migration_chart.sql"))
-migration = dbGetQuery(mydb, paste(query, collapse="\n"))
+query = paste(readLines(file("db/queries/get_migration_chart.sql")), collapse="\n")
+migration = dbGetQuery(mydb, query)
 chordDiagram(migration)
 ```
+
+```{r}
+chordDiagram(migration[migration$tissue != 'blood' & migration$destination_tissue!='blood',])
+```
+
+We can also compose statistics about the origin of samples
+
+By time
+```{r}
+dbSendUpdate(mydb, "create or replace temp view gsm_by_year as 
+  select gsm, (regexp_matches(submission_date, '(\\d{4})-.*'))[1] as year
+  from gsm   
+")
+gsmByYear = " 
+select year, count(gsm) from gsm_by_year
+group by year
+order by year
+"
+contaminedByYear = "
+select year, count(gsm.gsm) from contamined_samples cs 
+join gsm_by_year gsm on gsm.gsm = cs.gsm
+group by year
+order by year
+"
+
+year.bg = dbGetQuery(mydb, gsmByYear)
+year.cont = dbGetQuery(mydb, contaminedByYear)
+year = data.frame(year=year.cont$year, contamined=year.cont$count, all=year.bg[matchColumnIndex(year.cont$year, year.bg, 'year'), 'count'])
+year = cbind(year, ratio=year$contamined/year$all)
+ggplot(data=year, aes(x=year, y=ratio)) + geom_point()
+```
+
+
+By country
+(that's nice figures, but it's not very representative... tissue-bias, statistical significance, ...)
+```{r}
+dbSendUpdate(mydb, "create or replace temp view gsm_by_country as
+  select gsm.gsm, tissue,
+  trim(both ' ' from (regexp_matches(contact, '.*Country:(.*?)(;.*)?$'))[1]) as country
+  from gsm
+  join bioqc_gsm bg on bg.gsm = gsm.gsm
+")
+gsmByCountry = "
+select country, tissue, count(gsm) from gsm_by_country
+group by country, tissue
+order by country, tissue
+"
+contaminedByCountry = "
+select country, cs.tissue, count(gsm.gsm) from contamined_samples cs
+join gsm_by_country gsm on gsm.gsm = cs.gsm
+group by country, cs.tissue
+order by country, cs.tissue"
+
+country.bg = dbGetQuery(mydb, gsmByCountry)
+country.cont = dbGetQuery(mydb, contaminedByCountry)
+country = data.frame(country=country.cont$country, contamined=country.cont$count, all=country.bg[matchColumnIndex(country.cont$country, country.bg, 'country'), 'count'])
+country = cbind(country, ratio=country$contamined/country$all)
+
+spdf <- joinCountryData2Map(country, joinCode="NAME", nameJoinColumn="country")
+mapCountryData(spdf, nameColumnToPlot="ratio", catMethod="fixedWidth")
+
+country.filtered = country[country$all > 10000,]
+spdf <- joinCountryData2Map(country.filtered, joinCode="NAME", nameJoinColumn="country")
+mapCountryData(spdf, nameColumnToPlot="ratio", catMethod="fixedWidth")
+```
+

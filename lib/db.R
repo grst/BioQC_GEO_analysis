@@ -13,5 +13,9 @@ mydb <- dbConnect(drv, sprintf("jdbc:postgresql://%s:5432/%s", pg_server, pg_dbn
 #' @param df
 #' @param table
 dbAppendDf = function(table, df) {
+  #tmp = tempfile()
+  #write.csv(df, file=tmp, fileEncoding='utf-8')
+ # system(sprintf(
+ #  'PGPASSFILE=/homebasel/biocomp/sturmg/.pgpass /apps64/postgresql-9.2.2/bin/psql -U sturmg -c "\\copy %s from %s with csv header encoding \'UTF8\' delimiter as \',\'"', table, tmp))
   dbWriteTable(mydb, name=table, value=df, append=TRUE, overwrite=FALSE)
 }
