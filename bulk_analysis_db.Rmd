@@ -113,23 +113,24 @@ dbSendUpdate(mydb, "create or replace temp view gsm_by_year as
   select gsm, (regexp_matches(submission_date, '(\\d{4})-.*'))[1] as year
   from gsm   
 ")
-gsmByYear = " 
-select year, count(gsm) from gsm_by_year
-group by year
-order by year
-"
-contaminedByYear = "
-select year, count(gsm.gsm) from contamined_samples cs 
-join gsm_by_year gsm on gsm.gsm = cs.gsm
-group by year
-order by year
+byYear = "select year, bg.tissue, 
+  count(gsm.gsm) as total,
+  count(cs.gsm) as contamined, 
+  count(cs.gsm)/cast(count(gsm.gsm) as float) as ratio from gsm_by_year gsm
+  join bioqc_gsm bg on bg.gsm = gsm.gsm 
+  left outer join contamined_samples cs on cs.gsm = gsm.gsm 
+  where bg.tissue != 'other'
+  group by year, bg.tissue
+  order by year, bg.tissue
 "
 
-year.bg = dbGetQuery(mydb, gsmByYear)
-year.cont = dbGetQuery(mydb, contaminedByYear)
-year = data.frame(year=year.cont$year, contamined=year.cont$count, all=year.bg[matchColumnIndex(year.cont$year, year.bg, 'year'), 'count'])
-year = cbind(year, ratio=year$contamined/year$all)
-ggplot(data=year, aes(x=year, y=ratio)) + geom_point()
+year = dbGetQuery(mydb, byYear)
+tissues = c("liver")
+year.2 = year[year$tissue %in% tissues,]
+
+ggplot(data=year.2, aes(x=year, y=ratio)) + stat_summary(fun.y="mean", geom="bar")
+
+ggplot(data=year.2, aes(x=year, y=ratio, group=tissue, color=tissue)) + geom_line()
 ```
 
 
@@ -137,32 +138,52 @@ By country
 (that's nice figures, but it's not very representative... tissue-bias, statistical significance, ...)
 ```{r}
 dbSendUpdate(mydb, "create or replace temp view gsm_by_country as
-  select gsm.gsm, tissue,
-  trim(both ' ' from (regexp_matches(contact, '.*Country:(.*?)(;.*)?$'))[1]) as country
+  select gsm.gsm, trim(both ' ' from (regexp_matches(contact, '.*Country:(.*?)(;.*)?$'))[1]) as country
   from gsm
-  join bioqc_gsm bg on bg.gsm = gsm.gsm
 ")
-gsmByCountry = "
-select country, tissue, count(gsm) from gsm_by_country
-group by country, tissue
-order by country, tissue
+byCountry = "select country, bg.tissue, 
+  count(gsm.gsm) as total,
+  count(cs.gsm) as contamined, 
+  count(cs.gsm)/cast(count(gsm.gsm) as float) as ratio from gsm_by_country gsm
+  join bioqc_gsm bg on bg.gsm = gsm.gsm 
+  left outer join contamined_samples cs on cs.gsm = gsm.gsm 
+  where bg.tissue != 'other'
+  group by country, bg.tissue
+  order by country, bg.tissue
 "
-contaminedByCountry = "
-select country, cs.tissue, count(gsm.gsm) from contamined_samples cs
-join gsm_by_country gsm on gsm.gsm = cs.gsm
-group by country, cs.tissue
-order by country, cs.tissue"
 
-country.bg = dbGetQuery(mydb, gsmByCountry)
-country.cont = dbGetQuery(mydb, contaminedByCountry)
-country = data.frame(country=country.cont$country, contamined=country.cont$count, all=country.bg[matchColumnIndex(country.cont$country, country.bg, 'country'), 'count'])
-country = cbind(country, ratio=country$contamined/country$all)
+country = dbGetQuery(mydb, byCountry)
+country.2 = country[country$tissue == 'brain',]
+#country.2 = ddply(country[country$total > 2000,], ~country,summarise,ratio=mean(ratio))
 
-spdf <- joinCountryData2Map(country, joinCode="NAME", nameJoinColumn="country")
+ spdf <- joinCountryData2Map(country.2, joinCode="NAME", nameJoinColumn="country")
 mapCountryData(spdf, nameColumnToPlot="ratio", catMethod="fixedWidth")
 
-country.filtered = country[country$all > 10000,]
-spdf <- joinCountryData2Map(country.filtered, joinCode="NAME", nameJoinColumn="country")
-mapCountryData(spdf, nameColumnToPlot="ratio", catMethod="fixedWidth")
+```
+
+By organism
+```{r}
+dbSendUpdate(mydb, "create or replace temp view gsm_by_organism as
+  select gsm.gsm, organism_ch1 as organism
+  from gsm
+")
+byOrganism = "select organism, bg.tissue, 
+  count(gsm.gsm) as total,
+  count(cs.gsm) as contamined, 
+  count(cs.gsm)/cast(count(gsm.gsm) as float) as ratio from gsm_by_organism gsm
+  join bioqc_gsm bg on bg.gsm = gsm.gsm 
+  left outer join contamined_samples cs on cs.gsm = gsm.gsm 
+  where bg.tissue != 'other'
+  and organism in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')
+  group by organism, bg.tissue
+  order by organism, bg.tissue
+"
+
+organism = dbGetQuery(mydb, byOrganism)
+tissues = c("blood", "brain", "kidney", "liver")
+organism.2 = organism[organism$tissue %in% tissues, ]
+
+ggplot(data=organism.2, aes(x=organism, y=ratio)) + stat_summary(fun.y="mean", geom="bar")
+ggplot(data=organism.2, aes(x=organism, y=ratio, color=tissue)) + geom_point()
 ```
 
