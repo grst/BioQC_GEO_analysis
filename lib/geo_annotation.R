@@ -6,6 +6,7 @@
 stopifnot(suppressPackageStartupMessages(require(assertthat)))
 stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
 stopifnot(suppressPackageStartupMessages(require(ribiosUtils)))
+stopifnot(suppressPackageStartupMessages(require(stringr)))
 
 geo_annotation.tissueMap = read.csv("lib/res/map_tissue_annotation.csv", strip.white=TRUE, stringsAsFactors=FALSE)
 
@@ -47,8 +48,8 @@ extractFromList = function(characteristics, fieldName='tissue:') {
   characteristics = unlist(strsplit(characteristics, split=";"))
   for(char in characteristics) {
     char = trim(char)
-    if(tolower(substring(char, 0, length(fieldName))) == tolower(fieldName)){
-      return(trim(substring(char, length(fieldName)+1)))
+    if(tolower(substring(char, 0, str_length(fieldName))) == tolower(fieldName)){
+      return(trim(substring(char, str_length(fieldName)+1)))
     }
   }
   return("<not_annotated>")

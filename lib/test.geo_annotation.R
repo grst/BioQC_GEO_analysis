@@ -5,6 +5,7 @@ source("lib/geo_annotation.R")
 
 
 test_that("Test extractTissue", {
+  extractTissue = function(x) {extractFromList(x, 'tissue:')}
   characteristics = "tissue: foo bar"
   expect_equal(extractTissue(characteristics), "foo bar")
   
