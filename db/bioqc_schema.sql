@@ -12,9 +12,11 @@ create table bioqc_gsm(gsm varchar(10) primary key references gsm(gsm),
     tissue_orig text);
 
 drop table if exists bioqc_signatures cascade;
-create table bioqc_signatures(id varchar(80) not null primary key,
+create table bioqc_signatures(id serial primary key, 
+    name varchar(255) not null,
+    signature_set varchar(255) not null,
     description text null,
-    gene_symbols text null);
+    unique(name, signature_set));
 
 drop table if exists bioqc_tissues_signatures cascade;
 create table bioqc_tissues_signatures(tissue varchar(80) references bioqc_tissues(id),
@@ -27,4 +29,20 @@ create table bioqc_res(gse varchar(10) not null references gse(gse),
     signature varchar(80) references bioqc_signatures(id),
     pvalue double precision,
     primary key(gse, gsm, signature));
+
+drop table if exists bioqc_genenames cascade;
+create table bioqc_genenames(hgnc varchar(20) not null primary key,
+    symbol varchar(80) not null unique,
+    name text,
+    status text,
+    previous_symbols text,
+    synonyms text,
+    chromosome varchar(80),
+    accession_numbers text,
+    refseq_ids text);
+
+drop table if exists bioqc_signatures_genes;
+create table bioqc_signatures_genes(signature id int references bioqc_signatures(id),
+    gene varchar(80) references bioqc_genenames(symbol),
+    primary key(signature, gene));
 
