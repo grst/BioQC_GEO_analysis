@@ -1,0 +1,73 @@
+---
+title: Data preparation for Analysing GEO Samples for contamination. 
+output: 
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+source("lib/knitr.R")
+library(BioQC)
+library(rworldmap)
+source("lib/plots.R")
+source("lib/db.R")
+```
+
+In this file, run BioQC on all samples that have the required metadata
+to perform a meaningful contamination analysis: annotated tissue and
+annotated gene symbols. 
+
+First, we retrieve a list of the corresponding studies from the database: 
+```{r sample_filtering}
+# create temporary views for this chunk. 
+sqlTmpViews = "
+create or replace temp view tissue_annotated as (
+    select bioqc_gsm.gsm, gse_gsm.gse from bioqc_gsm
+    join gse_gsm on bioqc_gsm.gsm = gse_gsm.gsm
+    where tissue != 'other'
+);
+create or replace temp view annotation_package as (
+    select gsm.gsm, gse_gsm.gse from gsm
+    join gse_gsm on gse_gsm.gsm = gsm.gsm
+    join gpl on gpl.gpl = gsm.gpl
+    where gpl.bioc_package is not NULL and gpl.bioc_package != ''
+);
+create or replace temp view tissue_and_annotation as (
+    select * from tissue_annotated 
+    intersect select * from annotation_package
+);"
+dbSendUpdate(mydb, sqlTmpViews)
+
+# filtering stats for a table. 
+sqlStats = "
+select 'total', count(gsm.gsm), count(distinct gse_gsm.gse) from gsm
+join gse_gsm on gse_gsm.gsm = gsm.gsm
+union select 'tissue annotated', count(gsm), count(distinct gse) from tissue_annotated
+union select 'annotation package available', count(gsm), count(distinct gse) from annotation_package
+union select 'tissue and annotation package', count(gsm), count(distinct gse) from tissue_and_annotation
+"
+stats = dbGetQuery(mydb, sqlStats)
+
+# list of GSE to run BioQC on 
+sqlGse = "select distinct gse from tissue_and_annotation"
+gse = dbGetQuery(mydb, sqlGse)
+writeLines(gse$gse, file("results/gse_identifiers_bulk_analysis.txt"))
+
+# display table. 
+kable(stats)
+```
+
+We then run BioQC on these studies on the HPC using *chunksub*. The results live 
+in `/data64/bi/data/GEO_all/tmp/bioqc/bioqc_annotation_tissue` and have been 
+imported into the database using `scripts/bioqc2db.R`. 
+
+## tissue selection
+(after preprocessing -> which should be described in the methods.)
+integrate the ipython notebook and delete it. 
+How many samples per tissue? 
+
+## Organism selection. 
+How many of the above samples are left if we limit the organisms? 
+
+## Subsampling per study. 
+Random subsampling?
+How many samples per study? 

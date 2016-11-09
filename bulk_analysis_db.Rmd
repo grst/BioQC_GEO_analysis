@@ -1,11 +1,11 @@
-Analyse GEO Samples for contamination
-=====================================
+---
+title: Analyse GEO Samples for contamination
+output: 
+  html_document: default
+---
 
-In this file, run BioQC on all samples that have the required metadata
-to perform a meaningful contamination analysis: annotated tissue and
-annotated gene symbols. 
-
-```{r}
+```{r setup, include=FALSE}
+source("lib/knitr.R")
 library(BioQC)
 library(rworldmap)
 source("lib/plots.R")
@@ -13,23 +13,9 @@ source("lib/db.R")
 ```
 
 
-First, we retrieve a list of the corresponding studies from the database: 
-```{r}
-gse = dbGetQuery(mydb, "select distinct gse_gsm.gse from gse_gsm
-                        join bioqc_gsm bgsm on bgsm.gsm = gse_gsm.gsm
-                        join gse_gpl on gse_gpl.gse = gse_gsm.gse
-                        join gpl on gpl.gpl = gse_gpl.gpl
-                        where bgsm.tissue != 'other' and gpl.bioc_package is not NULL and gpl.bioc_package != '';")
-writeLines(gse$gse, file("results/gse_identifiers_bulk_analysis.txt"))
-```
-
-We then run BioQC on these studies on the HPC using *chunksub*. The results live 
-in `/data64/bi/data/GEO_all/tmp/bioqc/bioqc_annotation_tissue` and have been 
-imported into the database using `scripts/bioqc2db.R`. 
-
 To get an overview, we want to replicate the heatmaps for each tissue that we created in `bulk_analysis_gds.Rmd`. 
 
-```{r}
+```{r, cache=TRUE}
 tissues = dbGetQuery(mydb, "select * from bioqc_tissues where id != 'other'")
 
 getTissueSamples = function(tissue, limit=-1) {
