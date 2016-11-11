@@ -3,3 +3,5 @@ results/*
 data/*
 *.html
 .ipynb_checkpoints
+*_files
+*_cache

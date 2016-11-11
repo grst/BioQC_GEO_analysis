@@ -32,6 +32,7 @@ if(grepl("^GDS", geo.id)) {
 } else {
   # GEO Series. Might contain multiple esets. 
   for (i in seq_along(names(geo.res))) {
+    #extract GPL
     name = str_split(names(geo.res)[i], '_')[[1]][1]
     # print(sprintf(outfile, name))
     saveEset(geo.res[[i]], sprintf(outfile, name))

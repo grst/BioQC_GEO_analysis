@@ -129,7 +129,7 @@ To run BioQC, we need the Gene Symbols to be annotated. For this, we have essent
 
 [^1]: https://bioconductor.org/packages/release/bioc/manuals/GEOquery/man/GEOquery.pdf
 
-To find out for which GSE in particular the latter option exists, we retrieved the directory structure ofe the 
+To find out for which GSE in particular the latter option exists, we retrieved the directory structure of the 
 GEO ftp server: 
 
 * `lftp -c "open ftp://ftp.ncbi.nlm.nih.gov/geo/platforms/ && find && exit" > gpl_annot_ftp_tree.txt` 

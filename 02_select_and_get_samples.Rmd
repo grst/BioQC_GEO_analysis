@@ -8,24 +8,41 @@ output:
 source("lib/knitr.R")
 library(BioQC)
 library(rworldmap)
+library(VennDiagram)
+library(data.table)
+library(grid)
+library(gridBase)
 source("lib/plots.R")
 source("lib/db.R")
 ```
 
-In this file, run BioQC on all samples that have the required metadata
-to perform a meaningful contamination analysis: annotated tissue and
-annotated gene symbols. 
+Here, we document the sample selection process. 
 
-First, we retrieve a list of the corresponding studies from the database: 
-```{r sample_filtering}
-# create temporary views for this chunk. 
+## Required information 
+A sample is usable for use, if 
+
+* the gene symbos are annotated (requirement to run BioQC)
+* the tissue of origin is annotated (requirment to draw conclusions about contamination)
+
+We consider two approaches for annotating gene symbols: 
+
+* Using the Bioconductor [AnnotationDbi](https://bioconductor.org/packages/release/bioc/html/AnnotationDbi.html) package. The GEOmetadb provides a mapping of the GPL identifier to these packages. 
+* Using the `annotGPL=TRUE` option of [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html)'s `getGEO`. This requires an annotation file being available for the respective platform. We retrieved a list of the available annoataion files in an earlier step. 
+
+We compare the two methods with respect to the amount of usable samples that we can get: 
+ 
+```{r prepare_tmp_views}
 sqlTmpViews = "
-create or replace temp view tissue_annotated as (
-    select bioqc_gsm.gsm, gse_gsm.gse from bioqc_gsm
-    join gse_gsm on bioqc_gsm.gsm = gse_gsm.gsm
-    where tissue != 'other'
+create or replace temp view total as (
+  select gsm.gsm, gse_gsm.gse from gsm
+  join gse_gsm on gse_gsm.gsm = gsm.gsm
 );
-create or replace temp view annotation_package as (
+create or replace temp view has_tissue as (
+    select gsm.gsm, gse_gsm.gse from gsm
+    join gse_gsm on gse_gsm.gsm = gsm.gsm
+    where tissue is not NULL and tissue != 'other'
+);
+create or replace temp view has_package as (
     select gsm.gsm, gse_gsm.gse from gsm
     join gse_gsm on gse_gsm.gsm = gsm.gsm
     join gpl on gpl.gpl = gsm.gpl
@@ -34,46 +51,80 @@ create or replace temp view annotation_package as (
 create or replace temp view has_annot as (
     select gsm.gsm, gse_gsm.gse from gsm
     join gse_gsm on gse_gsm.gsm = gsm.gsm
-    where gpl in (select distinct gpl from bioqc_gpl_annot) 
-);
-create or replace temp view tissue_and_annot_pkg as (
-    select * from tissue_annotated 
-    intersect select * from annotation_package
-);
-create or replace temp view tissue_and_gpl_annot as (
-    select * from tissue_annotated 
-    intersect select * from has_annot
-);
-create or replace temp view tissue_and_annotation as (
-    select * from tissue_annotated 
-    intersect (select * from annotation_package union select * from has_annot)
+    where gpl in (select distinct gpl from gpl where has_annot = TRUE) 
 );"
 dbSendUpdate(mydb, sqlTmpViews)
-
+```
+ 
+```{r sample_filtering, cache=TRUE, fig.width=8, fig.height=3}
 # filtering stats for a table. 
 sqlStats = "
-select 'total', count(gsm.gsm), count(distinct gse_gsm.gse) from gsm
-join gse_gsm on gse_gsm.gsm = gsm.gsm
-union select 'tissue annotated', count(gsm), count(distinct gse) from tissue_annotated
-union select 'annotation package available', count(gsm), count(distinct gse) from annotation_package
-union select 'tissue and annotation package', count(gsm), count(distinct gse) from tissue_and_annot_pkg
-union select 'tissue and annot_gpl', count(gsm), count(distinct gse) from tissue_and_gpl_annot
-union select 'tissue and annot', count(gsm), count(distinct gse) from tissue_and_annotation
+select 'total', count(distinct gsm), count(distinct gse) from total
+union select 'tissue', count(distinct gsm), count(distinct gse) from has_tissue
+union select 'package', count(distinct gsm), count(distinct gse) from has_package
+union select 'annotation', count(distinct gsm), count(distinct gse) from has_annot
+union select 'tissue_package', count(distinct gsm), count(distinct gse) from (select * from has_tissue intersect select * from has_package) u1
+union select 'annotation_package', count(distinct gsm), count(distinct gse) from (select * from has_annot intersect select * from has_package) u2
+union select 'tissue_annotation', count(distinct gsm), count(distinct gse) from (select * from has_tissue intersect select * from has_annot) u3
+union select 'annotation_tissue_package', count(distinct gsm), count(distinct gse) from (select * from has_tissue intersect select * from has_package intersect select * from has_annot) u4
 "
-stats = dbGetQuery(mydb, sqlStats)
+stats = data.table(dbGetQuery(mydb, sqlStats))
+colnames(stats) = c("rn", "GSM", "GSE")
+setkey(stats,rn)
 
-# list of GSE to run BioQC on 
-sqlGse = "select distinct gse from tissue_and_annotation"
-gse = dbGetQuery(mydb, sqlGse)
-writeLines(gse$gse, file("results/gse_identifiers_bulk_analysis.txt"))
+categories = c("tissue annotated", "annot. pkg. exists", "GPL annot. file exists")
+colors=c('red', 'green', 'blue')
 
-# display table. 
-kable(stats)
+plot.new()
+gl = grid.layout(nrow=1, ncol=2)
+vp.1 = viewport(layout.pos.col=1, layout.pos.row=1)
+vp.2 = viewport(layout.pos.col=2, layout.pos.row=1)
+pushViewport(viewport(layout=gl))
+pushViewport(vp.1)
+
+draw.triple.venn(stats[rn=='tissue',GSM], 
+                 stats[rn=='package',GSM], 
+                 stats[rn=='annotation',GSM], 
+                 stats[rn=='tissue_package',GSM],
+                 stats[rn=='annotation_package',GSM], 
+                 stats[rn=='tissue_annotation',GSM], 
+                 stats[rn=='annotation_tissue_package',GSM], category=categories, fill=colors)
+
+popViewport()
+pushViewport(vp.2)
+
+draw.triple.venn(stats[rn=='tissue',GSE], 
+                 stats[rn=='package',GSE], 
+                 stats[rn=='annotation',GSE], 
+                 stats[rn=='tissue_package',GSE],
+                 stats[rn=='annotation_package',GSE], 
+                 stats[rn=='tissue_annotation',GSE], 
+                 stats[rn=='annotation_tissue_package',GSE], category=categories, fill=colors)
+
+popViewport(1)
 ```
 
-We then run BioQC on these studies on the HPC using *chunksub*. The results live 
-in `/data64/bi/data/GEO_all/tmp/bioqc/bioqc_annotation_tissue` and have been 
+The `getGEO` method appears to be the more powerful method. Ideal would be a combination of the two, however, for the sake of simplicity, we stick to `getGEO`, loosing `r stats[rn=="annotation_package",GSE]-stats[rn=="annotation_tissue_package",GSE]` studies (`r stats[rn=="annotation_package",GSM]-stats[rn=="annotation_tissue_package",GSM]` samples). 
+
+This leaves us with the following filtering result: 
+```{r sample_filtering2, cache=TRUE}
+tab = stats[.(c("total", "tissue", "annotation", "tissue_annotation"))]
+tab = tab[,comment:=c("total", "tissue annotated", "annotation file available", "tissue and annotation file")]
+kable(tab[,c("comment","GSM","GSE"),with=FALSE])
+```
+
+We store the respective gse identifiers in ``r gse.file = "results/gse_tissue_annotation.txt"; gse.file``. 
+```{r sample_filtering_out, cache=TRUE}
+sqlGse = "select distinct gse from (select * from has_tissue intersect select * from has_annot) u"
+gse = dbGetQuery(mydb, sqlGse)
+writeLines(gse$gse, file(gse.file))
+```
+
+We then run BioQC on these studies on the HPC using [*chunksub*](https://github.com/grst/chunksub). The results live 
+in `/pstore/data/biocomp/sturmg/projects/BioQC_GEO_analysis` and have been 
 imported into the database using `scripts/bioqc2db.R`. 
+
+
 
 ## tissue selection
 (after preprocessing -> which should be described in the methods.)
