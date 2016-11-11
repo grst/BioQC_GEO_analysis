@@ -31,9 +31,22 @@ create or replace temp view annotation_package as (
     join gpl on gpl.gpl = gsm.gpl
     where gpl.bioc_package is not NULL and gpl.bioc_package != ''
 );
-create or replace temp view tissue_and_annotation as (
+create or replace temp view has_annot as (
+    select gsm.gsm, gse_gsm.gse from gsm
+    join gse_gsm on gse_gsm.gsm = gsm.gsm
+    where gpl in (select distinct gpl from bioqc_gpl_annot) 
+);
+create or replace temp view tissue_and_annot_pkg as (
     select * from tissue_annotated 
     intersect select * from annotation_package
+);
+create or replace temp view tissue_and_gpl_annot as (
+    select * from tissue_annotated 
+    intersect select * from has_annot
+);
+create or replace temp view tissue_and_annotation as (
+    select * from tissue_annotated 
+    intersect (select * from annotation_package union select * from has_annot)
 );"
 dbSendUpdate(mydb, sqlTmpViews)
 
@@ -43,7 +56,9 @@ select 'total', count(gsm.gsm), count(distinct gse_gsm.gse) from gsm
 join gse_gsm on gse_gsm.gsm = gsm.gsm
 union select 'tissue annotated', count(gsm), count(distinct gse) from tissue_annotated
 union select 'annotation package available', count(gsm), count(distinct gse) from annotation_package
-union select 'tissue and annotation package', count(gsm), count(distinct gse) from tissue_and_annotation
+union select 'tissue and annotation package', count(gsm), count(distinct gse) from tissue_and_annot_pkg
+union select 'tissue and annot_gpl', count(gsm), count(distinct gse) from tissue_and_gpl_annot
+union select 'tissue and annot', count(gsm), count(distinct gse) from tissue_and_annotation
 "
 stats = dbGetQuery(mydb, sqlStats)
 

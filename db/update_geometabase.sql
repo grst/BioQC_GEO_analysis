@@ -54,3 +54,4 @@ insert into gse(gse)
 
 alter table smatrix add foreign key(gse) references gse(gse); 
 
+alter table gds add foreign key(gpl) references gpl(gpl)

@@ -113,6 +113,22 @@ sig.tissue.map = sig.tissue.map[,c(2,1)]
 dbAppendDf("bioqc_tissues_signatures", sig.tissue.map)
 ```
 
+### Load annotation information
+The directory structure of the GEO platforms was downloaded in order to find out, which GPL's provide annotation
+information. 
+
+* `lftp -c "open ftp://ftp.ncbi.nlm.nih.gov/geo/platforms/ && find && exit" > gpl_annot_ftp_tree.txt` 
+* `grep annot.gz gpl_annot_ftp_tree.txt | cut -d"/" -f5 | cut -d"." -f1 > gpl_annot.txt`
+
+```{r}
+sql = "create table bioqc_gpl_annot(gpl varchar(10) primary key references gpl(gpl), has_annot bool);"
+dbSendUpdate(mydb, sql)
+annot = read.table("db/data/gpl_annot.txt")
+annot = cbind(annot, rep(1, length(annot)))
+colnames(annot) = c("1", "2")
+dbAppendDf("bioqc_gpl_annot", annot)
+```
+
 
 
 Load BioQC data into the database

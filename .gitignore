@@ -2,3 +2,4 @@ plots/*
 results/*
 data/*
 *.html
+.ipynb_checkpoints
