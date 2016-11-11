@@ -2,15 +2,6 @@
 drop table if exists bioqc_tissues cascade;
 create table bioqc_tissues(id varchar(80) not null primary key);
 
-/** 
- * Table GEO Samples: holds additional meta information that is not
- * contained in GEOmetabase (e.g. the processed tissue information)
- */
-drop table if exists bioqc_gsm cascade;
-create table bioqc_gsm(gsm varchar(10) primary key references gsm(gsm),
-    tissue varchar(80) references bioqc_tissues(id),
-    tissue_orig text);
-
 drop table if exists bioqc_signatures cascade;
 create table bioqc_signatures(id varchar(80) not null primary key,
     description text null,

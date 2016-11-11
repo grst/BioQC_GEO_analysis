@@ -88,17 +88,24 @@ dbAppendDf("bioqc_signatures", gmt.table)
 ```
 
 
-### Extended sample meta information
+### Sample tissue annotation 
 
-The meta information is already provided by GEOmetabase. However, we want to add additional metadata 
-in a separate table, e.g extracted tissue annotation. 
+The sample tissue annotation is provided by GEOmetabase, however it is hidden in the `characertistics_ch1` column. 
+We extract the information from there and put it into a new column. This is more convenient and indexable. 
 ```{r}
 extractTissue = function(x) {extractFromList(x, 'tissue:')}
 tissue.raw = dbGetQuery(mydb, "select gsm, characteristics_ch1 from gsm where characteristics_ch1 like '%tissue: %'")
 tissues.extracted = lapply(tissue.raw$characteristics_ch1, extractTissue)
 tissues = lapply(tissues.extracted, sanitizeTissue)
+dbSendUpdate(mydb, "create temp table bioqc_gsm(gsm varchar(10), tissue varchar(80), tissue_orig text)")
 table = cbind(gsm=tissue.raw$gsm, tissue=tissues, tissue_orig=tissues.extracted)
 dbAppendDf("bioqc_gsm", table)
+sqlUpdateGsm = "
+  update gsm
+  set tissue = bioqc_gsm.tissue, tissue_orig = bioqc_gsm.tissue_orig
+  from bioqc_gsm
+  where gsm.gsm = bioqc_gsm.gsm"
+dbSendUpdate(mydb, sqlUpdateGsm)
 ```
 
 
@@ -114,27 +121,34 @@ dbAppendDf("bioqc_tissues_signatures", sig.tissue.map)
 ```
 
 ### Load annotation information
-The directory structure of the GEO platforms was downloaded in order to find out, which GPL's provide annotation
-information. 
+
+To run BioQC, we need the Gene Symbols to be annotated. For this, we have essentially two possibilities: 
+
+* use the Bioconductor annotation packages (listed in GeometaDB `gpl.bioc_package`)
+* use the GEO annot_gpl files ("in general available for all GSE that are referenced by a GDS"[^1]) 
+
+[^1]: https://bioconductor.org/packages/release/bioc/manuals/GEOquery/man/GEOquery.pdf
+
+To find out for which GSE in particular the latter option exists, we retrieved the directory structure ofe the 
+GEO ftp server: 
 
 * `lftp -c "open ftp://ftp.ncbi.nlm.nih.gov/geo/platforms/ && find && exit" > gpl_annot_ftp_tree.txt` 
 * `grep annot.gz gpl_annot_ftp_tree.txt | cut -d"/" -f5 | cut -d"." -f1 > gpl_annot.txt`
 
+We store a boolean flag in the gpl table if the respective platform provides an annotation file. 
+
 ```{r}
-sql = "create table bioqc_gpl_annot(gpl varchar(10) primary key references gpl(gpl), has_annot bool);"
+sql = "create temp table bioqc_gpl_annot(gpl varchar(10) primary key, has_annot int);"
 dbSendUpdate(mydb, sql)
 annot = read.table("db/data/gpl_annot.txt")
 annot = cbind(annot, rep(1, length(annot)))
 colnames(annot) = c("1", "2")
 dbAppendDf("bioqc_gpl_annot", annot)
+sqlUpdateGpl = "
+  update gpl
+  set has_annot = TRUE
+  from bioqc_gpl_annot a 
+  where a.gpl = gpl.gpl and a.has_annot = 1"
+dbSendUpdate(mydb, sqlUpdateGpl)
 ```
-
-
-
-Load BioQC data into the database
----------------------------------
-
-We now need to fill the table with the BioQC results. There is a separate R script for that:
-`scripts/bioqc2db.R`
-
 

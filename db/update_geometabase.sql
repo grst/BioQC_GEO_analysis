@@ -1,3 +1,7 @@
+-------------------------
+-- ADD PRIMARY KEYS
+-------------------------
+
 alter table gds add primary key(gds);
 alter table gds_subset add primary key("Name");
 alter table geoconvert add primary key(from_acc, to_acc);
@@ -10,14 +14,14 @@ alter table gse_gsm add primary key(gse, gsm);
 alter table metainfo add primary key(name);
 alter table smatrix add primary key("sMatrix");
 
---------------------------
--- ADD FOREIGN KEYS
+----------------------------------------------------------------------
+-- ADD FOREIGN KEYS and FIX CONSTRAINTS
 --
 -- some tables are incomplete, we will add the ids with 
 -- null in all other columns s.t. the constrainst are fulfilled. 
---------------------------
+----------------------------------------------------------------------
 
--- done 
+-- works
 alter table gse_gpl add foreign key(gse) references gse(gse);
 alter table gse_gpl add foreign key(gpl) references gpl(gpl);
 
@@ -53,5 +57,17 @@ insert into gse(gse)
         select * from gse where gse.gse = sMatrix.gse); 
 
 alter table smatrix add foreign key(gse) references gse(gse); 
+alter table gds add foreign key(gpl) references gpl(gpl);
 
-alter table gds add foreign key(gpl) references gpl(gpl)
+
+------------------------------------------------
+-- ADD ADDITIONAL COLUMNS
+--
+-- Add columns that will contain information 
+-- we obtain from other sources
+------------------------------------------------
+
+alter table gsm add column tissue varchar(80) references bioqc_tissues(id);
+alter table gsm add column tissue_orig text;
+
+alter table gpl add column has_annot boolean;
