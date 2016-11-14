@@ -1,4 +1,4 @@
-#!Rscript
+#!/bin/env Rscript
 
 ########
 # USAGE:

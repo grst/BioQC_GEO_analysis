@@ -1,3 +1,5 @@
+#!/bin/env Rscript
+
 ########
 # Script to install all AnnotationDbi Chip annotation packages
 # that can be used to annotate chip symbols for one of the chips 

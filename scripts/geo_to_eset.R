@@ -1,4 +1,4 @@
-#!Rscript
+#!/bin/env Rscript
 
 #########
 # USAGE Rscript geo_to_eset.Rscript <GDS507> </path/to/outdir>
