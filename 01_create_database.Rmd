@@ -8,6 +8,7 @@ database with the metadata.
 The sql schemata can be found in `db/*.sql`. 
 
 ```{r}
+stop("This file is not intended to be ran as a script. This would mess up the database. ")
 source("lib/db.R")
 source("lib/lib.R")
 source("lib/geo_annotation.R")
@@ -112,7 +113,7 @@ dbSendUpdate(mydb, sqlUpdateGsm)
 ### Map signatures to tissues
 
 To decide about contaminations, we need to know to which tissue each siganture belongs. 
-We annotated this in a csv file and now load it into the database. 
+We annotated this manually in a csv file for the most common tissues and now load it into the database. 
 ```{r}
 sig.tissue.map = read.table("lib/res/map_signature_tissue.csv", sep=";")
 sig.tissue.map = sig.tissue.map[sig.tissue.map$V2!="",]

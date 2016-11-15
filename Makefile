@@ -1,6 +1,8 @@
 R=R
+RMD_FILES= 02_select_and_get_samples.Rmd 03_analyse_samples.Rmd
+HTML_FILES= $(patsubst %.Rmd,%.html,$(RMD_FILES))
 
-all: 01_create_database.html 02_select_and_get_samples.html 
+all: $(HTML_FILES) 01_create_database.html
 
 clean:
 	rm -fv *.html
@@ -11,9 +13,8 @@ wipe: clean
 
 01_create_database.html: 01_create_database.Rmd 
 	# running create_database will mess up your db. You don't want to do that!
-	pandoc -f markdown -t html -o 01_create_database.html 01_create_database.Rmd
+	pandoc -f markdown -t html -s --mathjax --number-sections -o $@ $<
 	
-02_select_and_get_samples.html: 02_select_and_get_samples.Rmd
+$(HTML_FILES): %.html: %.Rmd
 	Rscript -e "rmarkdown::render('$<', output_format='all')"
-
 

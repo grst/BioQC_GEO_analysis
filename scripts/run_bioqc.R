@@ -19,7 +19,7 @@ stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
 stopifnot(suppressPackageStartupMessages(require(assertthat)))
 source("lib/lib.R")
 source("lib/geo_annotation.R")
-source("lib/db.R")
+# source("lib/db.R")
 
 # options(error = quote({
 #   dump.frames("ribios.dump", to.file = TRUE)
@@ -38,11 +38,13 @@ gmt <- readGmt(gmtFile)
 
 runFile = function(esetFile) {
   load(esetFile)
-  assert_that(length(levels(as.factor(pData(eset)$platform_id))) == 1)
-  platform.id = as.character(pData(eset)[1, 'platform_id'])
-  eset = attachGeneSymbols(eset, platform.id=platform.id)
-  #run BioQC
-  if(!all(is.na(fData(eset)$BioqcGeneSymbol))) {
+  # assert_that(length(levels(as.factor(pData(eset)$platform_id))) == 1)
+  # platform.id = as.character(pData(eset)[1, 'platform_id'])
+  
+  eset = attachOrthologousSymbols(eset)
+  
+  # run BioQC
+  if(!all(is.na(fData(eset)[["BioqcGeneSymbol"]]))) {
       bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="BioqcGeneSymbol")
       return(bioqcRes)
   } else {

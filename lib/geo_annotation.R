@@ -37,6 +37,19 @@ attachGeneSymbols = function(eset, platform.id=NULL) {
   } 
 }
 
+#' Attach human orthologous symbols
+#'
+attachOrthologousSymbols = function(eset) { 
+  fdata = fData(eset)
+  gene.ids = fdata[,"Gene ID"]
+  gene.ids = sapply(gene.ids, function(x) {str_replace(x, "///(.*)", "")}) # strip multiple gene symbols 
+  gene.orth = annotateHumanOrthologs(gene.ids)
+  gene.orth.m = matchColumn(gene.ids, gene.orth, "OrigGeneID", multi=FALSE)
+  fdata = cbind(fdata, data.frame(BioqcGeneSymbol=gene.orth.m$GeneSymbol))
+  fData(eset) = fdata
+  return(eset)
+}
+
 #' Extract the tissue name from sample annotation 
 #'
 #' In GEO Series, tissue information can be found

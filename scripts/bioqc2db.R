@@ -20,6 +20,7 @@ chunkFile = args[1]
 bqcFiles = readLines(chunkFile)
 
 for(bqcFile in bqcFiles) {
+  tryCatch ({
     gse = geoIdFromPath(bqcFile)
     bioqcRes = data.table(read.table(bqcFile), keep.rownames=TRUE)
     print(sprintf("Processing %s with %d rows and %d cols", bqcFile, nrow(bioqcRes), ncol(bioqcRes)))
@@ -27,4 +28,9 @@ for(bqcFile in bqcFiles) {
     setcolorder(res.molten, c(2,1,3))
     table = cbind(rep(gse, nrow(res.molten)), res.molten)
     dbAppendDf("bioqc_res", table)
+  }, 
+  error=function(cond) {
+    print(sprintf("%s failed: ", bqcFile))
+    print(cond)
+  })
 }

@@ -18,7 +18,7 @@ source("lib/db.R")
 
 Here, we document the sample selection process. 
 
-## Required information 
+## Selecting samples that have the required annotation
 A sample is usable for use, if 
 
 * the gene symbos are annotated (requirement to run BioQC)
@@ -72,7 +72,7 @@ stats = data.table(dbGetQuery(mydb, sqlStats))
 colnames(stats) = c("rn", "GSM", "GSE")
 setkey(stats,rn)
 
-categories = c("tissue annotated", "annot. pkg. exists", "GPL annot. file exists")
+categories = c("tissue", "annot pkg", "annot GPL")
 colors=c('red', 'green', 'blue')
 
 plot.new()
@@ -104,7 +104,7 @@ draw.triple.venn(stats[rn=='tissue',GSE],
 popViewport(1)
 ```
 
-The `getGEO` method appears to be the more powerful method. Ideal would be a combination of the two, however, for the sake of simplicity, we stick to `getGEO`, loosing `r stats[rn=="annotation_package",GSE]-stats[rn=="annotation_tissue_package",GSE]` studies (`r stats[rn=="annotation_package",GSM]-stats[rn=="annotation_tissue_package",GSM]` samples). 
+The `getGEO` method appears to be the more powerful method. Ideal would be a combination of the two, however, for the sake of simplicity, we stick to `getGEO`, loosing `r as.integer(stats[rn=="tissue_package",GSE]-stats[rn=="annotation_tissue_package",GSE])` studies (`r as.integer(stats[rn=="tissue_package",GSM]-stats[rn=="annotation_tissue_package",GSM])` samples). 
 
 This leaves us with the following filtering result: 
 ```{r sample_filtering2, cache=TRUE}
@@ -120,19 +120,29 @@ gse = dbGetQuery(mydb, sqlGse)
 writeLines(gse$gse, file(gse.file))
 ```
 
-We then run BioQC on these studies on the HPC using [*chunksub*](https://github.com/grst/chunksub). The results live 
-in `/pstore/data/biocomp/sturmg/projects/BioQC_GEO_analysis` and have been 
-imported into the database using `scripts/bioqc2db.R`. 
+
+## Processing samples with BioQC
+
+1. We download the studies with [`GEOquery`](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) in `scripts/geo_to_eset.R`. Some studies fail to download. 
+2. We run BioQC on these studies with `scripts/run_bioqc.R`. This process involves annotation the human orthologous genes for studies from different species. This is done using `ribiosAnnotation`. The annotation failes for species that are not in the ribios database. 
+3. We import the BioQC results into our database with `scripts/bioqc2db.R`. 
+
+After failures, we are left with the following number of studies/samples:
 
 
+## Excluding multi channel microarrays
 
-## tissue selection
-(after preprocessing -> which should be described in the methods.)
-integrate the ipython notebook and delete it. 
-How many samples per tissue? 
+Multi channel microarrays date back to the early age of gene expression studies. They don't provide absolute gene expression data and are not meaningful outside their experimental context. We therefore exclude these experiments
+
 
 ## Organism selection. 
+
 How many of the above samples are left if we limit the organisms? 
+
+## tissue selection
+How many samples per tissues after pre-selection
+
+
 
 ## Subsampling per study. 
 Random subsampling?
