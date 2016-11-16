@@ -27,7 +27,8 @@ for(bqcFile in bqcFiles) {
     res.molten = melt(bioqcRes, id.vars="rn")
     setcolorder(res.molten, c(2,1,3))
     table = cbind(rep(gse, nrow(res.molten)), res.molten)
-    dbAppendDf("bioqc_res", table)
+    table$value = as.character(table$value)
+    dbAppendDf("BIOQC_RES", table)
   }, 
   error=function(cond) {
     print(sprintf("%s failed: ", bqcFile))

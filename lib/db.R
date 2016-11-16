@@ -1,4 +1,5 @@
-stopifnot(suppressPackageStartupMessages(require(ribiosUtils)))
+stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
+stopifnot(suppressPackageStartupMessages(require("RJDBC")))
 source("lib/db/.db_creds.R")
 mydb = ribiosCon(db=pg_dbname, user=pg_user, password=pg_pass, forceJDBC=TRUE)
 
