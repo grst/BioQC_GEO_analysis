@@ -1,145 +1,138 @@
-CREATE TABLE gse 
-( "ID" REAL,
-	"title" TEXT,
-	"gse" TEXT,
-	"status" TEXT,
-	"submission_date" TEXT,
-	"last_update_date" TEXT,
-	"pubmed_id" INTEGER,
-	"summary" TEXT,
-	"type" TEXT,
-	"contributor" TEXT,
-	"web_link" TEXT,
-	"overall_design" TEXT,
-	"repeats" TEXT,
-	"repeats_sample_list" TEXT,
-	"variable" TEXT,
-	"variable_description" TEXT,
-	"contact" TEXT,
-	"supplementary_file" TEXT 
+CREATE TABLE bioqc_gse
+( ID NUMBER(10),
+	title CLOB,
+	gse varchar2(15) primary key,
+	status CLOB,
+	submission_date CLOB,
+	last_update_date CLOB,
+	pubmed_id NUMBER(10),
+	summary CLOB,
+	type CLOB,
+	contributor CLOB,
+	web_link CLOB,
+	overall_design CLOB,
+	repeats CLOB,
+	repeats_sample_list CLOB,
+	variable CLOB,
+	variable_description CLOB,
+	contact CLOB,
+	supplementary_file CLOB 
 );
-CREATE INDEX gse_acc_idx on gse (gse);
-CREATE TABLE gpl 
-( "ID" REAL,
-	"title" TEXT,
-	"gpl" TEXT,
-	"status" TEXT,
-	"submission_date" TEXT,
-	"last_update_date" TEXT,
-	"technology" TEXT,
-	"distribution" TEXT,
-	"organism" TEXT,
-	"manufacturer" TEXT,
-	"manufacture_protocol" TEXT,
-	"coating" TEXT,
-	"catalog_number" TEXT,
-	"support" TEXT,
-	"description" TEXT,
-	"web_link" TEXT,
-	"contact" TEXT,
-	"data_row_count" REAL,
-	"supplementary_file" TEXT,
-	"bioc_package" TEXT 
+CREATE TABLE bioqc_gpl 
+( ID NUMBER(10),
+	title CLOB,
+	gpl varchar2(15) primary key,
+	status CLOB,
+	submission_date CLOB,
+	last_update_date CLOB,
+	technology CLOB,
+	distribution CLOB,
+	organism CLOB,
+	manufacturer CLOB,
+	manufacture_protocol CLOB,
+	coating CLOB,
+	catalog_number CLOB,
+	support CLOB,
+	description CLOB,
+	web_link CLOB,
+	contact CLOB,
+	data_row_count NUMBER(10),
+	supplementary_file CLOB,
+	bioc_package CLOB 
 );
-CREATE INDEX gpl_acc_idx on gpl (gpl);
-CREATE TABLE gsm 
-( "ID" REAL,
-	"title" TEXT,
-	"gsm" TEXT,
-	"series_id" TEXT,
-	"gpl" TEXT,
-	"status" TEXT,
-	"submission_date" TEXT,
-	"last_update_date" TEXT,
-	"type" TEXT,
-	"source_name_ch1" TEXT,
-	"organism_ch1" TEXT,
-	"characteristics_ch1" TEXT,
-	"molecule_ch1" TEXT,
-	"label_ch1" TEXT,
-	"treatment_protocol_ch1" TEXT,
-	"extract_protocol_ch1" TEXT,
-	"label_protocol_ch1" TEXT,
-	"source_name_ch2" TEXT,
-	"organism_ch2" TEXT,
-	"characteristics_ch2" TEXT,
-	"molecule_ch2" TEXT,
-	"label_ch2" TEXT,
-	"treatment_protocol_ch2" TEXT,
-	"extract_protocol_ch2" TEXT,
-	"label_protocol_ch2" TEXT,
-	"hyb_protocol" TEXT,
-	"description" TEXT,
-	"data_processing" TEXT,
-	"contact" TEXT,
-	"supplementary_file" TEXT,
-	"data_row_count" REAL,
-	"channel_count" REAL 
+CREATE TABLE bioqc_gsm 
+( ID NUMBER(10),
+	title CLOB,
+	gsm varchar2(15) primary key,
+	series_id CLOB,
+	gpl varchar2(15),
+	status CLOB,
+	submission_date CLOB,
+	last_update_date CLOB,
+	type CLOB,
+	source_name_ch1 CLOB,
+	organism_ch1 CLOB,
+	characteristics_ch1 CLOB,
+	molecule_ch1 CLOB,
+	label_ch1 CLOB,
+	treatment_protocol_ch1 CLOB,
+	extract_protocol_ch1 CLOB,
+	label_protocol_ch1 CLOB,
+	source_name_ch2 CLOB,
+	organism_ch2 CLOB,
+	characteristics_ch2 CLOB,
+	molecule_ch2 CLOB,
+	label_ch2 CLOB,
+	treatment_protocol_ch2 CLOB,
+	extract_protocol_ch2 CLOB,
+	label_protocol_ch2 CLOB,
+	hyb_protocol CLOB,
+	description CLOB,
+	data_processing CLOB,
+	contact CLOB,
+	supplementary_file CLOB,
+	data_row_count NUMBER(10),
+	channel_count NUMBER(10) 
 );
-CREATE INDEX gsm_acc_idx on gsm (gsm);
-CREATE TABLE gse_gsm 
-( "gse" TEXT,
-	"gsm" TEXT 
+CREATE TABLE bioqc_gse_gsm 
+( gse varchar2(15),
+	gsm varchar2(15),
+  primary key(gse, gsm)
 );
-CREATE INDEX gse_gsm_idx1 on gse_gsm (gse);
-CREATE INDEX gse_gsm_idx2 on gse_gsm (gsm);
-CREATE TABLE gse_gpl 
-( "gse" TEXT,
-	"gpl" TEXT 
+CREATE TABLE bioqc_gse_gpl 
+( gse varchar2(15),
+	gpl varchar2(15),
+  primary key(gse, gpl)
 );
-CREATE INDEX gse_gpl_idx1 on gse_gpl (gse);
-CREATE INDEX gse_gpl_idx2 on gse_gpl (gpl);
-CREATE TABLE gds 
-( "ID" REAL,
-	"gds" TEXT,
-	"title" TEXT,
-	"description" TEXT,
-	"type" TEXT,
-	"pubmed_id" TEXT,
-	"gpl" TEXT,
-	"platform_organism" TEXT,
-	"platform_technology_type" TEXT,
-	"feature_count" INTEGER,
-	"sample_organism" TEXT,
-	"sample_type" TEXT,
-	"channel_count" TEXT,
-	"sample_count" INTEGER,
-	"value_type" TEXT,
-	"gse" TEXT,
-	"order" TEXT,
-	"update_date" TEXT 
+CREATE TABLE bioqc_gds 
+( ID NUMBER(10),
+	gds varchar2(15) primary key,
+	title CLOB,
+	description CLOB,
+	"TYPE" CLOB,
+	pubmed_id CLOB,
+	gpl varchar2(15),
+	platform_organism CLOB,
+	platform_technology_type CLOB,
+	feature_count NUMBER(10),
+	sample_organism CLOB,
+	sample_type CLOB,
+	channel_count CLOB,
+	sample_count NUMBER(10),
+	value_type CLOB,
+	gse CLOB,
+	"ORDER" CLOB,
+	update_date CLOB 
 );
-CREATE INDEX gds_acc_idx on gds (gds);
-CREATE TABLE gds_subset 
-( "ID" REAL,
-	"Name" TEXT,
-	"gds" TEXT,
-	"description" TEXT,
-	"sample_id" TEXT,
-	"type" TEXT 
+CREATE TABLE bioqc_gds_subset 
+( ID NUMBER(10),
+	Name varchar2(1000) primary key,
+	gds varchar2(15),
+	description CLOB,
+	sample_id CLOB,
+	type CLOB 
 );
-CREATE INDEX gds_subset_idx on gds_subset (gds);
-CREATE TABLE sMatrix 
-( "ID" INTEGER,
-	"sMatrix" TEXT,
-	"gse" TEXT,
-	"gpl" TEXT,
-	"GSM_Count" INTEGER,
-	"Last_Update_Date" TEXT 
+CREATE TABLE bioqc_sMatrix 
+( ID NUMBER(10),
+	sMatrix varchar(1000) primary key,
+	gse varchar2(15),
+	gpl varchar2(15),
+	GSM_Count NUMBER(10),
+	Last_Update_Date CLOB 
 );
-CREATE INDEX sMatrix_Name_idx on sMatrix (sMatrix);
-CREATE INDEX sMatrix_GSE_idx on sMatrix (gse);
-CREATE INDEX sMatrix_GPL_idx on sMatrix (gpl);
-CREATE INDEX sMatrix_Last_Update_Date_idx on sMatrix (Last_Update_Date);
-CREATE TABLE geodb_column_desc 
-( "TableName" TEXT,
-	"FieldName" TEXT,
-	"Description" TEXT 
+CREATE TABLE bioqc_geodb_column_desc 
+( TableName varchar(200),
+	FieldName varchar(200),
+	Description CLOB,
+  primary key(TableName, FieldName)
 );
-CREATE INDEX column_desc_idx on geodb_column_desc (TableName,FieldName);
-CREATE TABLE geoConvert(
-  from_acc TEXT,
-  to_acc TEXT,
-  to_type TEXT
+CREATE TABLE bioqc_geoConvert(
+  from_acc varchar2(1000),
+  to_acc varchar2(1000),
+  to_type CLOB,
+  primary key(from_acc, to_acc)
 );
-CREATE TABLE metaInfo (name varchar(50), value varchar(50));
+CREATE TABLE bioqc_metaInfo (
+  name varchar2(50) primary key,
+  value varchar2(50)
+);
