@@ -1,5 +1,5 @@
 R=R
-RMD_FILES= 02_select_and_get_samples.Rmd 03_analyse_samples.Rmd
+RMD_FILES= 02_select_and_get_samples.Rmd 03_make_sample_heatmaps.Rmd 04_analyse_migration.Rmd
 HTML_FILES= $(patsubst %.Rmd,%.html,$(RMD_FILES))
 
 all: $(HTML_FILES) 01_create_database.html
