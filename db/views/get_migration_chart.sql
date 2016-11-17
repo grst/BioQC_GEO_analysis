@@ -20,7 +20,9 @@ create view bioqc_tissue_migration as
                                   then 'other'
                                   else bts2.tissue
                                 end
-                              end as destination 
+                              end as destination
+                            , ROW_NUMBER() over (partition by br.gsm 
+                                                     order by cs.min_enrichment_ratio desc) as rk
   from res_tissue br
   left outer join bioqc_contamined_samples cs on br.gsm = cs.gsm
   left outer join bioqc_tissues_signatures bts2 on bts2.signature = cs.signature;
