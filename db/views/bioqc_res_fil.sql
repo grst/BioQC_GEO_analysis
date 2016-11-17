@@ -6,6 +6,8 @@
 --     filtering
 --   * Limit organisms to human, rat and mouse (most abundant ones) 
 --
+-- additionally, we add the parsed meta information year and country. 
+--
 -- remove gse annotation as some samples might be referenced in multiple
 -- series and would therefore be duplicated. This is not desired. 
 --
@@ -28,15 +30,18 @@
 -------------------------------------------------------------
 
 create materialized view bioqc_res_fil
+parallel 16
 build immediate
 refresh force
 on demand
 as (
-  select /*+ parallel(16) */  distinct  br.gsm
+  select /*+ parallel(32) */  distinct  br.gsm
                                       , br.signature
                                       , br.pvalue 
                                       , bg.tissue
                                       , bg.organism_ch1 as organism
+                                      , cast(cast(regexp_substr(submission_date, '^(\d{4})-.*', 1, 1, NULL, 1) as varchar2(4)) as NUMBER(4)) as year
+                                      , cast(regexp_substr(contact, '.*Country:(.*?);.*?$', 1, 1, NULL, 1) as varchar2(100)) as country
   from bioqc_res br
   join bioqc_gsm bg on bg.gsm = br.gsm
   where bg.tissue is not null and bg.tissue != 'other'
