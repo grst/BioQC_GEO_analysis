@@ -31,42 +31,20 @@ We consider two approaches for annotating gene symbols:
 
 We compare the two methods with respect to the amount of usable samples that we can get: 
  
-```{r prepare_tmp_views}
-sqlTmpViews = "
-create or replace temp view total as (
-  select gsm.gsm, gse_gsm.gse from gsm
-  join gse_gsm on gse_gsm.gsm = gsm.gsm
-);
-create or replace temp view has_tissue as (
-    select gsm.gsm, gse_gsm.gse from gsm
-    join gse_gsm on gse_gsm.gsm = gsm.gsm
-    where tissue is not NULL and tissue != 'other'
-);
-create or replace temp view has_package as (
-    select gsm.gsm, gse_gsm.gse from gsm
-    join gse_gsm on gse_gsm.gsm = gsm.gsm
-    join gpl on gpl.gpl = gsm.gpl
-    where gpl.bioc_package is not NULL and gpl.bioc_package != ''
-);
-create or replace temp view has_annot as (
-    select gsm.gsm, gse_gsm.gse from gsm
-    join gse_gsm on gse_gsm.gsm = gsm.gsm
-    where gpl in (select distinct gpl from gpl where has_annot = TRUE) 
-);"
-dbSendUpdate(mydb, sqlTmpViews)
-```
+Run sql script
+`views/annotation_stats.sql`.
  
 ```{r sample_filtering, cache=TRUE, fig.width=8, fig.height=3}
 # filtering stats for a table. 
 sqlStats = "
-select 'total', count(distinct gsm), count(distinct gse) from total
-union select 'tissue', count(distinct gsm), count(distinct gse) from has_tissue
-union select 'package', count(distinct gsm), count(distinct gse) from has_package
-union select 'annotation', count(distinct gsm), count(distinct gse) from has_annot
-union select 'tissue_package', count(distinct gsm), count(distinct gse) from (select * from has_tissue intersect select * from has_package) u1
-union select 'annotation_package', count(distinct gsm), count(distinct gse) from (select * from has_annot intersect select * from has_package) u2
-union select 'tissue_annotation', count(distinct gsm), count(distinct gse) from (select * from has_tissue intersect select * from has_annot) u3
-union select 'annotation_tissue_package', count(distinct gsm), count(distinct gse) from (select * from has_tissue intersect select * from has_package intersect select * from has_annot) u4
+select 'total', count(distinct gsm), count(distinct gse) from bioqc_studies_total
+union select 'tissue', count(distinct gsm), count(distinct gse) from bioqc_studies_has_tissue
+union select 'package', count(distinct gsm), count(distinct gse) from bioqc_studies_has_package
+union select 'annotation', count(distinct gsm), count(distinct gse) from bioqc_studies_has_annot
+union select 'tissue_package', count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_package) u1
+union select 'annotation_package', count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_annot intersect select * from bioqc_studies_has_package) u2
+union select 'tissue_annotation', count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_annot) u3
+union select 'annotation_tissue_package', count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_package intersect select * from bioqc_studies_has_annot) u4
 "
 stats = data.table(dbGetQuery(mydb, sqlStats))
 colnames(stats) = c("rn", "GSM", "GSE")
@@ -115,9 +93,9 @@ kable(tab[,c("comment","GSM","GSE"),with=FALSE])
 
 We store the respective gse identifiers in ``r gse.file = "results/gse_tissue_annotation.txt"; gse.file``. 
 ```{r sample_filtering_out, cache=TRUE}
-sqlGse = "select distinct gse from (select * from has_tissue intersect select * from has_annot) u"
+sqlGse = "select distinct gse from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_annot) u"
 gse = dbGetQuery(mydb, sqlGse)
-writeLines(gse$gse, file(gse.file))
+writeLines(gse$GSE, file(gse.file))
 ```
 
 
@@ -125,14 +103,32 @@ writeLines(gse$gse, file(gse.file))
 
 1. We download the studies with [`GEOquery`](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) in `scripts/geo_to_eset.R`. Some studies fail to download. 
 2. We run BioQC on these studies with `scripts/run_bioqc.R`. This process involves annotation the human orthologous genes for studies from different species. This is done using `ribiosAnnotation`. The annotation failes for species that are not in the ribios database. 
-3. We import the BioQC results into our database with `scripts/bioqc2db.R`. 
+3. We import the BioQC results into our database with `scripts/bioqc2db.R`. The import failes for studies that reference samples that are not in GEOmetadb
 
 After failures, we are left with the following number of studies/samples:
+
+```{r after_failures}
+# since there are muliple gpl and gsm in a gse, there might've been some gsm inserted, that don't have 
+# a tissue annotated, albeit the gse was selected. 
+sql = "
+select /*+ parallel(16) */ count(distinct bioqc_res.gsm) as GSM, count(distinct bioqc_res.gse) as GSE from bioqc_res 
+join bioqc_gsm bg on bg.gsm = bioqc_res.gsm
+where bg.tissue is not null and bg.tissue != 'other'"
+res = dbGetQuery(mydb, sql)
+
+```
 
 
 ## Excluding multi channel microarrays
 
 Multi channel microarrays date back to the early age of gene expression studies. They don't provide absolute gene expression data and are not meaningful outside their experimental context. We therefore exclude these experiments
+
+## Exclude duplicates (samples that are part of multiple studies)
+samples references in multiple gse are indeed indentical:
+```{r}
+sql = "with duplicates as (select /*+ parallel(16) */ gsm, count(distinct gse) from bioqc_res group by gsm having count(distinct gse) > 1)
+select /*+ parallel(16) */ * from bioqc_res join duplicates on duplicates.gsm = bioqc_res.gsm order by signature, bioqc_res.gsm"
+```
 
 
 ## Organism selection. 
