@@ -1,10 +1,14 @@
--- for migration chart with destination_tissue
-with res_tissue as (
-  select /*+ parallel(16) */ distinct gsm
-                                    , tissue as origin
-  from bioqc_res_fil 
-)
-, tissue_migration as (
+--------------------------------------------------------------------------------
+-- Create view that shows migration between the tissues. 
+--
+--------------------------------------------------------------------------------
+
+create view bioqc_tissue_migration as 
+  with res_tissue as (
+    select /*+ parallel(16) */ distinct gsm
+                                      , tissue as origin
+    from bioqc_res_fil 
+  )
   select /*+ parallel(16) */  br.*
                             , cs.signature
                             , cs.min_enrichment_ratio
@@ -17,14 +21,7 @@ with res_tissue as (
                                   else bts2.tissue
                                 end
                               end as destination 
-                            --, bts2.tissue    
   from res_tissue br
   left outer join bioqc_contamined_samples cs on br.gsm = cs.gsm
-  left outer join bioqc_tissues_signatures bts2 on bts2.signature = cs.signature
-) 
-select origin
-     , destination
-     , count(gsm) as "count"
-from tissue_migration
-group by origin, destination
-order by origin, destination
+  left outer join bioqc_tissues_signatures bts2 on bts2.signature = cs.signature;
+
