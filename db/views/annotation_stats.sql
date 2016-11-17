@@ -7,6 +7,7 @@
 ------------------------------------------------------
 
 create materialized view bioqc_studies_total
+parallel 16
 build immediate
 refresh force
 on demand
@@ -17,6 +18,7 @@ as
   join bioqc_gse_gsm on bioqc_gse_gsm.gsm = bioqc_gsm.gsm;
 
 create materialized view bioqc_studies_has_tissue
+parallel 16
 build immediate
 refresh force
 on demand
@@ -28,6 +30,7 @@ as
   where tissue is not NULL and tissue != 'other';
 
 create materialized view bioqc_studies_has_package
+parallel 16
 build immediate
 refresh force
 on demand
@@ -40,6 +43,7 @@ as
   where bioqc_gpl.bioc_package is not NULL;
 
 create materialized view bioqc_studies_has_annot
+parallel 16
 build immediate
 refresh force
 on demand

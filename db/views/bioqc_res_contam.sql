@@ -10,11 +10,15 @@
 --------------------------------------------------------------------------------
 
 CREATE MATERIALIZED VIEW bioqc_res_contam_6 -- log fold > 6
+parallel 16
 build immediate
 refresh force
 on demand
 as
-  select /*+ PARALLEL(16) */  brf.*
+  select /*+ PARALLEL(16) */  brf.gsm
+                            , brf.signature
+                            , brf.pvalue
+                            , brf.tissue
                             , bts.signature as exp_sig
                             , brf2.pvalue as exp_sig_pval
                             , log(10, cast(brf2.pvalue / brf.pvalue as binary_float)) as enrichment_ratio 
