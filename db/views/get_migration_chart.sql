@@ -1,32 +1,30 @@
 -- for migration chart with destination_tissue
-with contamined_samples as (
-    select gse, gsm, tissue, signature, min(enrichment_ratio), count(exp_sig) as count_exp from bioqc_res_ext2 bre
-    group by gse, gsm, tissue, signature
-),
-migration as (
-	select cs.*,
-	case when count_exp = ( -- meets the criterion for contamined (exceeds ALL expected signatures)
-		select count(*) from bioqc_tissues_signatures bts2
-		where bts2.tissue = cs.tissue)
-	then case when bts.tissue is not null
-		then bts.tissue
-		else 'other'
-		end
-	else cs.tissue -- if not, the destination tissue = tissue of origin  
-	end as destination_tissue from contamined_samples cs
-	left join bioqc_tissues_signatures bts on bts.signature = cs.signature
+with res_tissue as (
+  select /*+ parallel(16) */ distinct gsm
+                                    , tissue as origin
+  from bioqc_res_fil 
 )
-select tissue, destination_tissue, count(gsm) as "count"
-from migration
-group by tissue, destination_tissue
-
-
--- for migration chart with destination_tissue
--- with contamined_samples as (
---    select gse, gsm, tissue, signature, min(enrichment_ratio) from bioqc_res_ext2 bre
---    group by gse, gsm, tissue, signature
---    having count(exp_sig) = (select count(*) from bioqc_tissues_signatures where tissue = bre.tissue)
---) 
---select cs.*, case when bts.tissue is not null then bts.tissue else 'other' end as destination_tissue from contamined_samples cs
---left join bioqc_tissues_signatures bts on bts.signature = cs.signature
---order by tissue 
+, tissue_migration as (
+  select /*+ parallel(16) */  br.*
+                            , cs.signature
+                            , cs.min_enrichment_ratio
+                            , case 
+                                when min_enrichment_ratio is null -- sample not contamined
+                                then br.origin
+                                else case 
+                                  when bts2.tissue is null -- sample is contamined, but with a signature that is not associated with a tissue
+                                  then 'other'
+                                  else bts2.tissue
+                                end
+                              end as destination 
+                            --, bts2.tissue    
+  from res_tissue br
+  left outer join bioqc_contamined_samples cs on br.gsm = cs.gsm
+  left outer join bioqc_tissues_signatures bts2 on bts2.signature = cs.signature
+) 
+select origin
+     , destination
+     , count(gsm) as "count"
+from tissue_migration
+group by origin, destination
+order by origin, destination

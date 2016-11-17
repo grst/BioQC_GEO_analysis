@@ -51,7 +51,7 @@ CREATE TABLE bioqc_gsm
 	last_update_date CLOB,
 	type CLOB,
 	source_name_ch1 CLOB,
-	organism_ch1 CLOB,
+	organism_ch1 varchar(200),
 	characteristics_ch1 CLOB,
 	molecule_ch1 CLOB,
 	label_ch1 CLOB,

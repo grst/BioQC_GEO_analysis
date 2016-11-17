@@ -1,8 +1,19 @@
--- using group by having count, works on filtered table, but not as flexible. 
-create or replace view contamined_samples as (
-	select gse, gsm, tissue, signature, min(enrichment_ratio) from bioqc_res_ext2 bre
-	group by gse, gsm, tissue, signature
-	having count(exp_sig) = (select count(*) from bioqc_tissues_signatures where tissue = bre.tissue)
+--------------------------------------------------------------------------------
+-- shortcut to detect all contamined samples. 
+--
+-- requires the enrichment ratio to be higher than the predefined
+-- thershold for ALL expected signatuers
+--------------------------------------------------------------------------------
+create or replace view bioqc_contamined_samples as (
+	select /*+ parallel(16) */ gsm
+       , tissue
+       , signature
+       , min(enrichment_ratio) min_enrichment_ratio 
+  from bioqc_res_contam_6 bre
+	group by gsm, tissue, signature
+	having count(exp_sig) = (
+    select count(*)
+    from bioqc_tissues_signatures
+    where tissue = bre.tissue
+  )
 )
-
-
