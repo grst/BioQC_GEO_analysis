@@ -40,8 +40,19 @@ as (
                                       , br.pvalue 
                                       , bg.tissue
                                       , bg.organism_ch1 as organism
-                                      , cast(cast(regexp_substr(submission_date, '^(\d{4})-.*', 1, 1, NULL, 1) as varchar2(4)) as NUMBER(4)) as year
-                                      , cast(regexp_substr(contact, '.*Country:(.*?);.*?$', 1, 1, NULL, 1) as varchar2(100)) as country
+                                      , cast(
+                                          cast(
+                                            regexp_substr(submission_date, '^(\d{4})-.*', 1, 1, NULL, 1) 
+                                            as varchar2(4)
+                                          )
+                                          as NUMBER(4)
+                                        ) as year
+                                      , cast(
+                                          TRIM(BOTH
+                                             , regexp_substr(contact, 'Country:(.*?)(;.*)?$', 1, 1, NULL, 1) 
+                                          )
+                                          as varchar2(100)
+                                        ) as country
   from bioqc_res br
   join bioqc_gsm bg on bg.gsm = br.gsm
   where bg.tissue is not null and bg.tissue != 'other'

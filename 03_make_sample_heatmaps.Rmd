@@ -35,7 +35,8 @@ getTissueSamples = function(tissue, limit=-1) {
   ),
   significant_signatures as (
     select distinct signature
-    from bioqc_res_fil  
+    from bioqc_res_fil brf
+    join gsm_rand_lim grl on grl.gsm = brf.gsm
     where pvalue < 1e-8
   )
   select /* +parallel(16)*/ * 
