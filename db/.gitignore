@@ -3,4 +3,4 @@ dumps
 tables.txt
 tables
 data/*
-!data/map_signature_tissue.csv
+!data/map_signature_tissue*.csv
