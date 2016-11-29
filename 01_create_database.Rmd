@@ -12,6 +12,7 @@ stop("This file is not intended to be ran as a script. This would mess up the da
 source("lib/db.R")
 source("lib/lib.R")
 source("lib/geo_annotation.R")
+source("lib/db_io.R")
 library(RSQLite)
 library(testthat)
 library(data.table)
@@ -74,22 +75,6 @@ dbAppendDf("BIOQC_TISSUES", unique(geo_annotation.tissueMap["tissue"]))
 dbSendUpdate(mydb, "insert into bioqc_tissues values('other')")
 ```
 
-
-### Signatures
-
-Import the list of BioQC signatures from the gmt file shipped with the BioQC package. 
-```{r}
-library(BioQC)
-gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
-gmt <- readGmt(gmtFile)
-gmt.list = lapply(gmt, function(line) {
-  return(list(name=line$name, desc=line$desc, genes=paste(line$genes, collapse=',')))
-})
-gmt.table = do.call(rbind.data.frame, gmt.list)
-dbAppendDf("BIOQC_SIGNATURES", gmt.table)
-```
-
-
 ### Sample tissue annotation 
 
 The sample tissue annotation is provided by GEOmetabase, however it is hidden in the `characertistics_ch1` column. 
@@ -109,6 +94,20 @@ sqlUpdateGsm = "
 dbSendUpdate(mydb, sqlUpdateGsm)
 ```
 
+
+### Signatures
+
+Import the list of BioQC signatures from the gmt file shipped with the BioQC package. 
+```{r}
+library(BioQC)
+gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
+gmt2db(gmtFile)
+gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
+gmt2db("../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt")
+gmt2db("../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii")
+gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
+gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
+```
 
 ### Map signatures to tissues
 

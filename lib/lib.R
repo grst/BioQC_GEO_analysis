@@ -37,14 +37,6 @@ collapseSignatures = function(table, sig.list, new.name, method=max) {
   return(table.collapsed[-which(rownames(table.collapsed) %in% sig.list), ,drop=FALSE])
 }
 
-#' Compute the BioQC baseline score based on the overlap of two signatures
-#'
-#' @param sig.of.origin signature (name) of the annotated tissue of origin 
-#' @param sig.other signature (name) to be tested against
-getBaselineScore = function(sig.of.origin, sig.other) {
-  
-}
-
 #' Choose the most enriched signature for a given tissue
 #' 
 #' @param table.column column of the table with BioQc score
