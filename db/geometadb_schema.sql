@@ -17,7 +17,7 @@ CREATE TABLE bioqc_gse
 	variable_description CLOB,
 	contact CLOB,
 	supplementary_file CLOB 
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_gpl 
 ( ID NUMBER(10),
 	title CLOB,
@@ -39,21 +39,21 @@ CREATE TABLE bioqc_gpl
 	data_row_count NUMBER(10),
 	supplementary_file CLOB,
 	bioc_package CLOB 
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_gsm 
 ( ID NUMBER(10),
 	title CLOB,
 	gsm varchar2(15) primary key,
 	series_id CLOB,
 	gpl varchar2(15),
-	status CLOB,
-	submission_date CLOB,
-	last_update_date CLOB,
-	type CLOB,
+	status varchar2(255),
+	submission_date varchar2(10),
+	last_update_date varchar2(10),
+	type varchar(50),
 	source_name_ch1 CLOB,
-	organism_ch1 varchar(200),
+	organism_ch1 varchar(255),
 	characteristics_ch1 CLOB,
-	molecule_ch1 CLOB,
+	molecule_ch1 varchar(255),
 	label_ch1 CLOB,
 	treatment_protocol_ch1 CLOB,
 	extract_protocol_ch1 CLOB,
@@ -73,17 +73,17 @@ CREATE TABLE bioqc_gsm
 	supplementary_file CLOB,
 	data_row_count NUMBER(10),
 	channel_count NUMBER(10) 
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_gse_gsm 
 ( gse varchar2(15),
 	gsm varchar2(15),
   primary key(gse, gsm)
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_gse_gpl 
 ( gse varchar2(15),
 	gpl varchar2(15),
   primary key(gse, gpl)
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_gds 
 ( ID NUMBER(10),
 	gds varchar2(15) primary key,
@@ -103,7 +103,7 @@ CREATE TABLE bioqc_gds
 	gse CLOB,
 	"ORDER" CLOB,
 	update_date CLOB 
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_gds_subset 
 ( ID NUMBER(10),
 	Name varchar2(1000) primary key,
@@ -111,7 +111,7 @@ CREATE TABLE bioqc_gds_subset
 	description CLOB,
 	sample_id CLOB,
 	type CLOB 
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_sMatrix 
 ( ID NUMBER(10),
 	sMatrix varchar(1000) primary key,
@@ -119,20 +119,20 @@ CREATE TABLE bioqc_sMatrix
 	gpl varchar2(15),
 	GSM_Count NUMBER(10),
 	Last_Update_Date CLOB 
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_geodb_column_desc 
 ( TableName varchar(200),
 	FieldName varchar(200),
 	Description CLOB,
   primary key(TableName, FieldName)
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_geoConvert(
   from_acc varchar2(1000),
   to_acc varchar2(1000),
   to_type CLOB,
   primary key(from_acc, to_acc)
-);
+) tablespace srslight_d;
 CREATE TABLE bioqc_metaInfo (
   name varchar2(50) primary key,
   value varchar2(50)
-);
+) tablespace srslight_d;
