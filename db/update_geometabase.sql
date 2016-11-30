@@ -51,7 +51,23 @@ alter table bioqc_gds add foreign key(gpl) references bioqc_gpl(gpl);
 -- we obtain from other sources
 ------------------------------------------------
 
-alter table bioqc_gsm add (tissue varchar2(80) references bioqc_tissues("ID"));
-alter table bioqc_gsm add (tissue_orig clob);
-
+-- alter table bioqc_gsm add (tissue varchar2(80) references bioqc_tissues("ID"));
+alter table bioqc_gsm add (tissue_orig varchar(1000));
 alter table bioqc_gpl add (has_annot number(1));
+
+-- store tissue information in extra column: 
+update /*+ parallel(16) */ bioqc_gsm b
+set tissue_orig = (
+   with bioqc_gsm_tissue_orig as (
+    select gsm
+           , cast(
+              TRIM( BOTH from
+                regexp_substr(characteristics_ch1, 'tissue:(.*?)(;.*)?$', 1, 1, NULL, 1) 
+             ) as varchar2(1000)) as tissue_orig
+    from bioqc_gsm
+    where characteristics_ch1 like '%tissue:%'
+   )
+   select tissue_orig 
+   from bioqc_gsm_tissue_orig t
+   where b.gsm = t.gsm
+);

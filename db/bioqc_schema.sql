@@ -23,17 +23,15 @@ begin
   from dual;
 end;
 
-create table bioqc_tissues_signatures(tissue varchar2(80) not null
-                                    , signature number(10) not null
-                                    , tgroup varchar2(80) not null
-                                    , constraint pk_tissue_signature
-                                        primary key(tissue, signature, tgroup)
-                                    , constraint fk_tissue
-                                        foreign key (tissue)
-                                        references bioqc_tissues(id)
-                                    , constraint fk_signature
-                                        foreign key (signature)
-                                        references bioqc_signatures(id)
+create table bioqc_signature_set( signature number(10) not null 
+                                    references bioqc_signatures(id)
+                                , tissue varchar2(80) not null
+                                    references bioqc_tissues(id)
+                                , tgroup varchar(80) not null
+                                , signature_set varchar(80) not null                  
+                                , constraint pk_bioqc_signature_set
+                                    primary key(tissue, signature, tgroup)
+    
 ) tablespace srslight_d;
 
 create table bioqc_res(gse varchar2(10) not null 
