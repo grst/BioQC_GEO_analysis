@@ -8,10 +8,7 @@ stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
 stopifnot(suppressPackageStartupMessages(require(ribiosUtils)))
 stopifnot(suppressPackageStartupMessages(require(stringr)))
 
-geo_annotation.tissueMap = read.csv("lib/res/map_tissue_annotation.csv", strip.white=TRUE, stringsAsFactors=FALSE)
-
-
-#' Retrieve Gene Symbols for BioQC
+#' Retrieve Gene Symbols for BioQC with the Bioconductor packages. 
 #' 
 #' @param eset
 #' @param platform.id
@@ -48,38 +45,6 @@ attachOrthologousSymbols = function(eset) {
   fdata = cbind(fdata, data.frame(BioqcGeneSymbol=gene.orth.m$GeneSymbol))
   fData(eset) = fdata
   return(eset)
-}
-
-#' Extract the tissue name from sample annotation 
-#'
-#' In GEO Series, tissue information can be found
-#' in one of the characteristics_ch1 column.  
-#' 
-#' @param characteristics_ch1 column content
-#' @param fieldName 
-extractFromList = function(characteristics, fieldName='tissue:') {
-  characteristics = unlist(strsplit(characteristics, split=";"))
-  for(char in characteristics) {
-    char = trim(char)
-    if(tolower(substring(char, 0, str_length(fieldName))) == tolower(fieldName)){
-      return(trim(substring(char, str_length(fieldName)+1)))
-    }
-  }
-  return("<not_annotated>")
-}
-
-#' Map the often very specific tissue annotation from GEO
-#' to one tissue type, e.g. liver. 
-#'
-#' @param tissue.orig tissue annotation as found in the GEO
-#'    Series and retrieved by \code{\link{extractTissue}}
-sanitizeTissue = function(tissue.orig) {
-  tissue.orig = tolower(tissue.orig)
-  if(tissue.orig %in% geo_annotation.tissueMap$annotation) {
-    geo_annotation.tissueMap[geo_annotation.tissueMap[,'annotation'] == tissue.orig,'tissue']    
-  } else {
-    return("other")
-  }
 }
 
 geoIdFromPath = function(path) {

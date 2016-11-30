@@ -2,7 +2,10 @@
 # Library to read and write data from and to the database. 
 ###############################
 
-library(stringr)
+stopifnot(suppressPackageStartupMessages(require(stringr)))
+stopifnot(suppressPackageStartupMessages(require(data.table)))
+source("lib/db.R")
+source("lib/geo_annotation.R")
 
 #' Escape a string for SQL
 #' 
@@ -51,6 +54,38 @@ db2gmt = function(output_file) {
 #' 
 #' Signature names need to be the numeric ids from the signatures
 #' table. Ideally, create your gmt file with db2gmt
-bioqc2db = function(bioqc_res_file) {
-  
+bioqc2db = function(bioqc_res_matrix, cutoff=.01) {
+  res.molten = data.table(melt(bioqc_res_matrix, id.vars="rn"))
+  setcolorder(res.molten, c(2,1,3))
+  res.molten.f = res.molten[value<cutoff,]
+  # cannot insert high precision doubles otherwise (bug in RJBDC)
+  res.molten.f$value = as.character(res.molten.f$value)
+  return(res.molten.f)
+  #dbAppendDf("UDIS_RES", res.molten.f)
+}
+
+#' Add a signature set to the database.
+#' 
+#' Map the signature_name, source_file combination back to the original signature id. 
+#' This is possible because of the unique constraint. 
+#' 
+#' @param table the mapping table for the given tissue set (signature, signature_source, tissue, tissue_group)
+#' @param tissue_set_name Name of the tissue set, e.g. gtex_rock_solid
+signatureset2db = function(table, tissue_set_name) {
+  dbSendUpdate(mydb, "truncate table bioqc_tmp_tissue_set")
+  table = data.table(table)
+  table = table[,tissue_set:=rep(tissue_set_name, nrow(table))]
+  table = table[!is.na(tissue), ]
+  table = table[!is.na(group), ]
+  dbAppendDf("BIOQC_TMP_TISSUE_SET", table)
+  dbSendUpdate(mydb, "
+      insert into bioqc_tissue_set 
+          select  bs.id
+                , tts.tissue
+                , tts.tgroup
+                , tts.tissue_set
+          from bioqc_tmp_tissue_set tts
+          join bioqc_signatures bs
+          on tts.signature_name = bs.name and tts.signature_source = bs.source
+  ")
 }

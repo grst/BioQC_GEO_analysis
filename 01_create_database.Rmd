@@ -16,6 +16,7 @@ source("lib/db_io.R")
 library(RSQLite)
 library(testthat)
 library(data.table)
+library(readxl)
 ```
 
 Convert GEOMetadb
@@ -61,65 +62,6 @@ for(table in tables) {
 }
 ```
 
-
-Insert inital data
-------------------
-
-### Tissues
-
-The tissue table is a.t.m essintially a list of tissues that we curated. 
-For these tissues we created a map from the original GEO annotation to a 
-unified tissue name that we can work with. 
-```{r}
-dbAppendDf("BIOQC_TISSUES", unique(geo_annotation.tissueMap["tissue"]))
-dbSendUpdate(mydb, "insert into bioqc_tissues values('other')")
-```
-
-### Sample tissue annotation 
-
-The sample tissue annotation is provided by GEOmetabase, however it is hidden in the `characertistics_ch1` column. 
-We extract the information from there and put it into a new column. This is more convenient and indexable. 
-```{r}
-extractTissue = function(x) {extractFromList(x, 'tissue:')}
-tissue.raw = dbGetQuery(mydb, "select gsm, characteristics_ch1 from bioqc_gsm where characteristics_ch1 like '%tissue: %'")
-tissues.extracted = lapply(tissue.raw$CHARACTERISTICS_CH1, extractTissue)
-tissues = lapply(tissues.extracted, sanitizeTissue)
-dbSendUpdate(mydb, "create table bioqc_tmp_gsm(gsm varchar2(10) primary key, tissue varchar2(80), tissue_orig clob)")
-table = cbind(gsm=tissue.raw$GSM, tissue=tissues, tissue_orig=tissues.extracted)
-dbAppendDf("BIOQC_TMP_GSM", table)
-sqlUpdateGsm = "
-  update bioqc_gsm b
-  set (tissue, tissue_orig) = ( SELECT tissue, tissue_orig from bioqc_tmp_gsm t
-                                where b.gsm = t.gsm)"
-dbSendUpdate(mydb, sqlUpdateGsm)
-```
-
-
-### Signatures
-
-Import the list of BioQC signatures from the gmt file shipped with the BioQC package. 
-```{r}
-library(BioQC)
-gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
-gmt2db(gmtFile)
-gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
-gmt2db("../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt")
-gmt2db("../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii")
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
-```
-
-### Map signatures to tissues
-
-To decide about contaminations, we need to know to which tissue each siganture belongs. 
-We annotated this manually in a csv file for the most common tissues and now load it into the database. 
-```{r}
-sig.tissue.map = read.table("lib/res/map_signature_tissue.csv", sep=";")
-sig.tissue.map = sig.tissue.map[sig.tissue.map$V2!="",]
-sig.tissue.map = sig.tissue.map[,c(2,1)]
-dbAppendDf("BIOQC_TISSUES_SIGNATURES", sig.tissue.map)
-```
-
 ### Load annotation information
 
 To run BioQC, we need the Gene Symbols to be annotated. For this, we have essentially two possibilities: 
@@ -150,4 +92,54 @@ sqlUpdateGpl = "
                      where g.gpl = a.gpl)"
 dbSendUpdate(mydb, sqlUpdateGpl)
 ```
+
+
+Insert inital data
+------------------
+
+### Signatures
+
+Import the list of BioQC signatures from the gmt file shipped with the BioQC package. 
+```{r}
+library(BioQC)
+gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
+gmt2db(gmtFile)
+gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
+gmt2db("../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt")
+gmt2db("../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii")
+gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
+gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
+```
+
+
+### Tissues
+
+The tissue table is a.t.m essintially a list of tissues that we curated. 
+For these tissues we created a map from the original GEO annotation to a 
+unified tissue name that we can work with. 
+```{r}
+normalized_tissues = data.table(read_excel("manual_annotation/normalize_tissues.xlsx"))
+tissues = unique(normalized_tissues[!is.na(TISSUE_NORMALIZED),"TISSUE_NORMALIZED", with=FALSE])
+tab_normalized = normalized_tissues[!is.na(TISSUE_NORMALIZED),c("TISSUE", "TISSUE_NORMALIZED"), with=FALSE]
+
+dbAppendDf("BIOQC_TISSUES", tissues)
+dbAppendDf("BIOQC_NORMALIZE_TISSUES", tab_normalized)
+
+```
+
+### Map signatures to tissues
+
+To decide about contaminations, we need to know to which tissue each siganture belongs. 
+We annotated this manually in a csv file for the most common tissues and now load it into the database. 
+We minted a notion called 'tissue set'. A tissue set, e.g. 'intestine' is a superterm of 'colon' and 'jejunum' and will contain all 'expected signatures' for colon and jejunum. 
+```{r}
+bioqc_solid = read_excel("manual_annotation/signature_sets.xlsx", sheet = 1)
+gtex_solid = read_excel("manual_annotation/signature_sets.xlsx", sheet=2)
+
+signatureset2db(bioqc_solid, "bioqc_solid")
+signatureset2db(gtex_solid, "gtex_solid")
+
+```
+
+
 

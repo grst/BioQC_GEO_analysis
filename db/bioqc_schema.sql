@@ -1,6 +1,12 @@
 /** Table Tissues: holds manually selected tissues **/
 create table bioqc_tissues(id varchar2(80) not null primary key) 
   tablespace srslight_d;
+  
+/** map hetergenous tissue annotation from geo to unified tissue name **/
+create table bioqc_normalize_tissues(tissue_orig varchar(1000) not null
+                                   , tissue varchar(80) not null 
+                                       references bioqc_tissues(id))
+  tablespace srslight_d;
 
 create table bioqc_signatures(id number(10) not null primary key
                             , name varchar2(255) not null          -- name of the signature in gmt
@@ -23,16 +29,25 @@ begin
   from dual;
 end;
 
-create table bioqc_signature_set( signature number(10) not null 
+create table bioqc_tissue_set( signature number(10) not null 
                                     references bioqc_signatures(id)
                                 , tissue varchar2(80) not null
                                     references bioqc_tissues(id)
                                 , tgroup varchar(80) not null
-                                , signature_set varchar(80) not null                  
+                                , tissue_set varchar(80) not null                  
                                 , constraint pk_bioqc_signature_set
-                                    primary key(tissue, signature, tgroup)
+                                    primary key(tissue_set, tgroup, signature)
     
 ) tablespace srslight_d;
+
+/** for inserting tissue sets **/
+create global temporary table bioqc_tmp_tissue_set (
+    signature_name varchar2(255) not null 
+  , signature_source varchar2(255) not null
+  , tissue varchar(80) not null
+  , tgroup varchar(80) not null
+  , tissue_set varchar(80) not null
+) on commit preserve rows 
 
 create table bioqc_res(gse varchar2(10) not null 
                      , gsm varchar2(10) not null
@@ -47,6 +62,7 @@ create table bioqc_res(gse varchar2(10) not null
                         references bioqc_gsm(gsm)
                      , constraint fk_bioqc_res_signature
                         foreign key (signature)
-                        references bioqc_signatures(id)
+                        references bioqc_signatures(id) 
+                        on delete cascade
 ) tablespace srslight_d;
 

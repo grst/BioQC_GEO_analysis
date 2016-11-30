@@ -11,9 +11,7 @@
 # the table files are the result of write.table(wmwTest(...))
 ##################
 
-stopifnot(suppressPackageStartupMessages(require(data.table)))
-source("lib/db.R")
-source("lib/geo_annotation.R")
+souce("lib/db_io.R")
 
 args = commandArgs(trailingOnly=TRUE)
 chunkFile = args[1]
@@ -24,11 +22,7 @@ for(bqcFile in bqcFiles) {
     gse = geoIdFromPath(bqcFile)
     bioqcRes = data.table(read.table(bqcFile), keep.rownames=TRUE)
     print(sprintf("Processing %s with %d rows and %d cols", bqcFile, nrow(bioqcRes), ncol(bioqcRes)))
-    res.molten = melt(bioqcRes, id.vars="rn")
-    setcolorder(res.molten, c(2,1,3))
-    table = cbind(rep(gse, nrow(res.molten)), res.molten)
-    table$value = as.character(table$value)
-    dbAppendDf("BIOQC_RES", table)
+    bioqc2db(bioqcRes)
   }, 
   error=function(cond) {
     print(sprintf("%s failed: ", bqcFile))
