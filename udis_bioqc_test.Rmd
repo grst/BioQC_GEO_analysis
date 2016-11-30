@@ -1,0 +1,39 @@
+---
+title: "UDIS BioQC test"
+output: html_document
+---
+
+```{r}
+stop("This file is not intended to be ran as a script. This would mess up the database. ")
+source("lib/db.R")
+source("lib/lib.R")
+source("lib/geo_annotation.R")
+source("lib/db_io.R")
+source("lib/io.R")
+library(testthat)
+library(data.table)
+library(readr)
+library(ribiosIO)
+```
+
+
+Metadata has been imported with sqldeveloper. 
+
+```{r meta2db}
+gmt = readGmt("results/gmt_all.gmt")
+eset1395 = gct_to_eset("db/data/udis/1395.gct")
+bioqc_res = wmwTest(eset1395, gmt, valType="p.greater", col="desc")
+res1395 = bioqc2db(bioqc_res)
+write_tsv(res1395, "./db/data/udis/1395.res.tsv")
+
+eset205 = gct_to_eset("db/data/udis/205.gct")
+bioqc_res = wmwTest(eset205, gmt, valType="p.greater", col="desc")
+res205 = bioqc2db(bioqc_res)
+write_tsv(res205, "./db/data/udis/205.res.tsv")
+
+eset206 = gct_to_eset("db/data/udis/206.gct")
+bioqc_res = wmwTest(eset206, gmt, valType="p.greater", col="desc")
+res206 = bioqc2db(bioqc_res)
+write_tsv(res206, "./db/data/udis/206.res.tsv")
+
+```
