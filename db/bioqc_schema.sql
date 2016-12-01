@@ -35,8 +35,7 @@ create table bioqc_tissue_set( signature number(10) not null
                                     references bioqc_tissues(id)
                                 , tgroup varchar(80) not null
                                 , tissue_set varchar(80) not null                  
-                                , constraint pk_bioqc_signature_set
-                                    primary key(tissue_set, tgroup, signature)
+                                , primary key(tgroup, signature, tgroup, tissue_set)
     
 ) tablespace srslight_d;
 

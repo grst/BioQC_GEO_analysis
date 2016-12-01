@@ -253,6 +253,6 @@ query = "
 
 "
 data = dbGetQuery(mydb, query)
-write_tsv(data, "results/heatmaps_udis/top_signatures.tsv")
+write_tsv(data, "results/heatmaps_udis_bioqc/top_signatures.tsv")
 
 ```
