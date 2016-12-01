@@ -19,7 +19,9 @@ stopifnot(suppressPackageStartupMessages(require(Biobase)))
 stopifnot(suppressPackageStartupMessages(require(BioQC)))
 stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
 stopifnot(suppressPackageStartupMessages(require(assertthat)))
+stopifnot(suppressPackageStartupMessages(require(readr)))
 source("lib/lib.R")
+source("lib/db_io.R")
 source("lib/geo_annotation.R")
 # source("lib/db.R")
 
@@ -39,20 +41,16 @@ if(is.na(chunkFile)) {
 }
 outDir = args[1]
 outPath = file.path(outDir, "%s_bioqc_res.tab")
+outPathMelt = file.path(outDir, "%s_bioqc_res_melt.tab")
 esetFiles = readLines(chunkFile)
 
 gmt <- readGmt(gmtFile)
 
 runFile = function(esetFile) {
   load(esetFile)
-  # assert_that(length(levels(as.factor(pData(eset)$platform_id))) == 1)
-  # platform.id = as.character(pData(eset)[1, 'platform_id'])
-  
-  eset = attachOrthologousSymbols(eset)
-  
   # run BioQC
-  if(!all(is.na(fData(eset)[["BioqcGeneSymbol"]]))) {
-      bioqcRes = wmwTest(eset, gmt, valType="p.greater", col="BioqcGeneSymbol")
+  if(!all(is.na(fData(eset_res)[["BioqcGeneSymbol"]]))) {
+      bioqcRes = wmwTest(eset_res, gmt, valType="p.greater", col="BioqcGeneSymbol")
       return(bioqcRes)
   } else {
       stop("Gene Symbols could not be annotated.")
@@ -63,8 +61,12 @@ for (esetFile in esetFiles) {
   print(sprintf("%s started.", esetFile))
   tryCatch ({
     res = runFile(esetFile)
+    # also save melted and filtered file for db. 
+    res_mel = melt_bioqc(res)
     outFile = sprintf(outPath, tools::file_path_sans_ext(basename(esetFile)))
+    outFileMelt = sprintf(outPathMelt, tools::file_path_sans_ext(basename(esetFile)))
     write.table(res, file=outFile)
+    write_tsv(res_mel, outFileMelt, col_names=FALSE)
     print(sprintf("%s written to: %s", esetFile, outFile))
   }, 
   error=function(cond) {

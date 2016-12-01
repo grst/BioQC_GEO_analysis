@@ -135,9 +135,11 @@ We minted a notion called 'tissue set'. A tissue set, e.g. 'intestine' is a supe
 ```{r}
 bioqc_solid = read_excel("manual_annotation/signature_sets.xlsx", sheet = 1)
 gtex_solid = read_excel("manual_annotation/signature_sets.xlsx", sheet=2)
+gtex_all = read_excel("manual_annotation/signature_sets.xlsx", sheet=3)
 
 signatureset2db(bioqc_solid, "bioqc_solid")
 signatureset2db(gtex_solid, "gtex_solid")
+signatureset2db(gtex_all, "gtex_all")
 
 ```
 

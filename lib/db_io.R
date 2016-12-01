@@ -34,7 +34,7 @@ gmt2db = function(gmt_file) {
 #' Uses the database id as signature identifier. 
 #' @param output_file
 db2gmt = function(output_file) {
-  signatuers = dbGetQuery(mydb, "select * from bioqc_signatures
+  signatures = dbGetQuery(mydb, "select * from bioqc_signatures
                            order by source, name")
   if(file.exists(output_file)) {
     # need to clear the file, as we are appending later. 
@@ -54,7 +54,7 @@ db2gmt = function(output_file) {
 #' 
 #' Signature names need to be the numeric ids from the signatures
 #' table. Ideally, create your gmt file with db2gmt
-bioqc2db = function(bioqc_res_matrix, cutoff=.01) {
+melt_bioqc = function(bioqc_res_matrix, cutoff=.01) {
   res.molten = data.table(melt(bioqc_res_matrix, id.vars="rn"))
   setcolorder(res.molten, c(2,1,3))
   res.molten.f = res.molten[value<cutoff,]

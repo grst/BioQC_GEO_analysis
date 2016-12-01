@@ -49,20 +49,12 @@ create global temporary table bioqc_tmp_tissue_set (
   , tissue_set varchar(80) not null
 ) on commit preserve rows 
 
-create table bioqc_res(gse varchar2(10) not null 
-                     , gsm varchar2(10) not null
-                     , signature number(10) not null
-                     , pvalue binary_double
-                     , primary key(gse, gsm, signature)
-                     , constraint fk_gse
-                        foreign key (gse)
-                        references bioqc_gse(gse)
-                     , constraint fk_gsm
-                        foreign key (gsm)
+create table bioqc_res(gsm varchar2(10) not null 
                         references bioqc_gsm(gsm)
-                     , constraint fk_bioqc_res_signature
-                        foreign key (signature)
-                        references bioqc_signatures(id) 
+                     , signature number(10) not null
+                        references bioqc_signatures(id)
                         on delete cascade
+                     , pvalue binary_double
+                     , primary key(gsm, signature)
 ) tablespace srslight_d;
 
