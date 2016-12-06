@@ -18,6 +18,7 @@ CREATE TABLE bioqc_gse
 	contact CLOB,
 	supplementary_file CLOB 
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_gpl 
 ( ID NUMBER(10),
 	title CLOB,
@@ -40,6 +41,7 @@ CREATE TABLE bioqc_gpl
 	supplementary_file CLOB,
 	bioc_package CLOB 
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_gsm 
 ( ID NUMBER(10),
 	title CLOB,
@@ -74,16 +76,21 @@ CREATE TABLE bioqc_gsm
 	data_row_count NUMBER(10),
 	channel_count NUMBER(10) 
 ) tablespace srslight_d;
+
+create index /*+ parallel(16) */ bioqc_gsm_organism_ch1 on bioqc_gsm(organism_ch1);
+
 CREATE TABLE bioqc_gse_gsm 
 ( gse varchar2(15),
 	gsm varchar2(15),
   primary key(gse, gsm)
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_gse_gpl 
 ( gse varchar2(15),
 	gpl varchar2(15),
   primary key(gse, gpl)
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_gds 
 ( ID NUMBER(10),
 	gds varchar2(15) primary key,
@@ -104,6 +111,7 @@ CREATE TABLE bioqc_gds
 	"ORDER" CLOB,
 	update_date CLOB 
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_gds_subset 
 ( ID NUMBER(10),
 	Name varchar2(1000) primary key,
@@ -120,18 +128,21 @@ CREATE TABLE bioqc_sMatrix
 	GSM_Count NUMBER(10),
 	Last_Update_Date CLOB 
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_geodb_column_desc 
 ( TableName varchar(200),
 	FieldName varchar(200),
 	Description CLOB,
   primary key(TableName, FieldName)
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_geoConvert(
   from_acc varchar2(1000),
   to_acc varchar2(1000),
   to_type CLOB,
   primary key(from_acc, to_acc)
 ) tablespace srslight_d;
+
 CREATE TABLE bioqc_metaInfo (
   name varchar2(50) primary key,
   value varchar2(50)

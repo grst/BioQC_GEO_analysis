@@ -1,12 +1,18 @@
+-- alter table bioqc_gsm add column tissue_orig
+create index /*+ parallel(16) */ bioqc_gsm_tissue_orig
+  on bioqc_gsm(lower(tissue_orig));
+
 /** Table Tissues: holds manually selected tissues **/
 create table bioqc_tissues(id varchar2(80) not null primary key) 
   tablespace srslight_d;
   
 /** map hetergenous tissue annotation from geo to unified tissue name **/
-create table bioqc_normalize_tissues(tissue_orig varchar(1000) not null
+create table bioqc_normalize_tissues(tissue_orig varchar(1000) not null primary key
                                    , tissue varchar(80) not null 
                                        references bioqc_tissues(id))
   tablespace srslight_d;
+create index bioqc_normalize_tissues_tissue on bioqc_normalize_tissues(tissue);
+  
 
 create table bioqc_signatures(id number(10) not null primary key
                             , name varchar2(255) not null          -- name of the signature in gmt
@@ -16,6 +22,8 @@ create table bioqc_signatures(id number(10) not null primary key
                             , constraint uq_signatures
                                 unique(name, source)
 ) tablespace srslight_d;
+
+create index bioqc_signatures_source on bioqc_signatures(source);
 
 -- auto increment for bioqc_signatures
 create sequence sig_seq start with 1;
@@ -35,9 +43,11 @@ create table bioqc_tissue_set( signature number(10) not null
                                     references bioqc_tissues(id)
                                 , tgroup varchar(80) not null
                                 , tissue_set varchar(80) not null                  
-                                , primary key(tgroup, signature, tgroup, tissue_set)
+                                , primary key(signature, tgroup, tissue_set)
     
 ) tablespace srslight_d;
+
+create index bioqc_tissue_set_tissue on bioqc_tissue_set(tissue); 
 
 /** for inserting tissue sets **/
 create global temporary table bioqc_tmp_tissue_set (

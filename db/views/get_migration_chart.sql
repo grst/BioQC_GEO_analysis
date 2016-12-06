@@ -3,27 +3,34 @@
 --
 --------------------------------------------------------------------------------
 
-create view bioqc_tissue_migration as 
+create or replace view bioqc_tissue_migration as 
   with res_tissue as (
     select /*+ parallel(16) */ distinct gsm
-                                      , tissue as origin
     from bioqc_res_fil 
   )
   select /*+ parallel(16) */  br.*
+                            , cs.tissue_set 
+                            , cs.tgroup as origin
                             , cs.signature
+                            , cs.signature_name
                             , cs.min_enrichment_ratio
+                            , cs.rk
                             , case 
                                 when min_enrichment_ratio is null -- sample not contamined
-                                then br.origin
+                                then cs.tgroup
                                 else case 
-                                  when bts2.tissue is null -- sample is contamined, but with a signature that is not associated with a tissue
+                                  when bts2.tgroup is null -- sample is contamined, but with a signature that is not associated with a tissue
                                   then 'other'
-                                  else bts2.tissue
+                                  else bts2.tgroup
                                 end
                               end as destination
-                            , ROW_NUMBER() over (partition by br.gsm 
-                                                     order by cs.min_enrichment_ratio desc) as rk
   from res_tissue br
-  left outer join bioqc_contamined_samples cs on br.gsm = cs.gsm
-  left outer join bioqc_tissues_signatures bts2 on bts2.signature = cs.signature;
+  left outer join bioqc_contamined_samples cs 
+    on br.gsm = cs.gsm
+  left outer join bioqc_tissue_set bts2 
+    on bts2.signature = cs.signature
+    and bts2.tissue_set = cs.tissue_set
+--  where cs.tissue_set = 'gtex_solid'
+  order by br.gsm, cs.tissue_set, cs.rk
+;
 

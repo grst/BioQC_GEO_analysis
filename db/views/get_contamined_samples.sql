@@ -4,16 +4,22 @@
 -- requires the enrichment ratio to be higher than the predefined
 -- thershold for ALL expected signatuers
 --------------------------------------------------------------------------------
-create or replace view bioqc_contamined_samples as (
+create or replace view bioqc_contamined_samples as 
 	select /*+ parallel(16) */ gsm
-       , tissue
+       , tgroup
        , signature
+       , signature_name
+       , tissue_set
        , min(enrichment_ratio) min_enrichment_ratio 
-  from bioqc_res_contam_6 bre
-	group by gsm, tissue, signature
-	having count(exp_sig) = (
-    select count(*)
-    from bioqc_tissues_signatures
-    where tissue = bre.tissue
-  )
-)
+       , ROW_NUMBER() over (
+           partition by gsm, tgroup, tissue_set 
+           order by min(enrichment_ratio) desc)
+           as rk
+  from bioqc_res_contam brc
+	group by gsm
+       , tgroup
+       , signature
+       , signature_name
+       , tissue_set
+	having min(enrichment_ratio) > 6
+  order by gsm, tissue_set, rk;

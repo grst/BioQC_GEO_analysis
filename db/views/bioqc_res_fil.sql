@@ -34,11 +34,16 @@ parallel 16
 build immediate
 refresh force
 on demand
-as (
-  select /*+ parallel(32) */  distinct  br.gsm
+as 
+  with relevant_signatures as (
+      select distinct bs.source from bioqc_tissue_set bts
+      join bioqc_signatures bs on bs.id = bts.signature
+  )
+  select /*+ parallel(16)  */  distinct  br.gsm
                                       , br.signature
+                                      , bs.name as signature_name
                                       , br.pvalue 
-                                      , bg.tissue
+                                      , bnt.tissue
                                       , bg.organism_ch1 as organism
                                       , cast(
                                           cast(
@@ -48,16 +53,22 @@ as (
                                           as NUMBER(4)
                                         ) as year
                                       , cast(
-                                          TRIM(BOTH
-                                             , regexp_substr(contact, 'Country:(.*?)(;.*)?$', 1, 1, NULL, 1) 
+                                          TRIM(BOTH from
+                                               regexp_substr(contact, 'Country:(.*?)(;.*)?$', 1, 1, NULL, 1) 
                                           )
                                           as varchar2(100)
                                         ) as country
   from bioqc_res br
   join bioqc_gsm bg on bg.gsm = br.gsm
-  where bg.tissue is not null and bg.tissue != 'other'
+  join bioqc_normalize_tissues bnt on bnt.tissue_orig = lower(bg.tissue_orig)
+  join bioqc_signatures bs on bs.id = br.signature
+  where bs.source in (
+   -- TODO: this is hardcoded and evil for performance reasons... need to correct this at a certain point. 
+    'gtex_ngs_0.85_5.gmt', 'exp.tissuemark.affy.roche.symbols.gmt'
+    --select  /*+ CARDINALITY(relevant_signatures, 2) */ source from relevant_signatures
+  )
   and channel_count = 1
-  and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')
-);
-create /*+ parallel(32) */ index gsm on bioqc_res_fil(gsm);
-create /*+ parallel(32) */ index signature on bioqc_res_fil(signature);
+  and bg.organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus');
+create /*+ parallel(16) */ index bioqc_res_fil_gsm on bioqc_res_fil(gsm);
+create /*+ parallel(16) */ index bioqc_res_fil_signature on bioqc_res_fil(signature);
+create index bioqc_res_fil_tissue on bioqc_res_fil(tissue);
