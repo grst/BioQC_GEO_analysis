@@ -31,17 +31,20 @@ signature exceeds all expected signatures by a certain threshold (BioQC score > 
 We create a view `contamined_samples` that contains all contamined samples in `db/queries/get_contamined_samples.sql`. 
 
 Second, we retrieve the information we need for the migration chart from that temporary table. 
-```{r migration_chart, fig.width=7, fig.height=7} 
+```{r migration_chart, fig.width=8, fig.height=8} 
 query = "
 select origin
      , destination
      , count(gsm) as \"count\"
 from bioqc_tissue_migration 
-where rk = 1 -- in case of multi destination only take the highest enrichment_ratio. 
+where rk is null or rk = 1 -- in case of multi destination only take the highest enrichment_ratio. 
+  and tissue_set = 'gtex_solid'
 group by origin, destination
 order by origin, destination"
 migration = dbGetQuery(mydb, query)
-chordDiagram(migration)
+set.seed(42)
+col = rand_color(length(unique(migration$ORIGIN)))
+chordDiagram(migration, col=col)
 ```
 
 ```{r migration_chart_wo_blood, fig.width=7, fig.height=7}
@@ -56,6 +59,7 @@ select tissue
      , count(is_contam) as total
      , count(is_contam)/cast(count(gsm) as float) as ratio
 from bioqc_contam_stats
+where tissue_set = 'gtex_all'
 group by tissue
 order by ratio desc
 "

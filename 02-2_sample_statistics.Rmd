@@ -1,0 +1,88 @@
+---
+title: Data preparation for Analysing GEO Samples for contamination. 
+output: 
+  html_document: default
+---
+
+
+## Processing samples with BioQC
+
+1. We download the studies with [`GEOquery`](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) in `scripts/geo_to_eset.R`. Some studies fail to download. 
+2. We run BioQC on these studies with `scripts/run_bioqc.R`. This process involves annotation the human orthologous genes for studies from different species. This is done using `ribiosAnnotation`. The annotation failes for species that are not in the ribios database. 
+3. We import the BioQC results into our database with `scripts/bioqc2db.R`. The import failes for studies that reference samples that are not in GEOmetadb
+
+After failures, we are left with the following number of studies/samples:
+
+```{r after_failures}
+# since there are muliple gpl and gsm in a gse, there might've been some gsm inserted, that don't have 
+# a tissue annotated, albeit the gse was selected. 
+sqlFilter = "
+select /*+ parallel(16) */ count(distinct bioqc_res.gsm) as GSM, count(distinct bioqc_res.gse) as GSE from bioqc_res 
+join bioqc_gsm bg on bg.gsm = bioqc_res.gsm
+where bg.tissue is not null and bg.tissue != 'other'"
+res = dbGetQuery(mydb, sqlFilter)
+kable(res)
+```
+
+Although we lost a considerable amount of studies, we only lost a few samples. Apparently, the respective studies were relatively small. 
+<!-- i also found empty studies -->
+
+## Excluding multi channel microarrays
+
+Multi channel microarrays date back to the early age of gene expression studies. They don't provide absolute gene expression data and are not meaningful outside their experimental context. We therefore exclude these experiments
+```{r exclude_multichannel}
+sqlFilter = str_c(sqlFilter, "and channel_count = 1", sep="\n")
+res = dbGetQuery(mydb, sqlFilter)
+kable(res)
+```
+
+## Organism selection. 
+We were interested in the organism distribution.
+```{r filter_orga}
+sqlOrga = "
+select /*+ parallel(16) */  count(distinct bioqc_res.gsm) as GSM
+                          , count(distinct bioqc_res.gse) as GSE 
+                          , bg.organism_ch1
+from bioqc_res 
+join bioqc_gsm bg on bg.gsm = bioqc_res.gsm
+where bg.tissue is not null and bg.tissue != 'other'
+and channel_count = 1
+group by organism_ch1
+order by gsm desc"
+res = dbGetQuery(mydb, sqlOrga)
+kable(res)
+```
+
+Results suggest that it makes sense to limit the samples to the three main organisms: *H. sapiens*, *M. musculus*, *R. norvegicus*. This makes also sense as these species are closesly related and therefore the signatures are more likely to translate within these species. 
+We are left with the following amount of samples: 
+
+```{r filter_orga2}
+sqlFilter = str_c(sqlFilter, "and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')", sep="\n")
+res = dbGetQuery(mydb, sqlFilter)
+kable(res)
+```
+
+We create a materialized view `BIOQC_RES_FIL` with bioqc results that are filted according 
+to these criteria in `db/views/bioqc_res_fil.sql`. Make sure the results are identical: 
+```{r test_view}
+sqlTest = "select /*+ parallel(16) */ count(distinct gsm) from bioqc_res_fil"
+resTest = dbGetQuery(mydb, sqlTest)
+expect_equal(res$GSM, resTest[1,1])
+```
+
+
+## Tissue selection
+Number of samples per tissue:
+```{r tissues}
+sqlTissue = "
+select /*+ parallel(16) */ tissue, count(distinct gsm) as samples from bioqc_res_fil
+group by tissue
+order by samples desc"
+resTissue = dbGetQuery(mydb, sqlTissue)
+kable(resTissue)
+```
+
+
+<!-- ## Subsampling per study. 
+Random subsampling?
+How many samples per study? 
