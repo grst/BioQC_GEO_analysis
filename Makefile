@@ -18,7 +18,7 @@ wipe: clean
 
 #################################
 # Render Rmarkdown documents
-# ###############################
+#################################
 01_create_database.html: 01_create_database.Rmd 
 	# running create_database will mess up your db. You don't want to do that!
 	# therefore, we just convert the document to html using pandoc instead of rendering. 
@@ -27,24 +27,52 @@ wipe: clean
 $(HTML_FILES): %.html: %.Rmd
 	Rscript -e "rmarkdown::render('$<', output_format='all')"
 
+
+
+
 ##################################
 # GEO DOWNLOAD
 # 
 # create incremental list of files to download. 
 # Then, run chunksub to download the files.
 ##################################
-results/gse_lists/downloaded.txt: 
-	find $(DATA_PATH)/geo | grep -oP "GSE(\d+)" | sort -u > results/gse_lists/downloaded.txt
+results/gse_lists/downloaded.txt: .FORCE
+	find $(DATA_PATH)/geo | grep -oP "GSE(\d+)" | sort -u > $@ 
 
 results/gse_lists/missing_download.txt: results/gse_lists/gse_tissue_annotation.txt results/gse_lists/downloaded.txt
-	diff <(sort results/gse_lists/gse_tissue_annotation.txt) results/gse_lists/downloaded.txt | grep "^<" | grep -oP "GSE(\d+)" > results/gse_lists/missing_download.txt 
+	diff <(sort $(word 1,$^)) $(word 2,$^) | grep "^<" | grep -oP "GSE(\d+)" > $@ 
 
 download_gse: results/gse_lists/missing_download.txt
 	# limit the number of concurrent jobs to 60
 	$(eval CHUNKSIZE := $(shell wc -l results/gse_lists/missing_download.txt | awk '{print int($$1/60+1)}')) 
-	$(CHUNKSUB) -d $(CWD) -s $(CHUNKSIZE) -X y -N download_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/geo_to_eset.R {} $(DATA_PATH)/geo" results/gse_lists/missing_download.txt
+	rm -fr $(CHUNKSUB_PATH)/download_gse
+	$(CHUNKSUB) -d $(CWD) -s $(CHUNKSIZE) -X y -N download_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/geo_to_eset.R {} $(DATA_PATH)/geo" $< 
 
-# Annotate ExpressionSets with orthologous gene symbols for BioQC
+
+
+
+#################################
+# GEO ANNOTATION
+# 
+# annotate expression sets with human orthologues for BioQC
+#################################
+results/gse_lists/annotated_esets.txt: .FORCE
+	find $(DATA_PATH)/geo_annot | grep -oP "GSE(.*)\.Rdata" | sort -u > $@ 
+
+results/gse_lists/downloaded_esets.txt: .FORCE
+	find $(DATA_PATH)/geo | grep -oP "GSE(.*)\.Rdata" | sort -u > $@ 
+
+results/gse_lists/missing_annotation.txt: results/gse_lists/downloaded_esets.txt results/gse_lists/annotated_esets.txt
+	diff $^ | grep "^<" | grep -oP "GSE(.*)\.Rdata" | awk '{print "$(DATA_PATH)/geo/"$$0}' > results/gse_lists/missing_annotation.txt 
+
+annotate_gse: results/gse_lists/missing_annotation.txt
+	$(eval CHUNKSIZE := $(shell wc -l results/gse_lists/missing_annotation.txt | awk '{print int($$1/120+1)}'))
+	rm -fr $(CHUNKSUB_PATH)/annotate_gse
+	$(CHUNKSUB) -d $(CWD) -s $(CHUNKSIZE) -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N annotate_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/annotate_eset.R $(DATA_PATH)/geo_annot {}" $< 
+
+
+
+
 
 # run BioQC
 bioqc_melet_list.txt: geo 
@@ -58,4 +86,4 @@ eset_annot_list.txt: geo
 	# due to floating point inprecision, but identical up to 5 decimal digits (i checked)
 	./bash_wrapper.sh 24 "sort --parallel 24 -u -k1,2 bioqc_melt_all.tsv > bioqc_melt_all.uniq.tsv"
 
-
+.FORCE:
