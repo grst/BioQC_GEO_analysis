@@ -17,18 +17,11 @@
 stopifnot(suppressPackageStartupMessages(require(tools)))
 stopifnot(suppressPackageStartupMessages(require(Biobase)))
 stopifnot(suppressPackageStartupMessages(require(BioQC)))
-stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
 stopifnot(suppressPackageStartupMessages(require(assertthat)))
 stopifnot(suppressPackageStartupMessages(require(readr)))
 source("lib/lib.R")
 source("lib/db_io.R")
-source("lib/geo_annotation.R")
-# source("lib/db.R")
 
-# options(error = quote({
-#   dump.frames("ribios.dump", to.file = TRUE)
-#   quit(save = "no", status = 1L)
-# }))
 
 args = commandArgs(trailingOnly=TRUE)
 

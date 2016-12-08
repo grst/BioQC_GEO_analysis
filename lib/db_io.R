@@ -1,11 +1,10 @@
 ###############################
 # Library to read and write data from and to the database. 
+# need to source db.R before using!
 ###############################
 
 stopifnot(suppressPackageStartupMessages(require(stringr)))
 stopifnot(suppressPackageStartupMessages(require(data.table)))
-source("lib/db.R")
-source("lib/geo_annotation.R")
 
 #' Escape a string for SQL
 #' 
@@ -54,7 +53,7 @@ db2gmt = function(output_file) {
 #' 
 #' Signature names need to be the numeric ids from the signatures
 #' table. Ideally, create your gmt file with db2gmt
-melt_bioqc = function(bioqc_res_matrix, cutoff=.01) {
+melt_bioqc = function(bioqc_res_matrix, cutoff=.05) {
   res.molten = data.table(melt(bioqc_res_matrix, id.vars="rn"))
   setcolorder(res.molten, c(2,1,3))
   res.molten.f = res.molten[value<cutoff,]

@@ -99,16 +99,17 @@ Insert inital data
 
 ### Signatures
 
-Import the list of BioQC signatures from the gmt file shipped with the BioQC package. 
+Import signatures into the database and create a single, consolidated gmt file. 
 ```{r}
-library(BioQC)
-gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
-gmt2db(gmtFile)
+download.file("http://bioinfo.bas.roche.com:8080/apps/gsea/genesets/exp.tissuemark.bioqc.roche.symbols.gmt",
+              "data/expr.tissuemark.affy.roche.symbols.gmt")
+gmt2db("data/expr.tissuemark.affy.roche.symbols.gmt")
 gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
 gmt2db("../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt")
 gmt2db("../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii")
 gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
 gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
+db2gmt("results/gmt_all.gmt")
 ```
 
 
