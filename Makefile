@@ -84,10 +84,10 @@ annotate_gse: results/gse_lists/missing_annotation.txt
 # Import the bioqc_melt_all_uniq.tsv manually using Sqldeveloper. 
 #################################
 results/gse_lists/bioqced_esets.txt: .FORCE
-	find $(DATA_PATH)/bioqc | grep -oP "GSE(.*)_bioqc_res_melt\.tab" | sed s/_bioqc_res_melt\.tab/\.Rdata/ | sort -u > $@
+	find $(DATA_PATH)/bioqc | grep -oP "GSE(.*)_bioqc_res_melt\.tab" | sort -u > $@
 
 results/gse_lists/missing_bioqc.txt: results/gse_lists/annotated_esets.txt results/gse_lists/bioqced_esets.txt
-	diff $^ | grep "^<" | grep -oP "GSE(.*)\.Rdata" | awk '{print "$(DATA_PATH)/geo_annot/"$$0}' > $@
+	diff $(word 1,$^) <(sed s/_bioqc_res_melt\.tab/\.Rdata/ $(word 2,$^)) | grep "^<" | grep -oP "GSE(.*)\.Rdata" | awk '{print "$(DATA_PATH)/geo_annot/"$$0}' > $@
 
 .PHONY: run_bioqc
 run_bioqc: results/gse_lists/missing_bioqc.txt results/gmt_all.gmt
@@ -95,11 +95,11 @@ run_bioqc: results/gse_lists/missing_bioqc.txt results/gmt_all.gmt
 	$(CHUNKSUB) -d $(CWD) -s 10 -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N bioqc -j $(CHUNKSUB_PATH) "$(CWD)/scripts/run_bioqc.R $(DATA_PATH)/bioqc $(word 2,$^) {}" $< 
 
 $(DATA_PATH)/bioqc_melt_all.tsv: results/gse_lists/bioqced_esets.txt 
-	xargs cat < $< > $@
+	awk '{print "$(DATA_PATH)/bioqc/"$$0}' < $< | xargs cat > $@
 
 $(DATA_PATH)/bioqc_melt_all.uniq.tsv:  $(DATA_PATH)/bioqc_melt_all.tsv
 	# unique on first two columns. For one study the results exactely identical
 	# due to floating point inprecision, but identical up to 5 decimal digits (i checked)
-	bash_wrapper.sh 24 "sort --parallel 24 -u -k1,2 $< > $@ 
+	bash_wrapper.sh 24 "sort --parallel 24 -u -k1,2 $< > $@ "
 
 .FORCE:

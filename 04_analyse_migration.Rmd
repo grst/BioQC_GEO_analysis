@@ -59,7 +59,7 @@ select tissue
      , count(is_contam) as total
      , count(is_contam)/cast(count(gsm) as float) as ratio
 from bioqc_contam_stats
-where tissue_set = 'gtex_all'
+where tissue_set = 'gtex_solid'
 group by tissue
 order by ratio desc
 "
