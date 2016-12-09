@@ -1,17 +1,26 @@
 R=R
-RMD_FILES= 02_select_and_get_samples.Rmd 02-2_sample_statistics.Rmd 03_make_sample_heatmaps.Rmd 04_analyse_migration.Rmd
+RMD_FILES= 01_create_database.Rmd 02_select_and_get_samples.Rmd 02-2_sample_statistics.Rmd 03_make_sample_heatmaps.Rmd 04_analyse_migration.Rmd
 HTML_FILES= $(patsubst %.Rmd,%.html,$(RMD_FILES))
+MD_FILES= $(patsubst %.Rmd,%.CommonMark,$(RMD_FILES))
 DATA_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
 CHUNKSUB_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/chunksub
 SHELL= /bin/bash
 CHUNKSUB= /pstore/home/sturmg/.local/bin/chunksub
 CWD= $(shell pwd)
 
-all: $(HTML_FILES) 01_create_database.html
+.PHONY: docs
+docs: $(MD_FILES)
+	cd docs && make html 
+
+.PHONY: upload-docs
+upload-docs: docs
+	cd docs && make upload
 
 .PHONY: clean
 clean:
 	rm -fv *.html
+	rm -fv *.md
+	rm -fv *.CommonMark
 	rm -rfv *_files
 
 .PHONY: wipe
@@ -21,11 +30,6 @@ wipe: clean
 #################################
 # Render Rmarkdown documents
 #################################
-01_create_database.html: 01_create_database.Rmd 
-	# running create_database will mess up your db. You don't want to do that!
-	# therefore, we just convert the document to html using pandoc instead of rendering. 
-	pandoc -f markdown -t html -s --mathjax --number-sections -o $@ $<
-
 $(HTML_FILES): %.html: %.Rmd
 	Rscript -e "rmarkdown::render('$<', output_format='all')"
 

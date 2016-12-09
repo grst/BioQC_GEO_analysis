@@ -9,6 +9,6 @@ Detect tissue heterogeneity in public domain data using BioQC.
     :hidden:
 
     self
-    ../01_create_database.Rmd
+    setup_db.md
 
 ```

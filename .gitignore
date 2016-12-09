@@ -2,6 +2,7 @@ plots/*
 results/*
 data/*
 *.html
+*.CommonMark
 .ipynb_checkpoints
 *_files
 *_cache
