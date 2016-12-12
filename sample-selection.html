@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta name="description" content="">
+  <meta name="generator" content="bookdown 0.3 and GitBook 2.6.7">
+
+  <meta property="og:title" content="" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="" />
+  
+  
+  
+
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="setup-database.html">
+
+
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+</head>
+
+<body>
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> BioQC GEO Analysis</a></li>
+<li class="chapter" data-level="2" data-path="setup-database.html"><a href="setup-database.html"><i class="fa fa-check"></i><b>2</b> Setup Database</a><ul>
+<li class="chapter" data-level="2.1" data-path="setup-database.html"><a href="setup-database.html#tables-explained"><i class="fa fa-check"></i><b>2.1</b> Tables explained</a><ul>
+<li class="chapter" data-level="2.1.1" data-path="setup-database.html"><a href="setup-database.html#geometadb"><i class="fa fa-check"></i><b>2.1.1</b> GEOmetadb</a></li>
+<li class="chapter" data-level="2.1.2" data-path="setup-database.html"><a href="setup-database.html#tissue-annotation"><i class="fa fa-check"></i><b>2.1.2</b> Tissue Annotation</a></li>
+<li class="chapter" data-level="2.1.3" data-path="setup-database.html"><a href="setup-database.html#signatures"><i class="fa fa-check"></i><b>2.1.3</b> Signatures</a></li>
+<li class="chapter" data-level="2.1.4" data-path="setup-database.html"><a href="setup-database.html#expected-signatures"><i class="fa fa-check"></i><b>2.1.4</b> Expected Signatures</a></li>
+<li class="chapter" data-level="2.1.5" data-path="setup-database.html"><a href="setup-database.html#results"><i class="fa fa-check"></i><b>2.1.5</b> Results</a></li>
+</ul></li>
+<li class="chapter" data-level="2.2" data-path="setup-database.html"><a href="setup-database.html#import-geometadb"><i class="fa fa-check"></i><b>2.2</b> Import GEOmetadb</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="setup-database.html"><a href="setup-database.html#fix-foreign-key-constraints"><i class="fa fa-check"></i><b>2.2.1</b> Fix foreign key constraints</a></li>
+<li class="chapter" data-level="2.2.2" data-path="setup-database.html"><a href="setup-database.html#extract-tissue-annotation"><i class="fa fa-check"></i><b>2.2.2</b> Extract Tissue annotation</a></li>
+<li class="chapter" data-level="2.2.3" data-path="setup-database.html"><a href="setup-database.html#load-annotation-information"><i class="fa fa-check"></i><b>2.2.3</b> Load annotation information</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="setup-database.html"><a href="setup-database.html#import-bioqc-data"><i class="fa fa-check"></i><b>2.3</b> Import BioQC data</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="setup-database.html"><a href="setup-database.html#signatures-1"><i class="fa fa-check"></i><b>2.3.1</b> Signatures</a></li>
+<li class="chapter" data-level="2.3.2" data-path="setup-database.html"><a href="setup-database.html#tissue-annotation-1"><i class="fa fa-check"></i><b>2.3.2</b> Tissue Annotation</a></li>
+<li class="chapter" data-level="2.3.3" data-path="setup-database.html"><a href="setup-database.html#tissue-sets"><i class="fa fa-check"></i><b>2.3.3</b> Tissue Sets</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="sample-selection.html"><a href="sample-selection.html"><i class="fa fa-check"></i><b>3</b> Sample selection</a><ul>
+<li class="chapter" data-level="3.1" data-path="sample-selection.html"><a href="sample-selection.html#selecting-samples-that-have-the-required-annotation"><i class="fa fa-check"></i><b>3.1</b> Selecting samples that have the required annotation</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./"></a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="sample-selection" class="section level1">
+<h1><span class="header-section-number">3</span> Sample selection</h1>
+<p>Here, we document the sample selection process.</p>
+<div id="selecting-samples-that-have-the-required-annotation" class="section level2">
+<h2><span class="header-section-number">3.1</span> Selecting samples that have the required annotation</h2>
+<p>A sample is usable for use, if</p>
+<ul>
+<li>the gene symbos are annotated (requirement to run BioQC)</li>
+<li>the tissue of origin is annotated (requirment to draw conclusions about contamination)</li>
+</ul>
+<p>We consider two approaches for annotating gene symbols:</p>
+<ul>
+<li>Using the Bioconductor <a href="https://bioconductor.org/packages/release/bioc/html/AnnotationDbi.html">AnnotationDbi</a> package. The GEOmetadb provides a mapping of the GPL identifier to these packages.</li>
+<li>Using the <code>annotGPL=TRUE</code> option of <a href="https://bioconductor.org/packages/release/bioc/html/GEOquery.html">GEOquery</a>’s <code>getGEO</code>. This requires an annotation file being available for the respective platform. We retrieved a list of the available annoataion files in an earlier step.</li>
+</ul>
+<p>We compare the two methods with respect to the amount of usable samples that we can get:</p>
+<p>Run sql script <code>views/annotation_stats.sql</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># filtering stats for a table. </span>
+sqlStats =<span class="st"> &quot;</span>
+<span class="st">select &#39;total&#39;, count(distinct gsm), count(distinct gse) from bioqc_studies_total</span>
+<span class="st">union select &#39;tissue&#39;, count(distinct gsm), count(distinct gse) from bioqc_studies_has_tissue</span>
+<span class="st">union select &#39;package&#39;, count(distinct gsm), count(distinct gse) from bioqc_studies_has_package</span>
+<span class="st">union select &#39;annotation&#39;, count(distinct gsm), count(distinct gse) from bioqc_studies_has_annot</span>
+<span class="st">union select &#39;tissue_package&#39;, count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_package) u1</span>
+<span class="st">union select &#39;annotation_package&#39;, count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_annot intersect select * from bioqc_studies_has_package) u2</span>
+<span class="st">union select &#39;tissue_annotation&#39;, count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_annot) u3</span>
+<span class="st">union select &#39;annotation_tissue_package&#39;, count(distinct gsm), count(distinct gse) from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_package intersect select * from bioqc_studies_has_annot) u4</span>
+<span class="st">&quot;</span>
+stats =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">dbGetQuery</span>(mydb, sqlStats))
+<span class="kw">colnames</span>(stats) =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;rn&quot;</span>, <span class="st">&quot;GSM&quot;</span>, <span class="st">&quot;GSE&quot;</span>)
+<span class="kw">setkey</span>(stats,rn)
+
+categories =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;tissue&quot;</span>, <span class="st">&quot;annot pkg&quot;</span>, <span class="st">&quot;annot GPL&quot;</span>)
+colors=<span class="kw">c</span>(<span class="st">&#39;red&#39;</span>, <span class="st">&#39;green&#39;</span>, <span class="st">&#39;blue&#39;</span>)
+
+<span class="kw">plot.new</span>()
+gl =<span class="st"> </span><span class="kw">grid.layout</span>(<span class="dt">nrow=</span><span class="dv">1</span>, <span class="dt">ncol=</span><span class="dv">2</span>)
+vp<span class="fl">.1</span> =<span class="st"> </span><span class="kw">viewport</span>(<span class="dt">layout.pos.col=</span><span class="dv">1</span>, <span class="dt">layout.pos.row=</span><span class="dv">1</span>)
+vp<span class="fl">.2</span> =<span class="st"> </span><span class="kw">viewport</span>(<span class="dt">layout.pos.col=</span><span class="dv">2</span>, <span class="dt">layout.pos.row=</span><span class="dv">1</span>)
+<span class="kw">pushViewport</span>(<span class="kw">viewport</span>(<span class="dt">layout=</span>gl))
+<span class="kw">pushViewport</span>(vp<span class="fl">.1</span>)
+
+<span class="kw">draw.triple.venn</span>(stats[rn==<span class="st">&#39;tissue&#39;</span>,GSM], 
+                 stats[rn==<span class="st">&#39;package&#39;</span>,GSM], 
+                 stats[rn==<span class="st">&#39;annotation&#39;</span>,GSM], 
+                 stats[rn==<span class="st">&#39;tissue_package&#39;</span>,GSM],
+                 stats[rn==<span class="st">&#39;annotation_package&#39;</span>,GSM], 
+                 stats[rn==<span class="st">&#39;tissue_annotation&#39;</span>,GSM], 
+                 stats[rn==<span class="st">&#39;annotation_tissue_package&#39;</span>,GSM], <span class="dt">category=</span>categories, <span class="dt">fill=</span>colors)</code></pre></div>
+<pre><code>## (polygon[GRID.polygon.11], polygon[GRID.polygon.12], polygon[GRID.polygon.13], polygon[GRID.polygon.14], polygon[GRID.polygon.15], polygon[GRID.polygon.16], text[GRID.text.17], text[GRID.text.18], text[GRID.text.19], text[GRID.text.20], text[GRID.text.21], text[GRID.text.22], text[GRID.text.23], text[GRID.text.24], text[GRID.text.25], text[GRID.text.26])</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">popViewport</span>()
+<span class="kw">pushViewport</span>(vp<span class="fl">.2</span>)
+
+<span class="kw">draw.triple.venn</span>(stats[rn==<span class="st">&#39;tissue&#39;</span>,GSE], 
+                 stats[rn==<span class="st">&#39;package&#39;</span>,GSE], 
+                 stats[rn==<span class="st">&#39;annotation&#39;</span>,GSE], 
+                 stats[rn==<span class="st">&#39;tissue_package&#39;</span>,GSE],
+                 stats[rn==<span class="st">&#39;annotation_package&#39;</span>,GSE], 
+                 stats[rn==<span class="st">&#39;tissue_annotation&#39;</span>,GSE], 
+                 stats[rn==<span class="st">&#39;annotation_tissue_package&#39;</span>,GSE], <span class="dt">category=</span>categories, <span class="dt">fill=</span>colors)</code></pre></div>
+<pre><code>## (polygon[GRID.polygon.27], polygon[GRID.polygon.28], polygon[GRID.polygon.29], polygon[GRID.polygon.30], polygon[GRID.polygon.31], polygon[GRID.polygon.32], text[GRID.text.33], text[GRID.text.34], text[GRID.text.35], text[GRID.text.36], text[GRID.text.37], text[GRID.text.38], text[GRID.text.39], text[GRID.text.40], text[GRID.text.41], text[GRID.text.42])</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">popViewport</span>(<span class="dv">1</span>)</code></pre></div>
+<p><img src="02_select_and_get_samples_files/figure-html/sample_filtering-1.png" width="768" style="display:block; margin: auto" style="display: block; margin: auto;" /></p>
+<p>The <code>getGEO</code> method appears to be the more powerful method. Ideal would be a combination of the two, however, for the sake of simplicity, we stick to <code>getGEO</code>, loosing 499 studies (35602 samples).</p>
+<p>This leaves us with the following filtering result:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tab =<span class="st"> </span>stats[.(<span class="kw">c</span>(<span class="st">&quot;total&quot;</span>, <span class="st">&quot;tissue&quot;</span>, <span class="st">&quot;annotation&quot;</span>, <span class="st">&quot;tissue_annotation&quot;</span>))]
+tab =<span class="st"> </span>tab[,comment:<span class="er">=</span><span class="kw">c</span>(<span class="st">&quot;total&quot;</span>, <span class="st">&quot;tissue annotated&quot;</span>, <span class="st">&quot;annotation file available&quot;</span>, <span class="st">&quot;tissue and annotation file&quot;</span>)]
+<span class="kw">kable</span>(tab[,<span class="kw">c</span>(<span class="st">&quot;comment&quot;</span>,<span class="st">&quot;GSM&quot;</span>,<span class="st">&quot;GSE&quot;</span>),<span class="dt">with=</span><span class="ot">FALSE</span>])</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">comment</th>
+<th align="right">GSM</th>
+<th align="right">GSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">total</td>
+<td align="right">1945417</td>
+<td align="right">73719</td>
+</tr>
+<tr class="even">
+<td align="left">tissue annotated</td>
+<td align="right">760798</td>
+<td align="right">24267</td>
+</tr>
+<tr class="odd">
+<td align="left">annotation file available</td>
+<td align="right">768346</td>
+<td align="right">31579</td>
+</tr>
+<tr class="even">
+<td align="left">tissue and annotation file</td>
+<td align="right">275206</td>
+<td align="right">9632</td>
+</tr>
+</tbody>
+</table>
+<p>We store the respective gse identifiers in <code>results/gse_lists/gse_tissue_annotation.txt</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sqlGse =<span class="st"> &quot;select distinct gse from (select * from bioqc_studies_has_tissue intersect select * from bioqc_studies_has_annot) u&quot;</span>
+gse =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, sqlGse)
+<span class="kw">writeLines</span>(gse$GSE, <span class="kw">file</span>(gse.file))</code></pre></div>
+
+</div>
+</div>
+
+
+
+
+
+
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="setup-database.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"weibo": false,
+"instapper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
