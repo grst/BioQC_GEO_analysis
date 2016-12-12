@@ -123,7 +123,7 @@ sql = "drop table bioqc_gpl_annot"
 dbSendUpdate(mydb, sql)
 ```
 
-We compared the two approaches in [Sample selection]. 
+We compared the two approaches in [Sample Selection](#sample-selection). 
 
 ## Import BioQC data
 We install the BioQC schema using this [SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/bioqc_schema.sql). 

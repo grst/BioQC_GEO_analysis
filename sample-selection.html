@@ -118,8 +118,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="2.3.3" data-path="setup-database.html"><a href="setup-database.html#tissue-sets"><i class="fa fa-check"></i><b>2.3.3</b> Tissue Sets</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="sample-selection.html"><a href="sample-selection.html"><i class="fa fa-check"></i><b>3</b> Sample selection</a><ul>
-<li class="chapter" data-level="3.1" data-path="sample-selection.html"><a href="sample-selection.html#selecting-samples-that-have-the-required-annotation"><i class="fa fa-check"></i><b>3.1</b> Selecting samples that have the required annotation</a></li>
+<li class="chapter" data-level="3" data-path="sample-selection.html"><a href="sample-selection.html"><i class="fa fa-check"></i><b>3</b> Sample Selection and processing</a><ul>
+<li class="chapter" data-level="3.1" data-path="sample-selection.html"><a href="sample-selection.html#required-annotation"><i class="fa fa-check"></i><b>3.1</b> Required annotation</a><ul>
+<li class="chapter" data-level="3.1.1" data-path="sample-selection.html"><a href="sample-selection.html#sample-list"><i class="fa fa-check"></i><b>3.1.1</b> Export list of samples</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="sample-selection.html"><a href="sample-selection.html#processing-samples-with-bioqc"><i class="fa fa-check"></i><b>3.2</b> Processing Samples with BioQC</a></li>
+<li class="chapter" data-level="3.3" data-path="sample-selection.html"><a href="sample-selection.html#excluding-multi-channel-microarrays"><i class="fa fa-check"></i><b>3.3</b> Excluding multi channel microarrays</a></li>
+<li class="chapter" data-level="3.4" data-path="sample-selection.html"><a href="sample-selection.html#organism-selection."><i class="fa fa-check"></i><b>3.4</b> Organism selection.</a></li>
+<li class="chapter" data-level="3.5" data-path="sample-selection.html"><a href="sample-selection.html#tissue-selection"><i class="fa fa-check"></i><b>3.5</b> Tissue selection</a></li>
 </ul></li>
 </ul>
 
@@ -139,10 +145,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
             <section class="normal" id="section-">
 <div id="sample-selection" class="section level1">
-<h1><span class="header-section-number">3</span> Sample selection</h1>
-<p>Here, we document the sample selection process.</p>
-<div id="selecting-samples-that-have-the-required-annotation" class="section level2">
-<h2><span class="header-section-number">3.1</span> Selecting samples that have the required annotation</h2>
+<h1><span class="header-section-number">3</span> Sample Selection and processing</h1>
+<p>Here, we document the sample selection process before running <em>BioQC</em>.</p>
+<div id="required-annotation" class="section level2">
+<h2><span class="header-section-number">3.1</span> Required annotation</h2>
 <p>A sample is <em>usable</em> for this study, if</p>
 <ul>
 <li>the gene symbos are annotated (requirement to run BioQC)</li>
@@ -189,6 +195,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </tr>
 </tbody>
 </table>
+<div id="sample-list" class="section level3">
+<h3><span class="header-section-number">3.1.1</span> Export list of samples</h3>
 <p>We store the respective gse identifiers in <code>results/gse_lists/gse_tissue_annotation.txt</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sqlGse =<span class="st"> &quot;</span>
 <span class="st">select distinct gse</span>
@@ -200,6 +208,34 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="st">    from bioqc_studies_has_annot) u&quot;</span>
 gse =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, sqlGse)
 <span class="kw">writeLines</span>(gse$GSE, <span class="kw">file</span>(gse.file))</code></pre></div>
+
+</div>
+</div>
+<div id="processing-samples-with-bioqc" class="section level2">
+<h2><span class="header-section-number">3.2</span> Processing Samples with BioQC</h2>
+<p>The following processes are ressource intensive, therefore we execute them on high performance cluster (HPC). We use <a href="https://github.com/grst/chunksub">chunksub</a> to distribute the <a href="sample-selection.html#sample-list">list of sample ids</a> to the workers. This involves four major steps which are also documented in the project’s <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile">Makefile</a>.</p>
+<ol style="list-style-type: decimal">
+<li>We download the studies with <a href="https://bioconductor.org/packages/release/bioc/html/GEOquery.html">GEOquery</a> and store them as R <a href="https://bioconductor.org/packages/devel/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf">ExpressionSet</a> using <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/geo_to_eset.R">geo_to_eset.R</a>. For some packages, the download is not successful.</li>
+<li>We annotated human orthologous genes for all studies using <a href="https://github.com/Accio/ribios">ribiosAnnotation</a> in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/annotate_eset.R">annotate_eset.R</a>. This is necessary as the tissue signatures are built on a human dataset. The annotation failes for species which are not in the <code>ribios</code> database.</li>
+<li>We run <em>BioQC</em> on these studies use <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/run_bioqc.R">run_bioqc.R</a>.</li>
+<li>Finally, we prefilter BioQC’s results for having a p-value of at most 0.05 and import them into the database.</li>
+</ol>
+<p>After failures, we are left with the following number of studies/samples:</p>
+<p>Although we lost a considerable amount of studies, we only lost a few samples. Apparently, the respective studies were relatively small. <!-- i also found empty studies --></p>
+</div>
+<div id="excluding-multi-channel-microarrays" class="section level2">
+<h2><span class="header-section-number">3.3</span> Excluding multi channel microarrays</h2>
+<p>Multi channel microarrays date back to the early age of gene expression studies. They don’t provide absolute gene expression data and are not meaningful outside their experimental context. We therefore exclude these experiments</p>
+</div>
+<div id="organism-selection." class="section level2">
+<h2><span class="header-section-number">3.4</span> Organism selection.</h2>
+<p>We were interested in the organism distribution.</p>
+<p>Results suggest that it makes sense to limit the samples to the three main organisms: <em>H. sapiens</em>, <em>M. musculus</em>, <em>R. norvegicus</em>. This makes also sense as these species are closesly related and therefore the signatures are more likely to translate within these species. We are left with the following amount of samples:</p>
+<p>We create a materialized view <code>BIOQC_RES_FIL</code> with bioqc results that are filted according to these criteria in <code>db/views/bioqc_res_fil.sql</code>. Make sure the results are identical:</p>
+</div>
+<div id="tissue-selection" class="section level2">
+<h2><span class="header-section-number">3.5</span> Tissue selection</h2>
+<p>Number of samples per tissue:</p>
 
 </div>
 </div>

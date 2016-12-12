@@ -118,8 +118,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="2.3.3" data-path="setup-database.html"><a href="setup-database.html#tissue-sets"><i class="fa fa-check"></i><b>2.3.3</b> Tissue Sets</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="sample-selection.html"><a href="sample-selection.html"><i class="fa fa-check"></i><b>3</b> Sample selection</a><ul>
-<li class="chapter" data-level="3.1" data-path="sample-selection.html"><a href="sample-selection.html#selecting-samples-that-have-the-required-annotation"><i class="fa fa-check"></i><b>3.1</b> Selecting samples that have the required annotation</a></li>
+<li class="chapter" data-level="3" data-path="sample-selection.html"><a href="sample-selection.html"><i class="fa fa-check"></i><b>3</b> Sample Selection and processing</a><ul>
+<li class="chapter" data-level="3.1" data-path="sample-selection.html"><a href="sample-selection.html#required-annotation"><i class="fa fa-check"></i><b>3.1</b> Required annotation</a><ul>
+<li class="chapter" data-level="3.1.1" data-path="sample-selection.html"><a href="sample-selection.html#sample-list"><i class="fa fa-check"></i><b>3.1.1</b> Export list of samples</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="sample-selection.html"><a href="sample-selection.html#processing-samples-with-bioqc"><i class="fa fa-check"></i><b>3.2</b> Processing Samples with BioQC</a></li>
+<li class="chapter" data-level="3.3" data-path="sample-selection.html"><a href="sample-selection.html#excluding-multi-channel-microarrays"><i class="fa fa-check"></i><b>3.3</b> Excluding multi channel microarrays</a></li>
+<li class="chapter" data-level="3.4" data-path="sample-selection.html"><a href="sample-selection.html#organism-selection."><i class="fa fa-check"></i><b>3.4</b> Organism selection.</a></li>
+<li class="chapter" data-level="3.5" data-path="sample-selection.html"><a href="sample-selection.html#tissue-selection"><i class="fa fa-check"></i><b>3.5</b> Tissue selection</a></li>
 </ul></li>
 </ul>
 
@@ -227,7 +233,7 @@ sqlUpdateGpl =<span class="st"> &quot;</span>
 <span class="co"># drop tmp table</span>
 sql =<span class="st"> &quot;drop table bioqc_gpl_annot&quot;</span>
 <span class="kw">dbSendUpdate</span>(mydb, sql)</code></pre></div>
-<p>We compared the two approaches in <a href="sample-selection.html#sample-selection">Sample selection</a>.</p>
+<p>We compared the two approaches in <a href="sample-selection.html#sample-selection">Sample Selection</a>.</p>
 </div>
 </div>
 <div id="import-bioqc-data" class="section level2">

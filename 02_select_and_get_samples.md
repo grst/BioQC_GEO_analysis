@@ -1,10 +1,10 @@
-# Sample selection 
+# Sample Selection and processing {#sample-selection}
 
 
 
-Here, we document the sample selection process. 
+Here, we document the sample selection process before running *BioQC*. 
 
-## Selecting samples that have the required annotation
+## Required annotation
 A sample is *usable* for this study, if 
 
 * the gene symbos are annotated (requirement to run BioQC)
@@ -36,6 +36,7 @@ tissue and annotation file     275206    9632
 
 
 
+### Export list of samples {#sample-list}
 We store the respective gse identifiers in `results/gse_lists/gse_tissue_annotation.txt`: 
 
 ```r
