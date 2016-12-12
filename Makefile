@@ -1,7 +1,6 @@
 R=R
 RMD_FILES= 01_create_database.Rmd 02_select_and_get_samples.Rmd 02-2_sample_statistics.Rmd 03_make_sample_heatmaps.Rmd 04_analyse_migration.Rmd
-HTML_FILES= $(patsubst %.Rmd,%.html,$(RMD_FILES))
-MD_FILES= $(patsubst %.Rmd,%.CommonMark,$(RMD_FILES))
+PREVIEW_FILES = $(patsubst %,%.preview,$(RMD_FILES))
 DATA_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
 CHUNKSUB_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/chunksub
 SHELL= /bin/bash
@@ -34,6 +33,10 @@ book: $(RMD_FILES)
 upload-book: book
 	cd gh-pages && cp -R ../_book/* ./ && git add --all * && git commit --allow-empty -m "update docs" && git push origin gh-pages
 
+# render a chapter only by calling `make chapter1.Rmd.preview`
+.PHONY: $(PREVIEW_FILES)
+$(PREVIEW_FILES): %.Rmd.preview: %.Rmd
+	Rscript -e "bookdown::preview_chapter('$<', 'bookdown::gitbook')"
 
 
 
