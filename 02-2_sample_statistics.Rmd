@@ -1,9 +1,4 @@
----
-title: Data preparation for Analysing GEO Samples for contamination. 
-output: 
-  html_document: default
----
-
+# Sample statistics
 
 ## Processing samples with BioQC
 

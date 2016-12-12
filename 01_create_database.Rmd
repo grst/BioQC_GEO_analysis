@@ -1,14 +1,8 @@
-Create and Fill Database
-========================
+# Setup Database
 
-We store Meta information fo GEO samples and BioQC results in 
-a postgreSQL database. In this document, we initalize the
-database with the metadata. 
-
-The sql schemata can be found in `db/*.sql`. 
-
-```{r}
-stop("This file is not intended to be ran as a script. This would mess up the database. ")
+```{r, include=FALSE}
+source("lib/knitr.R")
+source("lib/config.R")
 source("lib/db.R")
 source("lib/lib.R")
 source("lib/geo_annotation.R")
@@ -19,40 +13,58 @@ library(data.table)
 library(readxl)
 ```
 
-Convert GEOMetadb
------------------
+We store meta information for GEO samples and BioQC results in 
+an Oracle 11g database. We combine the metadata from [GEOmetadb](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html)
+with tables to store signature scores generated with 
+[BioQC](https://accio.github.io/BioQC) and manually curated annotations. 
 
-[GEOMetabase](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html) 
-is an sqlite database containing all the meta information also stored in the ExpressionSets. 
-There is a shell script `db/sqlite_to_psql.sh` that converts the sqlite database into a postgresql database. 
-A nasty file system/kernel bug lead to random skipping of rows, which I had to find a workaround to. 
+[GEOmetadb](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html) 
+is an SQLite database containing metadata associated with samples and studies from GEO. 
 
-We first need to provide a list of tables: 
+```{r include=FALSE, fig.cap="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here] for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study."}
+knitr::include_graphics("db/er_diagram_test.png")
+```
+
+## Tables explained
+
+### GEOmetadb
+* **BIOQC_GSM**: *from GEOmetadb*, meta information for all *Samples* in GEO
+* **BIOQC_GPL**: *from GEOmetadb*, list of all platforms (*e.g.* different types of microarrays) referenced in GEO. 
+* **BIOQC_GSE**: *from GEOmetadb*, list of *Series* (collections of samples) in GEO. 
+
+### Tissue Annotation
+The annotation of tissues is inconsistent within GEO. A "liver" sample can be termed *e.g.* "liver", "liver biopsy" or "primary liver". We therefore need a way to "normalize" the tissue name. We did this manually for the most abundant tissues in this [Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx) which is then imported into the **BIOQC_NORMALIZE_TISSUES** table. **BIOQC_TISSUES** is simply a unique list of all curated tissues. 
+
+### Signatures
+Signatures are essentially a list of genes, which are over-represented in a certain tissue, cell type, pathway, etc. A common way to save such signatures is the [GMT file format](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29). These GMT files can be imported into **BIOQC_SIGNATURES**. 
+
+### Expected Signatures
+In order to find out which samples are 'contamined' by other tissues, we first need to define which signatures we would 'expect' in a certain tissue. We therefore manually mapped signatures to the respective tissue type in this 
+[Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx). For example, we map the signatures `Intestine_Colon_cecum_NR_0.7_3` and `Intestine_Colon_NR_0.7_3` to *colon*.  
+
+Moreover, we sometimes run into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called *tissue sets*. For example, it is hard to distinguish *jejunum* from *colon*, but easy to distinguish the two from other tissues. We therefore created a tissue set *intestine*, which contains both *jejunum* and *colon* and references all signatures associated with the two tissues. This information is imported into **BIOQC_TISSUE_SET**. 
+
+### Results
+Our analysis creates a p-value for each sample in `BIOQC_GSM` and each signature in `BIOQC_SIGNATURES`. These p-values are stored in **BIOQC_RES**.
+
+
+## Import GEOmetadb
+
+First, we need to extract a list of tables:  
 ```{r}
-gdb = dbConnect(SQLite(), "db/geometabase/GEOmetadb.sqlite")
+gdb = dbConnect(SQLite(), file.path(DATA_DIR, "geometabase/GEOmetadb.sqlite"))
 tables = dbListTables(gdb)
-writeLines(tables, file("db/geometabase/tables.txt"))
+writeLines(tables, file(file.path(DATA_DIR, "geometabase/tables.txt")))
 ```
 
-Truncate previous data (uncomment corresponding line): 
-```{r}
-for(table in tables) {
-#    dbSendUpdate(mydb, sprintf("truncate %s cascade", tolower(table)))
-}
-```
+Then, we use a [conversion script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/geometadb2csv.sh) to 
+export the SQL schema and the tables as csv, which can be easily imported into the Oracle DBS. 
 
-Then, we run the shell script `db/sqlite_to_psql` to import the data. All corresponding steps are documented in the shell script. 
-It involves charset conversion and workarounds around the filesystem bug. 
-The following chunk can be used to find what rows have been skipped in the gsm table and debug the conversion process. 
-```{r}
-in.sqlite = dbGetQuery(gdb, "select gsm from gsm order by gsm")
-in.psql = dbGetQuery(mydb, "select gsm from gsm order by gsm")
-writeLines(in.sqlite[[1]], file("db/in.sqlite.txt"))
-writeLines(in.sqlite[[1]], file("db/in.psql.txt"))
-```
+We adjusted the [GEOmetadb schema](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/geometadb_schema.sql) to match 
+Oracle datatypes. 
 
-Now, check for consistency, i.e. do all tables have the same number of rows? 
-```{r}
+Once the tables are imported, we check if all the tables have the same number of rows: 
+```{r, eval=FALSE, include=TRUE}
 # check for consistency 
 for(table in tables) {
   count.query = sprintf("select count(*) from %s", table)
@@ -62,45 +74,71 @@ for(table in tables) {
 }
 ```
 
+
+### Fix foreign key constraints
+
+Unfortunately, foreign key constraints are not enabled in the GEOmetadb SQLite database. It turned out, that
+when trying to add such constraints in Oracle, the GEOmetadb is not entirely consistent. We fixed missing 
+parent keys by adding *stub* entries to the tables. The procedure is documented in 
+[this SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql)
+
+
+### Extract Tissue annotation
+
+The tissue annotation for each sample is hidden in the `characteristics_ch1` column. Since this information is 
+essential for our study, we parsed it into a separate column using a regular expression. The procedure is documented in 
+[this SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql)
+
+
 ### Load annotation information
 
-To run BioQC, we need the Gene Symbols to be annotated. For this, we have essentially two possibilities: 
+To run [BioQC](https://accio.github.io/BioQC), gene symbols need to be annotated in the gene expression matrix.
+To retrieve gene symbols, we are aware of two feasible possibilities: 
 
-* use the Bioconductor annotation packages (listed in GeometaDB `gpl.bioc_package`)
-* use the GEO annot_gpl files ("in general available for all GSE that are referenced by a GDS"[^1]) 
+* the Bioconductor annotation packages (listed in GEOmetadb `gpl.bioc_package`)
+* use the GEO `annot_gpl` files ("in general available for all GSE that are referenced by a GDS"[^1]) 
 
 [^1]: https://bioconductor.org/packages/release/bioc/manuals/GEOquery/man/GEOquery.pdf
 
-To find out for which GSE in particular the latter option exists, we retrieved the directory structure of the 
+To find out for which GSE in particular the latter option exists, we parsed the directory structure of the
 GEO ftp server: 
 
-* `lftp -c "open ftp://ftp.ncbi.nlm.nih.gov/geo/platforms/ && find && exit" > gpl_annot_ftp_tree.txt` 
-* `grep annot.gz gpl_annot_ftp_tree.txt | cut -d"/" -f5 | cut -d"." -f1 > gpl_annot.txt`
+```{bash, eval=FALSE, include=TRUE}
+lftp -c "open ftp://ftp.ncbi.nlm.nih.gov/geo/platforms/ && find && exit" > gpl_annot_ftp_tree.txt
+grep annot.gz gpl_annot_ftp_tree.txt | cut -d"/" -f5 | cut -d"." -f1 > gpl_annot.txt
+```
 
-We store a boolean flag in the gpl table if the respective platform provides an annotation file. 
+We add this information the the `BIOQC_GPL` table as a boolean flag indicating whether the respective
+platform has an annotation file. 
 
-```{r}
+```{r, eval=FALSE, include=TRUE}
+# tmp table
 sql = "create table bioqc_gpl_annot(gpl varchar2(10) primary key, has_annot number(1))"
 dbSendUpdate(mydb, sql)
 annot = read.table("db/data/gpl_annot.txt")
 annot = cbind(annot, rep(1, length(annot)))
 colnames(annot) = c("1", "2")
 dbAppendDf("BIOQC_GPL_ANNOT", annot)
+# update gpl from tmp table
 sqlUpdateGpl = "
   update bioqc_gpl g
   set has_annot = (select has_annot from bioqc_gpl_annot a
                      where g.gpl = a.gpl)"
 dbSendUpdate(mydb, sqlUpdateGpl)
+# drop tmp table
+sql = "drop table bioqc_gpl_annot"
+dbSendUpdate(mydb, sql)
 ```
 
 
-Insert inital data
-------------------
+## Import BioQC data
+We install the BioQC schema using this [SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/bioqc_schema.sql). 
 
 ### Signatures
 
-Import signatures into the database and create a single, consolidated gmt file. 
-```{r}
+Import signatures into the database and create a single, consolidated gmt file. Tissue signature relevant for this
+study are `expr.tissuemark.affy.roche.symbols.gmt` and the `gtex` signatures. 
+```{r, eval=FALSE, include=TRUE}
 download.file("http://bioinfo.bas.roche.com:8080/apps/gsea/genesets/exp.tissuemark.bioqc.roche.symbols.gmt",
               "data/expr.tissuemark.affy.roche.symbols.gmt")
 gmt2db("data/expr.tissuemark.affy.roche.symbols.gmt")
@@ -113,13 +151,11 @@ db2gmt("results/gmt_all.gmt")
 ```
 
 
-### Tissues
+### Tissue Annotation
 
-The tissue table is a.t.m essintially a list of tissues that we curated. 
-For these tissues we created a map from the original GEO annotation to a 
-unified tissue name that we can work with. 
-```{r}
-normalized_tissues = data.table(read_excel("manual_annotation/normalize_tissues.xlsx"))
+Import the [manually curated tissues](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx) from Excel into the database. 
+```{r, eval=FALSE, include=TRUE}
+normalized_tissues = data.table(read_excel("manual_annotation/nosrmalize_tissues.xlsx"))
 tissues = unique(normalized_tissues[!is.na(TISSUE_NORMALIZED),"TISSUE_NORMALIZED", with=FALSE])
 tab_normalized = normalized_tissues[!is.na(TISSUE_NORMALIZED),c("TISSUE", "TISSUE_NORMALIZED"), with=FALSE]
 
@@ -128,15 +164,13 @@ dbAppendDf("BIOQC_NORMALIZE_TISSUES", tab_normalized)
 
 ```
 
-### Map signatures to tissues
+### Tissue Sets
 
-To decide about contaminations, we need to know to which tissue each siganture belongs. 
-We annotated this manually in a csv file for the most common tissues and now load it into the database. 
-We minted a notion called 'tissue set'. A tissue set, e.g. 'intestine' is a superterm of 'colon' and 'jejunum' and will contain all 'expected signatures' for colon and jejunum. 
-```{r}
-bioqc_solid = read_excel("manual_annotation/signature_sets.xlsx", sheet = 1)
-gtex_solid = read_excel("manual_annotation/signature_sets.xlsx", sheet=2)
-gtex_all = read_excel("manual_annotation/signature_sets.xlsx", sheet=3)
+Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx) from Excel into the database. 
+```{r, eval=FALSE, include=TRUE}
+bioqc_solid = read_excel("manual_annotation/tissue_sets.xlsx", sheet = 1)
+gtex_solid = read_excel("manual_annotation/tissue_sets.xlsx", sheet=2)
+gtex_all = read_excel("manual_annotation/tissue_sets.xlsx", sheet=3)
 
 signatureset2db(bioqc_solid, "bioqc_solid")
 signatureset2db(gtex_solid, "gtex_solid")

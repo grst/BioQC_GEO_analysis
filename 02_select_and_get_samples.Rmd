@@ -1,8 +1,4 @@
----
-title: Data preparation for Analysing GEO Samples for contamination. 
-output: 
-  html_document: default
----
+# Sample selection 
 
 ```{r setup, include=FALSE}
 source("lib/knitr.R")

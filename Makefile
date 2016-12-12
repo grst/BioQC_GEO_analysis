@@ -8,30 +8,31 @@ SHELL= /bin/bash
 CHUNKSUB= /pstore/home/sturmg/.local/bin/chunksub
 CWD= $(shell pwd)
 
-.PHONY: docs
-docs: $(MD_FILES)
-	cd docs && make html 
-
-.PHONY: upload-docs
-upload-docs: docs
-	cd docs && make upload
-
 .PHONY: clean
 clean:
 	rm -fv *.html
 	rm -fv *.md
 	rm -fv *.CommonMark
 	rm -rfv *_files
+	rm -rfv *_book 
+	rm -fv _main*
 
 .PHONY: wipe
 wipe: clean
 	rm -rfv *_cache
 
+
 #################################
 # Render Rmarkdown documents
 #################################
-$(HTML_FILES): %.html: %.Rmd
-	Rscript -e "rmarkdown::render('$<', output_format='all')"
+
+.PHONY: book
+book: $(RMD_FILES)
+	Rscript -e "bookdown::render_book('index.Rmd', 'bookdown::gitbook')"
+
+.PHONY: upload-book
+upload-book: book
+	cd gh-pages && cp -R ../_book/* ./ && git add --all * && git commit --allow-empty -m "update docs" && git push origin gh-pages
 
 
 
