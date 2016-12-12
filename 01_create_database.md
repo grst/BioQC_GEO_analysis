@@ -10,7 +10,10 @@ with tables to store signature scores generated with
 [GEOmetadb](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html) 
 is an SQLite database containing metadata associated with samples and studies from GEO. 
 
-
+<div class="figure" style="text-align: center">
+<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
+<p class="caption">(\#fig:unnamed-chunk-2)Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study.</p>
+</div>
 
 ## Tables explained
 
@@ -29,7 +32,7 @@ Signatures are essentially a list of genes, which are over-represented in a cert
 In order to find out which samples are 'contamined' by other tissues, we first need to define which signatures we would 'expect' in a certain tissue. We therefore manually mapped signatures to the respective tissue type in this 
 [Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx). For example, we map the signatures `Intestine_Colon_cecum_NR_0.7_3` and `Intestine_Colon_NR_0.7_3` to *colon*.  
 
-Moreover, we sometimes run into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called *tissue sets*. For example, it is hard to distinguish *jejunum* from *colon*, but easy to distinguish the two from other tissues. We therefore created a tissue set *intestine*, which contains both *jejunum* and *colon* and references all signatures associated with the two tissues. This information is imported into **BIOQC_TISSUE_SET**. 
+Moreover, we ran into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called *tissue sets*. For example, it is hard to distinguish *jejunum* from *colon*, but easy to distinguish the two from other tissues. We therefore created a tissue set *intestine*, which contains both *jejunum* and *colon* and references all signatures associated with the two tissues. This information is part of the same [Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx) which we imported into  **BIOQC_TISSUE_SET**. 
 
 ### Results
 Our analysis creates a p-value for each sample in `BIOQC_GSM` and each signature in `BIOQC_SIGNATURES`. These p-values are stored in **BIOQC_RES**.
@@ -66,17 +69,16 @@ for(table in tables) {
 
 ### Fix foreign key constraints
 
-Unfortunately, foreign key constraints are not enabled in the GEOmetadb SQLite database. It turned out, that
-when trying to add such constraints in Oracle, the GEOmetadb is not entirely consistent. We fixed missing 
-parent keys by adding *stub* entries to the tables. The procedure is documented in 
-[this SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql)
+Unfortunately, foreign key constraints are not enabled in the GEOmetadb SQLite database. It turned out that the GEOmetadb is not entirely consistent when trying to add such constraints in Oracle. We fixed missing 
+parent keys by adding "stub" entries to the tables. The procedure is documented in 
+[this SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql). 
 
 
 ### Extract Tissue annotation
 
-The tissue annotation for each sample is hidden in the `characteristics_ch1` column. Since this information is 
+The tissue annotation for each sample is hidden in the `characteristics_ch1` column of the `BIOQC_GSM` table. Since this information is 
 essential for our study, we parsed it into a separate column using a regular expression. The procedure is documented in 
-[this SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql)
+[this SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql). 
 
 
 ### Load annotation information
@@ -121,6 +123,7 @@ sql = "drop table bioqc_gpl_annot"
 dbSendUpdate(mydb, sql)
 ```
 
+We compared the two approaches in [Sample selection]. 
 
 ## Import BioQC data
 We install the BioQC schema using this [SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/bioqc_schema.sql). 

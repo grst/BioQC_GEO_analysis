@@ -142,6 +142,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h1><span class="header-section-number">2</span> Setup Database</h1>
 <p>We store meta information for GEO samples and BioQC results in an Oracle 11g database. We combine the metadata from <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html">GEOmetadb</a> with tables to store signature scores generated with <a href="https://accio.github.io/BioQC">BioQC</a> and manually curated annotations.</p>
 <p><a href="https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html">GEOmetadb</a> is an SQLite database containing metadata associated with samples and studies from GEO.</p>
+<div class="figure" style="text-align: center"><span id="fig:unnamed-chunk-2"></span>
+<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
+<p class="caption">
+Figure 2.1: Entitiy relationship diagram of the <em>BioQC</em> database scheme. Click the <a href="https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf">here</a> for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (…) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study.
+</p>
+</div>
 <div id="tables-explained" class="section level2">
 <h2><span class="header-section-number">2.1</span> Tables explained</h2>
 <div id="geometadb" class="section level3">
@@ -163,7 +169,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="expected-signatures" class="section level3">
 <h3><span class="header-section-number">2.1.4</span> Expected Signatures</h3>
 <p>In order to find out which samples are ‘contamined’ by other tissues, we first need to define which signatures we would ‘expect’ in a certain tissue. We therefore manually mapped signatures to the respective tissue type in this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a>. For example, we map the signatures <code>Intestine_Colon_cecum_NR_0.7_3</code> and <code>Intestine_Colon_NR_0.7_3</code> to <em>colon</em>.</p>
-<p>Moreover, we sometimes run into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called <em>tissue sets</em>. For example, it is hard to distinguish <em>jejunum</em> from <em>colon</em>, but easy to distinguish the two from other tissues. We therefore created a tissue set <em>intestine</em>, which contains both <em>jejunum</em> and <em>colon</em> and references all signatures associated with the two tissues. This information is imported into <strong>BIOQC_TISSUE_SET</strong>.</p>
+<p>Moreover, we ran into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called <em>tissue sets</em>. For example, it is hard to distinguish <em>jejunum</em> from <em>colon</em>, but easy to distinguish the two from other tissues. We therefore created a tissue set <em>intestine</em>, which contains both <em>jejunum</em> and <em>colon</em> and references all signatures associated with the two tissues. This information is part of the same <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a> which we imported into <strong>BIOQC_TISSUE_SET</strong>.</p>
 </div>
 <div id="results" class="section level3">
 <h3><span class="header-section-number">2.1.5</span> Results</h3>
@@ -188,11 +194,11 @@ for(table in tables) {
 }</code></pre></div>
 <div id="fix-foreign-key-constraints" class="section level3">
 <h3><span class="header-section-number">2.2.1</span> Fix foreign key constraints</h3>
-<p>Unfortunately, foreign key constraints are not enabled in the GEOmetadb SQLite database. It turned out, that when trying to add such constraints in Oracle, the GEOmetadb is not entirely consistent. We fixed missing parent keys by adding <em>stub</em> entries to the tables. The procedure is documented in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql">this SQL script</a></p>
+<p>Unfortunately, foreign key constraints are not enabled in the GEOmetadb SQLite database. It turned out that the GEOmetadb is not entirely consistent when trying to add such constraints in Oracle. We fixed missing parent keys by adding “stub” entries to the tables. The procedure is documented in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql">this SQL script</a>.</p>
 </div>
 <div id="extract-tissue-annotation" class="section level3">
 <h3><span class="header-section-number">2.2.2</span> Extract Tissue annotation</h3>
-<p>The tissue annotation for each sample is hidden in the <code>characteristics_ch1</code> column. Since this information is essential for our study, we parsed it into a separate column using a regular expression. The procedure is documented in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql">this SQL script</a></p>
+<p>The tissue annotation for each sample is hidden in the <code>characteristics_ch1</code> column of the <code>BIOQC_GSM</code> table. Since this information is essential for our study, we parsed it into a separate column using a regular expression. The procedure is documented in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/update_geometabase.sql">this SQL script</a>.</p>
 </div>
 <div id="load-annotation-information" class="section level3">
 <h3><span class="header-section-number">2.2.3</span> Load annotation information</h3>
@@ -221,6 +227,7 @@ sqlUpdateGpl =<span class="st"> &quot;</span>
 <span class="co"># drop tmp table</span>
 sql =<span class="st"> &quot;drop table bioqc_gpl_annot&quot;</span>
 <span class="kw">dbSendUpdate</span>(mydb, sql)</code></pre></div>
+<p>We compared the two approaches in <a href="sample-selection.html#sample-selection">Sample selection</a>.</p>
 </div>
 </div>
 <div id="import-bioqc-data" class="section level2">
