@@ -38,6 +38,12 @@ wipe: clean
 	rm -rfv *_cache
 
 
+# make contamination heatmaps for all samples
+.PHONY: heatmaps
+heatmaps: 
+	Rscript scripts/make_sample_heatmaps.R
+
+
 
 ##################################
 # GEO DOWNLOAD
