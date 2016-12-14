@@ -1,4 +1,4 @@
-# Sample selection 
+# Sample Selection and processing {#sample-selection}
 
 ```{r setup, include=FALSE}
 source("lib/knitr.R")
@@ -14,9 +14,9 @@ source("lib/plots.R")
 source("lib/db.R")
 ```
 
-Here, we document the sample selection process. 
+Here, we document the sample selection process before running *BioQC*. 
 
-## Selecting samples that have the required annotation
+## Required annotation
 A sample is *usable* for this study, if 
 
 * the gene symbos are annotated (requirement to run BioQC)
@@ -133,6 +133,7 @@ kable(tab[,c("comment","GSM","GSE"),with=FALSE])
 gse.file = "results/gse_lists/gse_tissue_annotation.txt"
 ```
 
+### Export list of samples {#sample-list}
 We store the respective gse identifiers in ``r gse.file``: 
 ```{r sample_filtering_out}
 sqlGse = "
