@@ -35,10 +35,6 @@ build immediate
 refresh force
 on demand
 as 
-  with relevant_signatures as (
-      select distinct bs.source from bioqc_tissue_set bts
-      join bioqc_signatures bs on bs.id = bts.signature
-  )
   select /*+ parallel(16)  */  distinct  br.gsm
                                       , br.signature
                                       , bs.name as signature_name
@@ -58,15 +54,10 @@ as
                                           )
                                           as varchar2(100)
                                         ) as country
-  from bioqc_res br
+  from bioqc_res_tissue br
   join bioqc_gsm bg on bg.gsm = br.gsm
   join bioqc_normalize_tissues bnt on bnt.tissue_orig = lower(bg.tissue_orig)
   join bioqc_signatures bs on bs.id = br.signature
-  where bs.source in (
-   -- TODO: this is hardcoded and evil for performance reasons... need to correct this at a certain point. 
-    'gtex_ngs_0.85_5.gmt', 'exp.tissuemark.affy.roche.symbols.gmt'
-    --select  /*+ CARDINALITY(relevant_signatures, 2) */ source from relevant_signatures
-  )
   and channel_count = 1
   and bg.organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus');
 create /*+ parallel(16) */ index bioqc_res_fil_gsm on bioqc_res_fil(gsm);
