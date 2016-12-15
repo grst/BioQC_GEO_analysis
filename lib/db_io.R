@@ -73,9 +73,11 @@ melt_bioqc = function(bioqc_res_matrix, cutoff=.05) {
 signatureset2db = function(table, tissue_set_name) {
   dbSendUpdate(mydb, "truncate table bioqc_tmp_tissue_set")
   table = data.table(table)
+  table = table[,comment:=NULL]
+  table = melt(table, id.vars = c('signature', 'signature_source', 'group'), na.rm=TRUE)
+  table = table[,variable:=NULL]
   table = table[,tissue_set:=rep(tissue_set_name, nrow(table))]
-  table = table[!is.na(tissue), ]
-  table = table[!is.na(group), ]
+  table = table[!is.na(group),]
   dbAppendDf("BIOQC_TMP_TISSUE_SET", table)
   dbSendUpdate(mydb, "
       insert into bioqc_tissue_set 

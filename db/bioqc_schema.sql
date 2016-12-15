@@ -53,8 +53,8 @@ create index bioqc_tissue_set_tissue on bioqc_tissue_set(tissue);
 create global temporary table bioqc_tmp_tissue_set (
     signature_name varchar2(255) not null 
   , signature_source varchar2(255) not null
-  , tissue varchar(80) not null
   , tgroup varchar(80) not null
+  , tissue varchar(80) not null
   , tissue_set varchar(80) not null
 ) on commit preserve rows 
 

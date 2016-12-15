@@ -32,7 +32,7 @@ knitr::include_graphics("db/design/er_diagram.png")
 * **BIOQC_GPL**: *from GEOmetadb*, list of all platforms (*e.g.* different types of microarrays) referenced in GEO. 
 * **BIOQC_GSE**: *from GEOmetadb*, list of *Series* (collections of samples) in GEO. 
 
-### Tissue Annotation
+### Tissue Annotation {#tissue-normalization}
 The annotation of tissues is inconsistent within GEO. A "liver" sample can be termed *e.g.* "liver", "liver biopsy" or "primary liver". We therefore need a way to "normalize" the tissue name. We did this manually for the most abundant tissues in this [Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx) which is then imported into the **BIOQC_NORMALIZE_TISSUES** table. **BIOQC_TISSUES** is simply a unique list of all curated tissues. 
 
 ### Signatures
@@ -139,14 +139,21 @@ We install the BioQC schema using this [SQL script](https://github.com/grst/BioQ
 Import signatures into the database and create a single, consolidated gmt file. Tissue signature relevant for this
 study are `expr.tissuemark.affy.roche.symbols.gmt` and the `gtex` signatures. 
 ```{r, eval=FALSE, include=TRUE}
-download.file("http://bioinfo.bas.roche.com:8080/apps/gsea/genesets/exp.tissuemark.bioqc.roche.symbols.gmt",
-              "data/expr.tissuemark.affy.roche.symbols.gmt")
+# Signatures shipped with BioQC (updated version from 2016-12-08)
+# download.file("http://bioinfo.bas.roche.com:8080/apps/gsea/genesets/exp.tissuemark.bioqc.roche.symbols.gmt",
+#              "data/expr.tissuemark.affy.roche.symbols.gmt")
 gmt2db("data/expr.tissuemark.affy.roche.symbols.gmt")
+
+# control signatures generated from GTEx using *pygenesig*
+gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
+gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
+
+# pathway gene sets not relevant for this study 
 gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
 gmt2db("../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt")
 gmt2db("../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii")
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
+
+# save imported signatures to consolidated gmt file
 db2gmt("results/gmt_all.gmt")
 ```
 
@@ -155,7 +162,7 @@ db2gmt("results/gmt_all.gmt")
 
 Import the [manually curated tissues](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx) from Excel into the database. 
 ```{r, eval=FALSE, include=TRUE}
-normalized_tissues = data.table(read_excel("manual_annotation/nosrmalize_tissues.xlsx"))
+normalized_tissues = data.table(read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 1))
 tissues = unique(normalized_tissues[!is.na(TISSUE_NORMALIZED),"TISSUE_NORMALIZED", with=FALSE])
 tab_normalized = normalized_tissues[!is.na(TISSUE_NORMALIZED),c("TISSUE", "TISSUE_NORMALIZED"), with=FALSE]
 
@@ -168,11 +175,11 @@ dbAppendDf("BIOQC_NORMALIZE_TISSUES", tab_normalized)
 
 Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx) from Excel into the database. 
 ```{r, eval=FALSE, include=TRUE}
-bioqc_solid = read_excel("manual_annotation/tissue_sets.xlsx", sheet = 1)
-gtex_solid = read_excel("manual_annotation/tissue_sets.xlsx", sheet=2)
-gtex_all = read_excel("manual_annotation/tissue_sets.xlsx", sheet=3)
+bioqc_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 3)
+gtex_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet=4)
+gtex_solid = read_excel("manual_annotation/tissue_annotation.xlsx", sheet=5)
 
-signatureset2db(bioqc_solid, "bioqc_solid")
+signatureset2db(bioqc_all, "bioqc_all")
 signatureset2db(gtex_solid, "gtex_solid")
 signatureset2db(gtex_all, "gtex_all")
 
