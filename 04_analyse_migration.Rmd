@@ -1,8 +1,4 @@
----
-title: Analyse GEO Samples for contamination
-output: 
-  html_document: default
----
+# Tissue Migration
 
 ```{r setup, include=FALSE}
 source("lib/knitr.R")
@@ -13,10 +9,6 @@ source("lib/plots.R")
 source("lib/db.R")
 ```
 
-```
-# tissue migration
-
-```
 
 Now, detect samples we defined as contamined:
 * highly siginificant BioQC scores (min score per sample >6)
@@ -38,7 +30,7 @@ select origin
      , count(gsm) as \"count\"
 from bioqc_tissue_migration 
 where rk is null or rk = 1 -- in case of multi destination only take the highest enrichment_ratio. 
-  and tissue_set = 'gtex_solid'
+  and tissue_set = 'bioqc_all'
 group by origin, destination
 order by origin, destination"
 migration = dbGetQuery(mydb, query)

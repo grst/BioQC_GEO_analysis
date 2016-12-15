@@ -14,9 +14,10 @@ source("lib/plots.R")
 source("lib/db.R")
 ```
 
+## Sample Preselection
 Here, we document the sample selection process before running *BioQC*. 
 
-## Required annotation
+### Required annotation
 A sample is *usable* for this study, if 
 
 * the gene symbos are annotated (requirement to run BioQC)

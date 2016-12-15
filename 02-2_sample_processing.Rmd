@@ -1,4 +1,4 @@
-## Processing Samples with BioQC
+## Sample Processing with BioQC
 
 ```{r setup, include=FALSE}
 source("lib/knitr.R")
@@ -14,106 +14,107 @@ source("lib/plots.R")
 source("lib/db.R")
 ```
 
-The following processes are ressource intensive, therefore we execute them on high performance cluster (HPC). We use [chunksub](https://github.com/grst/chunksub) to distribute the [list of sample ids](#sample-list) to the workers. This involves four major steps which are also documented in the project's [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). 
+The following processes are ressource intensive, therefore we execute them on a high performance cluster (HPC). We use [chunksub](https://github.com/grst/chunksub) to distribute the [list of sample ids](#sample-list) to the workers. This involves four major steps which are also documented in the project's [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). 
 
-1. We download the studies with [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) and store them as R [ExpressionSet](https://bioconductor.org/packages/devel/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) using [geo_to_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/geo_to_eset.R). For some packages, the download is not successful. 
-2. We annotated human orthologous genes for all studies using [ribiosAnnotation](https://github.com/Accio/ribios) in [annotate_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/annotate_eset.R). This is necessary as the tissue signatures are built on a human dataset. The annotation failes for species which are not in the `ribios` database. 
+1. We download the studies with [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) and store them as R [ExpressionSet](https://bioconductor.org/packages/devel/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) using the R script [geo_to_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/geo_to_eset.R). For some series, the download is not successful. 
+2. We annotated human orthologous genes for all studies using [ribiosAnnotation](https://github.com/Accio/ribios) in [annotate_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/annotate_eset.R). This is necessary as the tissue signatures are built on a human dataset. The annotation failes for species which are not in the *ribios* database. 
 3. We run *BioQC* on these studies use [run_bioqc.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/run_bioqc.R). 
-4. Finally, we prefilter BioQC's results for having a p-value of at most 0.05 and import them into the database. 
+4. Finally, we prefilter BioQC's results for having a p-value < 0.05 and import them into the database. 
 
 
-After failures / insignificant pvalue, we are left with the following number of studies/samples:
+The failures during download and annotation reduce the number of samples available to our study. Moreover, there are 
+some, where none of the BioQC signatures generates a p-value < 0.05. This is number of samples and studies left in the database.
+Note, that we only consider the *original BioQC* signatures here, not the control signatures derived from GTEx. 
+
+<!-- since there are muliple gpl and gsm in a gse, there might've been some gsm 
+inserted, that don't have a tissue annotated, albeit the gse was selected. -->
 
 ```{r after_failures, cache=TRUE}
-# since there are muliple gpl and gsm in a gse, there might've been some gsm inserted, that don't have 
-# a tissue annotated, albeit the gse was selected. 
+
 sql = "
-select /*+ USE_HASH(br, bg, bnt, bgg) parallel(16) */ count(distinct bgg.gsm) as GSM
-                                                    , count(distinct bgg.gse) as GSE
+select /*+ USE_HASH(br, bg, bs, bnt, bgg) parallel(16) */ count(distinct bgg.gsm) as GSM
+                                                        , count(distinct bgg.gse) as GSE
 from bioqc_res_tissue br
+join bioqc_signatures bs
+  on bs.id = br.signature
 join bioqc_gsm bg
   on bg.gsm = br.gsm
 left outer join bioqc_gse_gsm bgg
   on bgg.gsm = br.gsm
 "
-sql_where = "where bg.tissue_orig is not NULL"
+sql_where = "
+where bg.tissue_orig is not NULL
+  and bs.source = 'expr.tissuemark.affy.roche.symbols.gmt'" # <- only consider the original BioQC signatures
 res = dbGetQuery(mydb, str_c(sql, sql_where, sep="\n"))
 kable(res)
 ```
 
-Although we lost a considerable amount of studies, we only lost a few samples. Apparently, the respective studies were relatively small. 
-<!-- i also found empty studies -->
+## Sample Post-selection
 
-## Excluding multi channel microarrays
+### Excluding multi-channel microarrays
 
-Multi channel microarrays date back to the early age of gene expression studies. They don't provide absolute gene expression data and are not meaningful outside their experimental context. We therefore exclude these experiments
+Multi channel microarrays date back to the early age of gene expression studies. They don't provide absolute gene expression data and are not meaningful outside their experimental context. We therefore exclude these experiments:
 ```{r exclude_multichannel, cache=TRUE}
+sql2 = sql
 sql_where2 = str_c(sql_where, "and channel_count = 1", sep="\n")
-res = dbGetQuery(mydb, str_c(sql, sql_where2, sep="\n"))
+res = dbGetQuery(mydb, str_c(sql2, sql_where2, sep="\n"))
 kable(res)
 ```
 
-Exclude samples that have a tissue that has not been normalized. 
+### Exclude non-mapped tissues
+We exclude samples that have a tissue annotated, but it is not mapped to a [normalized tissue](#tissue-normalization). 
 
 ```{r normalize_tissue, cache=TRUE}
-# replace join on 'has_tissue' with join on 'normalize_tissue'
-sql = "
-select /*+ USE_HASH(br, bg, bnt, bgg) parallel(16) */ count(distinct br.gsm)  as GSM
-                                                    , count(distinct bgg.gse) as GSE 
-from bioqc_res_tissue br
-join bioqc_gsm bg
-  on bg.gsm = br.gsm
+sql3 = str_c(sql, "
 join bioqc_normalize_tissues bnt
-  on bnt.tissue_orig = lower(bg.tissue_orig)
-left outer join bioqc_gse_gsm bgg
-  on bgg.gsm = br.gsm
-where channel_count = 1
-"
-res = dbGetQuery(mydb, sql)
+  on bnt.tissue_orig = lower(bg.tissue_orig)", sep="\n")
+sql_where3 = sql_where2
+res = dbGetQuery(mydb, str_c(sql3, sql_where3, sep="\n"))
 kable(res)
 ```
 
-## Organism selection. 
+### Select organisms
 We were interested in the organism distribution.
 ```{r filter_orga, cache=TRUE}
 sql_orga = "
-select /*+ USE_HASH(br, bg, bnt, bgg) parallel(16) */ count(distinct br.gsm)  as GSM
-                                                    , count(distinct bgg.gse) as GSE 
-                                                    , bg.organism_ch1
+select /*+ USE_HASH(br, bg, bs, bnt, bgg) parallel(16) */ count(distinct br.gsm)  as GSM
+                                                        , count(distinct bgg.gse) as GSE 
+                                                        , bg.organism_ch1
 from bioqc_res_tissue br
 join bioqc_gsm bg
   on bg.gsm = br.gsm
+join bioqc_signatures bs
+  on bs.id = br.signature
 join bioqc_normalize_tissues bnt
   on bnt.tissue_orig = lower(bg.tissue_orig)
 left outer join bioqc_gse_gsm bgg
   on bgg.gsm = br.gsm
 where channel_count = 1
+and bs.source = 'expr.tissuemark.affy.roche.symbols.gmt'
 group by organism_ch1
 order by gsm desc"
 res = dbGetQuery(mydb, sql_orga)
 kable(res)
 ```
 
-Results suggest that it makes sense to limit the samples to the three main organisms: *H. sapiens*, *M. musculus*, *R. norvegicus*. This makes also sense as these species are closesly related and therefore the signatures are more likely to translate within these species. 
+Results suggest that it makes sense to limit the analysis to the three main organisms: *H. sapiens*, *M. musculus*, *R. norvegicus*. This makes also sense as these species are closesly related and therefore the signatures are more likely to translate within these species. 
 We are left with the following amount of samples: 
 
 ```{r filter_orga2, cache=TRUE}
-sql_orga2 = str_c(sql, "and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')", sep="\n")
-res = dbGetQuery(mydb, sql_orga2)
+sql4 = sql3
+sql_where4 = str_c(sql_where3, "
+  and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')", sep="\n")
+res = dbGetQuery(mydb, str_c(sql4, sql_where4, sep="\n"))
 kable(res)
 ```
 
 We create a materialized view `BIOQC_RES_FIL` with bioqc results that are filted according 
-to these criteria in `db/views/bioqc_res_fil.sql`. Make sure the results are identical: 
-```{r test_view, cache=TRUE}
-sqlTest = "select /*+ parallel(16) */ count(distinct gsm) from bioqc_res_fil"
-resTest = dbGetQuery(mydb, sqlTest)
-expect_equal(res$GSM, resTest[1,1])
-```
+to these criteria in `db/views/bioqc_res_fil.sql`, except that it also contains the GTEx signatures. ``
 
 
-## Tissue selection
-Number of samples per tissue:
+### Select tissues
+
+Of which tissues are enough samples available that we can make a meaningful statement about contamination? 
 ```{r tissues, cache=TRUE}
 sqlTissue = "
 select /*+ parallel(16) */ tissue, count(distinct gsm) as samples from bioqc_res_fil

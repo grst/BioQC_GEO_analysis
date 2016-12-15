@@ -1,5 +1,5 @@
 R=R
-RMD_FILES= 01_create_database.Rmd 02_select_and_get_samples.Rmd 02-2_sample_processing.Rmd 03_make_sample_heatmaps.Rmd 04_analyse_migration.Rmd
+RMD_FILES= 01_create_database.Rmd 02_select_and_get_samples.Rmd 02-2_sample_processing.Rmd 04_analyse_migration.Rmd
 PREVIEW_FILES = $(patsubst %,%.preview,$(RMD_FILES))
 DATA_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
 CHUNKSUB_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/chunksub
@@ -27,15 +27,13 @@ $(PREVIEW_FILES): %.Rmd.preview: %.Rmd
 
 .PHONY: clean
 clean:
-	rm -fv *.html
-	rm -fv *.CommonMark
-	rm -rfv *_files
 	rm -rfv *_book 
+	rm -rfv _bookdown_files/*_files
 	rm -fv _main*
 
 .PHONY: wipe
 wipe: clean
-	rm -rfv *_cache
+	rm -rfv _bookdown_files
 
 
 # make contamination heatmaps for all samples

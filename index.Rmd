@@ -3,3 +3,9 @@
 Systematically testing the GEO for *tissue heterogeneity*. 
 
 *Manuscript in preparation*
+
+## The Experiment in brief
+
+We take all samples from GEO which have the required annotation. We run BioQC on each of the samples. 
+We compare the tissue predicted by BioQC with the annotated tissue and call a sample 'contamined' 
+if the prediction does not match the annotation. 

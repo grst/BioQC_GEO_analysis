@@ -24,26 +24,18 @@ getTissueSamples = function(tissue) {
   # get all samples belonging to one tissue and filter for siginifant 
   # signatures in one sql query! 
   query = "
-  with bqc_tissue as (
-    select  bg.gsm
-          , bg.tissue_orig
-          , bnt.tissue
-    from bioqc_gsm bg
-    join bioqc_normalize_tissues bnt on bnt.tissue_orig = lower(bg.tissue_orig)
-    where bnt.tissue = ?
-  ), gmt_signatures as (
+  with gmt_signatures as (
     select * from bioqc_signatures 
     where source = 'gtex_ngs_0.85_5.gmt'
   )
-  select /*+ parallel(16) */ bt.gsm
-         , bt.tissue_orig
-         , bt.tissue
+  select /*+ parallel(16) */ br.gsm
+         , br.tissue
         -- , ur.signature
          , gs.name as SIGNATURE
          , br.pvalue
-    from bioqc_res_tissue br
+    from bioqc_res_fil br
     join gmt_signatures gs on gs.id = br.signature
-    right outer join bqc_tissue bt on br.gsm = bt.gsm
+    where tissue = ?
     order by gsm
   "
   data = dbGetQuery(mydb, query, tissue)
