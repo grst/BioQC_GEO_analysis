@@ -312,7 +312,7 @@ create or replace view bioqc_tissue_migration as
                             , brf.country
                             , bts.tgroup as origin 
                             , bts.tissue_set
-                            , cs.min_enrichment_ratio
+                            , cs.min_enrichment_ratio as enrichment_ratio
                             , cs.rk
                             , bts2.tgroup as destination
   from bioqc_res_fil brf
