@@ -46,8 +46,7 @@ create table bioqc_tissue_set( signature number(10) not null
                                 , primary key(signature, tissue, tissue_set)
     
 ) tablespace srslight_d;
-
-create index bioqc_tissue_set_tissue on bioqc_tissue_set(tissue); 
+create index bioqc_tissue_set_tgroup on bioqc_tissue_set(tgroup); 
 
 /** for inserting tissue sets **/
 create global temporary table bioqc_tmp_tissue_set (
