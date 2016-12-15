@@ -1,9 +1,9 @@
---------------------------------------------------------------------------------
+----------------------------------------------------
 -- A list of all original tissue annotations
 -- occuring in udis and GEO. 
 --
--- Export this to the excel sheet for manual annotation
---------------------------------------------------------------------------------
+-- Export this to the excel sheet for manual annotaiton
+----------------------------------------------------
 
 create materialized view bioqc_all_tissues
 build immediate
