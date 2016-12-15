@@ -1,0 +1,22 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<SnapshotOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.SnapshotOraclev11g" name="BIOQC_RES_FIL" directorySegmentName="seg_0" id="D1EE1A8D-C129-67AB-9180-6C82823A1023">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>BIOQC_RES_FIL</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:26 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<action>ON DEMAND</action>
+<defaultSegment>NO</defaultSegment>
+<degree>16</degree>
+<parallelClause>YES</parallelClause>
+<refresh>YES</refresh>
+<refreshType>FORCE</refreshType>
+<subquery>select /*+ parallel(16)  */  distinct  br.gsm&lt;br/&gt;                                      , br.signature&lt;br/&gt;                                      , bs.name as signature_name&lt;br/&gt;                                      , br.pvalue &lt;br/&gt;                                      , bnt.tissue&lt;br/&gt;                                      , bg.organism_ch1 as organism&lt;br/&gt;                                      , cast(&lt;br/&gt;                                          cast(&lt;br/&gt;                                            regexp_substr(submission_date, &apos;^(\d{4})-.*&apos;, 1, 1, NULL, 1) &lt;br/&gt;                                            as varchar2(4)&lt;br/&gt;                                          )&lt;br/&gt;                                          as NUMBER(4)&lt;br/&gt;                                        ) as year&lt;br/&gt;                                      , cast(&lt;br/&gt;                                          TRIM(BOTH from&lt;br/&gt;                                               regexp_substr(contact, &apos;Country:(.*?)(;.*)?$&apos;, 1, 1, NULL, 1) &lt;br/&gt;                                          )&lt;br/&gt;                                          as varchar2(100)&lt;br/&gt;                                        ) as country&lt;br/&gt;  from bioqc_res_tissue br&lt;br/&gt;  join bioqc_gsm bg on bg.gsm = br.gsm&lt;br/&gt;  join bioqc_normalize_tissues bnt on bnt.tissue_orig = lower(bg.tissue_orig)&lt;br/&gt;  join bioqc_signatures bs on bs.id = br.signature&lt;br/&gt;  and channel_count = 1&lt;br/&gt;  and bg.organism_ch1 in (&apos;Homo sapiens&apos;, &apos;Mus musculus&apos;, &apos;Rattus norvegicus&apos;)</subquery>
+<subqueryChanged>false</subqueryChanged>
+<subqueryNeedsMigration>false</subqueryNeedsMigration>
+<tablespace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tablespace>
+<useIndex>YES</useIndex>
+<with></with>
+</SnapshotOraclev11g>

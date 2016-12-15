@@ -1,0 +1,22 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<SnapshotOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.SnapshotOraclev11g" name="BIOQC_STUDIES_HAS_ANNOT" directorySegmentName="seg_0" id="852F5C74-2920-2A22-1DF8-93895D0AF9B9">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>BIOQC_STUDIES_HAS_ANNOT</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:26 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<action>ON DEMAND</action>
+<defaultSegment>NO</defaultSegment>
+<degree>16</degree>
+<parallelClause>YES</parallelClause>
+<refresh>YES</refresh>
+<refreshType>FORCE</refreshType>
+<subquery>select /*+ parallel(16) */  bioqc_gsm.gsm&lt;br/&gt;                            , bioqc_gse_gsm.gse &lt;br/&gt;  from bioqc_gsm&lt;br/&gt;  join bioqc_gse_gsm on bioqc_gse_gsm.gsm = bioqc_gsm.gsm&lt;br/&gt;  where gpl in (&lt;br/&gt;    select distinct gpl&lt;br/&gt;    from bioqc_gpl&lt;br/&gt;    where has_annot = 1&lt;br/&gt;  )</subquery>
+<subqueryChanged>false</subqueryChanged>
+<subqueryNeedsMigration>false</subqueryNeedsMigration>
+<tablespace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tablespace>
+<useIndex>YES</useIndex>
+<with></with>
+</SnapshotOraclev11g>

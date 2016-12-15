@@ -1,0 +1,75 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="34E9AF57-CB17-3FA7-C55D-775EC836CA25" schemaObject="467C9D78-14EE-283D-5271-3C94AD8626A0" name="BIOQC_RES">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>BIOQC_RES</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="GSM" id="1EAC55D0-1219-B770-5589-45F127D697A4">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_RES</sourceObjSchema>
+<sourceObjName>GSM</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10 BYTE</dataTypeSize>
+<ownDataTypeParameters>10 BYTE,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="SIGNATURE" id="8BBEF9A2-947F-2F2D-A6FE-21F7154C2326">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_RES</sourceObjSchema>
+<sourceObjName>SIGNATURE</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT019</logicalDatatype>
+<dataTypePrecision>10</dataTypePrecision>
+<dataTypeScale>0</dataTypeScale>
+<ownDataTypeParameters>,10,0</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="PVALUE" id="DCB91A0B-5965-85F5-CC09-DA3E47B05BD9">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_RES</sourceObjSchema>
+<sourceObjName>PVALUE</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT056</logicalDatatype>
+<dataTypeSize>8</dataTypeSize>
+<ownDataTypeParameters>8,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="8529302A-9A04-1F90-DB93-45ABF151EE1A" schemaObject="467C9D78-14EE-283D-5271-3C94AD8626A0" name="BIOQC_RES_PK">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>SYS_C00171270</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="1EAC55D0-1219-B770-5589-45F127D697A4"/>
+<colUsage columnID="8BBEF9A2-947F-2F2D-A6FE-21F7154C2326"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

@@ -1,0 +1,75 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="BIOQC_RES_CONTAM" directorySegmentName="seg_0" id="3060F956-C00E-FA5D-B712-F6CEF9D67617">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:26 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<degree>16</degree>
+<logging>NO</logging>
+<materializedQueryTable>true</materializedQueryTable>
+<parallel>YES</parallel>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>6E5EB1B1-B8D6-EDBD-C531-217AEDF72544</segment>
+<materializedView>B04DE3D9-F79C-D44D-ABDA-411FBE14DDEE</materializedView>
+<tableSpace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tableSpace>
+<temporaryChanged>false</temporaryChanged>
+<accessDriverType>oracle_loader</accessDriverType>
+<rejectLimit></rejectLimit>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="SIGNATURE_NAME" id="07A3D70F-AC1B-D1AC-F50E-B1690AD1258B">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="TGROUP" id="0ECEA837-9263-BAF5-4854-E488CF3735C4">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="PVALUE" id="26485236-1F4B-310F-83FD-07F61A39398A">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="EXP_SIG_NAME" id="7A7F71D2-F065-D81B-9C7F-0892CA2B707E">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="EXP_SIG" id="8272972B-7961-E4C1-32E0-337527C82E6B">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="EXP_SIG_PVALUE" id="9A5B4B44-AA5D-3AE1-B2B9-56AA19218AA4">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="SIGNATURE" id="B7442946-B59D-3493-9BA3-27D3698D8FAE">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="TISSUE" id="B7C87F97-1CA5-BAEF-F06C-771B8DA63737">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="TISSUE_SET" id="BB97197B-F331-A648-607A-18F0B2835326">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="ENRICHMENT_RATIO" id="BBB6A8E5-133B-653D-5222-F36D93213873">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="GSM" id="DFD71AD8-85EF-853B-E824-EE3168AA3E02">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+</TableProxyOraclev11g>

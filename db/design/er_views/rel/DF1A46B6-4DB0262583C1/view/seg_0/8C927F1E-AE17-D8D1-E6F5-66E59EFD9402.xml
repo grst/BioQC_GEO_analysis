@@ -1,0 +1,181 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableView class="oracle.dbtools.crest.model.design.relational.TableView" directorySegmentName="seg_0" id="8C927F1E-AE17-D8D1-E6F5-66E59EFD9402" schemaObject="467C9D78-14EE-283D-5271-3C94AD8626A0" name="BIOQC_TISSUE_MIGRATION">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>BIOQC_TISSUE_MIGRATION</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<userDefined>true</userDefined>
+<userDefinedSQL>CREATE OR REPLACE VIEW BIOQC_TISSUE_MIGRATION&lt;br/&gt;AS &lt;br/&gt;with res_tissue as (&lt;br/&gt;    select /*+ parallel(16) */ distinct gsm&lt;br/&gt;    from bioqc_res_fil &lt;br/&gt;  )&lt;br/&gt;  select /*+ parallel(16) */  br.gsm&lt;br/&gt;                            , br.signature&lt;br/&gt;                            , br.signature_name&lt;br/&gt;                            , br.pvalue&lt;br/&gt;                            , br.organism&lt;br/&gt;                            , br.year&lt;br/&gt;                            , br.country&lt;br/&gt;                            , bts.tgroup as origin &lt;br/&gt;                            , bts.tissue_set&lt;br/&gt;                            , cs.min_enrichment_ratio&lt;br/&gt;                            , cs.rk&lt;br/&gt;                            , case &lt;br/&gt;                                when min_enrichment_ratio is null -- sample not contamined&lt;br/&gt;                                then bts.tgroup&lt;br/&gt;                                else case &lt;br/&gt;                                  when bts2.tgroup is null -- sample is contamined, but with a signature that is not associated with a tissue&lt;br/&gt;                                  then &apos;other&apos;&lt;br/&gt;                                  else bts2.tgroup&lt;br/&gt;                                end&lt;br/&gt;                              end as destination&lt;br/&gt;  from bioqc_res_fil br&lt;br/&gt;  join bioqc_tissue_set bts &lt;br/&gt;    on bts.tissue = br.tissue&lt;br/&gt;  left outer join bioqc_contamined_samples cs &lt;br/&gt;    on cs.gsm = br.gsm &lt;br/&gt;    and cs.signature = br.signature&lt;br/&gt;    and cs.tissue_set = bts.tissue_set&lt;br/&gt;  join bioqc_tissue_set bts2&lt;br/&gt;    on bts2.tissue_set = bts.tissue_set&lt;br/&gt;    and bts2.signature = br.signature&lt;br/&gt;  where (rk is null or rk = 1)&lt;br/&gt;     -- and bts.tissue_set = &apos;gtex_solid&apos;&lt;br/&gt;  order by br.gsm, cs.tissue_set, cs.rk</userDefinedSQL>
+<viewElements>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="GSM" id="AA2DED2D-4787-9C77-8FE4-307167A7F334">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>GSM</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>GSM</alias>
+<dataType>VARCHAR2 (10)</dataType>
+<headerAlias>GSM</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="SIGNATURE" id="4A7265C4-B3F5-2858-C6CC-75AA3865E2AC">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>SIGNATURE</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>SIGNATURE</alias>
+<dataType>NUMBER (10)</dataType>
+<headerAlias>SIGNATURE</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="SIGNATURE_NAME" id="BAE41594-80B6-6E65-2087-EF9200C48E22">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>SIGNATURE_NAME</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>SIGNATURE_NAME</alias>
+<dataType>VARCHAR2 (255)</dataType>
+<headerAlias>SIGNATURE_NAME</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="PVALUE" id="3EEE46DA-FA3B-B7D4-3427-448EEFF6617B">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>PVALUE</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>PVALUE</alias>
+<dataType>BINARY_DOUBLE (8)</dataType>
+<headerAlias>PVALUE</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="ORGANISM" id="2C13249D-8E5F-FC2E-EFDB-DBB16876812B">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>ORGANISM</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>ORGANISM</alias>
+<dataType>VARCHAR2 (255)</dataType>
+<headerAlias>ORGANISM</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="YEAR" id="513E7B20-A59F-907C-6B90-351F74D94C49">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>YEAR</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>YEAR</alias>
+<dataType>NUMBER (4)</dataType>
+<headerAlias>YEAR</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="COUNTRY" id="9FBAC0B2-BEF6-5CD3-C124-B33ABE201242">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>COUNTRY</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>COUNTRY</alias>
+<dataType>VARCHAR2 (100)</dataType>
+<headerAlias>COUNTRY</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="ORIGIN" id="EE356D6F-543A-6AC4-CE7A-AF5CEFDF809E">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>ORIGIN</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>ORIGIN</alias>
+<dataType>VARCHAR2 (80)</dataType>
+<headerAlias>ORIGIN</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="TISSUE_SET" id="ACFE8C49-8588-469A-802A-A26C14B2D51D">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>TISSUE_SET</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>TISSUE_SET</alias>
+<dataType>VARCHAR2 (80)</dataType>
+<headerAlias>TISSUE_SET</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="MIN_ENRICHMENT_RATIO" id="90D0886D-5B74-9A80-42CB-F13AE5EBD054">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>MIN_ENRICHMENT_RATIO</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>MIN_ENRICHMENT_RATIO</alias>
+<dataType>BINARY_DOUBLE (8)</dataType>
+<headerAlias>MIN_ENRICHMENT_RATIO</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="RK" id="81222BD5-83CE-9F84-C937-FF4EFDD0ADF8">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>RK</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>RK</alias>
+<dataType>NUMBER</dataType>
+<headerAlias>RK</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="DESTINATION" id="252B9A89-2943-27D6-95DB-279E41B9C641">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_TISSUE_MIGRATION</sourceObjSchema>
+<sourceObjName>DESTINATION</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>DESTINATION</alias>
+<dataType>VARCHAR2 (80)</dataType>
+<headerAlias>DESTINATION</headerAlias>
+<reference>false</reference>
+</viewElement>
+</viewElements>
+</TableView>

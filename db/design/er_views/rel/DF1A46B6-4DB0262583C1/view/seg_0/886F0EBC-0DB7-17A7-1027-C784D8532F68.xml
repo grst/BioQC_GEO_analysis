@@ -1,0 +1,111 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableView class="oracle.dbtools.crest.model.design.relational.TableView" directorySegmentName="seg_0" id="886F0EBC-0DB7-17A7-1027-C784D8532F68" schemaObject="467C9D78-14EE-283D-5271-3C94AD8626A0" name="BIOQC_CONTAM_STATS">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>BIOQC_CONTAM_STATS</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<userDefined>true</userDefined>
+<userDefinedSQL>CREATE OR REPLACE VIEW BIOQC_CONTAM_STATS&lt;br/&gt;AS &lt;br/&gt;with res_tissue as (&lt;br/&gt;    select /*+ parallel(16) */ distinct brf.gsm&lt;br/&gt;                                      , bts.tgroup&lt;br/&gt;                                      , bts.tissue_set&lt;br/&gt;                                      , brf.tissue&lt;br/&gt;                                      , brf.organism&lt;br/&gt;                                      , brf.year&lt;br/&gt;                                      , brf.country&lt;br/&gt;    from bioqc_res_fil brf&lt;br/&gt;    join bioqc_tissue_set bts on bts.tissue = brf.tissue&lt;br/&gt;  )&lt;br/&gt;  select distinct br.gsm&lt;br/&gt;                , br.tissue_set&lt;br/&gt;                , br.tissue&lt;br/&gt;                , br.organism&lt;br/&gt;                , br.year&lt;br/&gt;                , br.country &lt;br/&gt;                , case &lt;br/&gt;                   when cs.gsm is null&lt;br/&gt;                   then null&lt;br/&gt;                   else 1 &lt;br/&gt;                  end as is_contam &lt;br/&gt;  from res_tissue br&lt;br/&gt;  left outer join bioqc_contamined_samples cs on cs.gsm = br.gsm</userDefinedSQL>
+<viewElements>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="GSM" id="061E9E0F-7F96-3640-9775-9129A36E7C05">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAM_STATS</sourceObjSchema>
+<sourceObjName>GSM</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>GSM</alias>
+<dataType>VARCHAR2 (10)</dataType>
+<headerAlias>GSM</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="TISSUE_SET" id="586657D8-18D2-E03B-B67A-21FCF3A2E5ED">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAM_STATS</sourceObjSchema>
+<sourceObjName>TISSUE_SET</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>TISSUE_SET</alias>
+<dataType>VARCHAR2 (80)</dataType>
+<headerAlias>TISSUE_SET</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="TISSUE" id="2368FEE3-295A-56CE-4370-82ABEEF31041">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAM_STATS</sourceObjSchema>
+<sourceObjName>TISSUE</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>TISSUE</alias>
+<dataType>VARCHAR2 (80)</dataType>
+<headerAlias>TISSUE</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="ORGANISM" id="064F8D50-9178-6B87-C720-F3E923F2839C">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAM_STATS</sourceObjSchema>
+<sourceObjName>ORGANISM</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>ORGANISM</alias>
+<dataType>VARCHAR2 (255)</dataType>
+<headerAlias>ORGANISM</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="YEAR" id="6D0A7B6C-2FD3-6998-61D9-A18423329A9F">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAM_STATS</sourceObjSchema>
+<sourceObjName>YEAR</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>YEAR</alias>
+<dataType>NUMBER (4)</dataType>
+<headerAlias>YEAR</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="COUNTRY" id="38453F62-A08A-ED9A-DFCB-8CE0C305FD9A">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAM_STATS</sourceObjSchema>
+<sourceObjName>COUNTRY</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>COUNTRY</alias>
+<dataType>VARCHAR2 (100)</dataType>
+<headerAlias>COUNTRY</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="IS_CONTAM" id="8ED0C413-FE58-8AF9-E465-2231F1B21086">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAM_STATS</sourceObjSchema>
+<sourceObjName>IS_CONTAM</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>IS_CONTAM</alias>
+<dataType>NUMBER</dataType>
+<headerAlias>IS_CONTAM</headerAlias>
+<reference>false</reference>
+</viewElement>
+</viewElements>
+</TableView>

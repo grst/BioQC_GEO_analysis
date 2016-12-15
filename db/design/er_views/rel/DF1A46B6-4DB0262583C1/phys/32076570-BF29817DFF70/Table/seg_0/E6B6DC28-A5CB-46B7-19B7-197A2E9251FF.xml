@@ -1,0 +1,55 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="BIOQC_RES_TISSUE" directorySegmentName="seg_0" id="E6B6DC28-A5CB-46B7-19B7-197A2E9251FF">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:26 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<degree>16</degree>
+<logging>NO</logging>
+<materializedQueryTable>true</materializedQueryTable>
+<parallel>YES</parallel>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>6E5EB1B1-B8D6-EDBD-C531-217AEDF72544</segment>
+<materializedView>AFF5996B-9385-C6B6-FC16-20597FA2DF5C</materializedView>
+<tableSpace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tableSpace>
+<temporaryChanged>false</temporaryChanged>
+<accessDriverType>oracle_loader</accessDriverType>
+<rejectLimit></rejectLimit>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="SIGNATURE" id="51974305-E813-DFA4-D1E0-3270F2EEDDF2">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="GSM" id="B3226F5D-8706-3A78-0B6F-CDEE90D0BD58">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="PVALUE" id="D6C57004-B985-58CE-F65F-7B91C8BE5D09">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+<indexProxies>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="BIOQC_RES_TISSUE_GSM" id="6204F151-17AC-02F0-7990-BD27E49319A6">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<logging>NO</logging>
+<segment>4163D3D7-CE6E-B5D0-8CD6-54DA8F116511</segment>
+<tableSpace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tableSpace>
+</IndexProxy>
+<IndexProxy class="oracle.dbtools.crest.model.design.storage.oracle.v10g.IndexProxyOraclev10g" name="BIOQC_RES_TISSUE_SIGNATURE" id="66E784BA-A453-5685-501E-7065261CD245">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<logging>NO</logging>
+<segment>4163D3D7-CE6E-B5D0-8CD6-54DA8F116511</segment>
+<tableSpace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tableSpace>
+</IndexProxy>
+</indexProxies>
+</TableProxyOraclev11g>

@@ -1,0 +1,22 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<SnapshotOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.SnapshotOraclev11g" name="BIOQC_STUDIES_TOTAL" directorySegmentName="seg_0" id="7B8BE256-25F8-D8DB-269A-5BEB955D120B">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>BIOQC_STUDIES_TOTAL</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:26 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<action>ON DEMAND</action>
+<defaultSegment>NO</defaultSegment>
+<degree>16</degree>
+<parallelClause>YES</parallelClause>
+<refresh>YES</refresh>
+<refreshType>FORCE</refreshType>
+<subquery>select /*+ parallel(16) */  bioqc_gsm.gsm&lt;br/&gt;                            , bioqc_gse_gsm.gse&lt;br/&gt;  from bioqc_gsm&lt;br/&gt;  join bioqc_gse_gsm on bioqc_gse_gsm.gsm = bioqc_gsm.gsm</subquery>
+<subqueryChanged>false</subqueryChanged>
+<subqueryNeedsMigration>false</subqueryNeedsMigration>
+<tablespace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tablespace>
+<useIndex>YES</useIndex>
+<with></with>
+</SnapshotOraclev11g>

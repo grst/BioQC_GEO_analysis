@@ -1,0 +1,30 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableProxyOraclev11g class="oracle.dbtools.crest.model.design.storage.oracle.v11g.TableProxyOraclev11g" name="BIOQC_STUDIES_HAS_PACKAGE" directorySegmentName="seg_0" id="4E324AFF-1E64-01C6-C907-ACF85947B236">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:26 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
+<degree>16</degree>
+<logging>NO</logging>
+<materializedQueryTable>true</materializedQueryTable>
+<parallel>YES</parallel>
+<partitionedRowMovement>DISABLE</partitionedRowMovement>
+<segment>6E5EB1B1-B8D6-EDBD-C531-217AEDF72544</segment>
+<materializedView>5BCCFCCB-F75C-8A2D-C91A-3E161692ACE1</materializedView>
+<tableSpace>023AB8E3-EFF6-7C70-B387-18886D1ADF86</tableSpace>
+<temporaryChanged>false</temporaryChanged>
+<accessDriverType>oracle_loader</accessDriverType>
+<rejectLimit></rejectLimit>
+<columnProxies itemClass="oracle.dbtools.crest.model.design.storage.oracle.v12c.ColumnProxyOraclev12c">
+<ColumnProxy name="GSM" id="30C25CB7-4914-313E-95E6-E29D3E589935">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+<ColumnProxy name="GSE" id="7D9FE70E-171C-67E4-96F0-345E380E0A06">
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:27 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+</ColumnProxy>
+</columnProxies>
+</TableProxyOraclev11g>

@@ -1,0 +1,111 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<TableView class="oracle.dbtools.crest.model.design.relational.TableView" directorySegmentName="seg_0" id="65910E0A-9AB0-B956-9C91-67DBA6380D59" schemaObject="467C9D78-14EE-283D-5271-3C94AD8626A0" name="BIOQC_CONTAMINED_SAMPLES">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>SRSLIGHT</sourceObjSchema>
+<sourceObjName>BIOQC_CONTAMINED_SAMPLES</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:24 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<userDefined>true</userDefined>
+<userDefinedSQL>CREATE OR REPLACE VIEW BIOQC_CONTAMINED_SAMPLES&lt;br/&gt;AS &lt;br/&gt;select /*+ parallel(16) */ gsm&lt;br/&gt;       , tgroup&lt;br/&gt;       , signature&lt;br/&gt;       , signature_name&lt;br/&gt;       , tissue_set&lt;br/&gt;       , min(enrichment_ratio) min_enrichment_ratio &lt;br/&gt;       , ROW_NUMBER() over (&lt;br/&gt;           partition by gsm, tgroup, tissue_set &lt;br/&gt;           order by min(enrichment_ratio) desc)&lt;br/&gt;           as rk&lt;br/&gt;  from bioqc_res_contam brc&lt;br/&gt;	group by gsm&lt;br/&gt;       , tgroup&lt;br/&gt;       , signature&lt;br/&gt;       , signature_name&lt;br/&gt;       , tissue_set&lt;br/&gt;	having min(enrichment_ratio) &gt; 6&lt;br/&gt;  order by gsm, tissue_set, rk</userDefinedSQL>
+<viewElements>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="GSM" id="7C9CB5FD-E89A-517E-E309-656E0422059F">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAMINED_SAMPLES</sourceObjSchema>
+<sourceObjName>GSM</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>GSM</alias>
+<dataType>VARCHAR2 (10)</dataType>
+<headerAlias>GSM</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="TGROUP" id="349D543F-FBC3-AEA2-50DA-7244AFFA0F55">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAMINED_SAMPLES</sourceObjSchema>
+<sourceObjName>TGROUP</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>TGROUP</alias>
+<dataType>VARCHAR2 (80)</dataType>
+<headerAlias>TGROUP</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="SIGNATURE" id="E2AC1E66-8C2F-62CC-FA45-77652F5B0BFA">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAMINED_SAMPLES</sourceObjSchema>
+<sourceObjName>SIGNATURE</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>SIGNATURE</alias>
+<dataType>NUMBER (10)</dataType>
+<headerAlias>SIGNATURE</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="SIGNATURE_NAME" id="DD5CBFE2-9946-D843-4A49-F559C84F34FD">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAMINED_SAMPLES</sourceObjSchema>
+<sourceObjName>SIGNATURE_NAME</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>SIGNATURE_NAME</alias>
+<dataType>VARCHAR2 (255)</dataType>
+<headerAlias>SIGNATURE_NAME</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="TISSUE_SET" id="0D74B4DF-3D4E-BD3C-A80F-C1AC5B058070">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAMINED_SAMPLES</sourceObjSchema>
+<sourceObjName>TISSUE_SET</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>TISSUE_SET</alias>
+<dataType>VARCHAR2 (80)</dataType>
+<headerAlias>TISSUE_SET</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="MIN_ENRICHMENT_RATIO" id="F9C50A4B-65AC-4BBE-88FF-B54026DBDFBD">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAMINED_SAMPLES</sourceObjSchema>
+<sourceObjName>MIN_ENRICHMENT_RATIO</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>MIN_ENRICHMENT_RATIO</alias>
+<dataType>BINARY_DOUBLE (8)</dataType>
+<headerAlias>MIN_ENRICHMENT_RATIO</headerAlias>
+<reference>false</reference>
+</viewElement>
+<viewElement class="oracle.dbtools.crest.model.design.relational.ColumnView" name="RK" id="0F5C0151-E8C8-ECF0-F3CC-B0E2DC5F2162">
+<sourceConnName>bin_srslight</sourceConnName>
+<sourceObjSchema>BIOQC_CONTAMINED_SAMPLES</sourceObjSchema>
+<sourceObjName>RK</sourceObjName>
+<createdBy>sturmg</createdBy>
+<createdTime>2016-12-15 08:33:25 UTC</createdTime>
+<ownerDesignName>er_views</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<alias>RK</alias>
+<dataType>NUMBER</dataType>
+<headerAlias>RK</headerAlias>
+<reference>false</reference>
+</viewElement>
+</viewElements>
+</TableView>
