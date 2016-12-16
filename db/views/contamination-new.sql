@@ -307,4 +307,52 @@ create /*+ parallel(16) */ index bte2_min_er
 create /*+ parallel(16) */ index bte2_rk
   on bioqc_tissue_enrichment2(rk);
   
+-------------------------------------------------------------------------------
+-- BIOQC_CONTAM_STATS
+-- 
+-- contamination stats with meta information
+--
+-- List of all samples with
+--   * meta information
+--   * boolean flag (null | 1) indicating whether the sample is contamined. 
+--------------------------------------------------------------------------------
+create or replace view bioqc_contam_stats
+as
+  select /*+ parallel(16) */ distinct bss.gsm
+                , bte.tissue_set
+                , bss.tissue
+                , bte.tgroup
+                , bte.found_sig
+                , bte.found_sig_name
+                , bte.min_enrichment_ratio as enrichment_ratio
+                , bss.organism
+                , bss.year
+                , bss.country
+  from bioqc_selected_samples bss
+  join bioqc_tissue_enrichment2 bte
+    on bte.gsm = bss.gsm
+  where rk = 1;
+  
+--------------------------------------------------------------------------------
+-- BIOQC_TISSUE_MIGRATION
+--
+-- Create view that shows migration between the tissues. 
+--------------------------------------------------------------------------------
+create or replace view bioqc_tissue_migration
+as
+  select /*+ parallel(16) */  distinct bte.gsm
+                          , bte.tissue_set
+                          , bte.tgroup as source
+                          , bte.found_sig
+                          , bte.found_sig_name
+                          , bte.min_enrichment_ratio as enrichment_ratio
+                          , bte.rk 
+                          , case when bts.tgroup is null
+                              then bte.tgroup
+                              else bts.tgroup
+                            end as destination
+  from bioqc_tissue_enrichment2 bte
+  left outer join bioqc_tissue_set bts
+    on bts.signature = bte.found_sig
+    and bts.tissue_set = bte.tissue_set 
   

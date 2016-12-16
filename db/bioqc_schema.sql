@@ -50,6 +50,7 @@ create index bioqc_tissue_set_tgroup on bioqc_tissue_set(tgroup);
 create index bioqc_tissue_set_tissue_set on bioqc_tissue_set(tissue_set); 
 create index bioqc_tissue_set_tissue on bioqc_tissue_set(tissue); 
 create index bioqc_tissue_set_signature on bioqc_tissue_set(signature); 
+create index bioqc_tissue_set_tgts on bioqc_tissue_set(tgroup, tissue_set); 
 
 /** for inserting tissue sets **/
 create global temporary table bioqc_tmp_tissue_set (
