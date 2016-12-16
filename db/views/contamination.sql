@@ -37,234 +37,277 @@ create /*+ parallel(16) */ index bioqc_res_tissue_gsm
   on bioqc_res_tissue(gsm);
 create /*+ parallel(16) */ index bioqc_res_tissue_signature
   on bioqc_res_tissue(signature);
-
+  
 
 
 --------------------------------------------------------------------------------
--- BIOQC_RES_FIL
+-- BIOQC_SELECTED_SAMPLES
 --
--- filtered bioqc results that can be used for analysis
---   * tissue annotated and normalized
---   * channel_count = 1 (remove obsolete studies, not considered in original
---     filtering
---   * Limit organisms to human, rat and mouse (most abundant ones) 
---
--- additionally, we add the parsed meta information year and country. 
+-- "background" 
 --------------------------------------------------------------------------------
 
-create materialized view bioqc_res_fil
+create materialized view bioqc_selected_samples
 parallel 16
 build immediate
 refresh force
 on demand
 as 
-  select /*+ parallel(16)  */ distinct  br.gsm
-                                      , br.signature
-                                      , bs.name as signature_name
-                                      , br.pvalue 
-                                      , bnt.tissue
-                                      , bg.organism_ch1 as organism
-                                      , cast(
-                                          cast(
-                                            regexp_substr(submission_date, '^(\d{4})-.*', 1, 1, NULL, 1) 
-                                            as varchar2(4)
-                                          )
-                                          as NUMBER(4)
-                                        ) as year
-                                      , cast(
-                                          TRIM(BOTH from
-                                               regexp_substr(contact, 'Country:(.*?)(;.*)?$', 1, 1, NULL, 1) 
-                                          )
-                                          as varchar2(100)
-                                        ) as country
-  from bioqc_res_tissue br
-  join bioqc_gsm bg 
-    on bg.gsm = br.gsm
+  select /*+ parallel(16) */ bg.gsm
+                           , bg.organism_ch1 as organism
+                           , bg.tissue_orig
+                           , bnt.tissue
+                           , cast(
+                               cast(
+                                 regexp_substr(submission_date, '^(\d{4})-.*', 1, 1, NULL, 1) 
+                                 as varchar2(4)
+                               )
+                               as NUMBER(4)
+                             ) as year
+                           , cast(
+                               TRIM(BOTH from
+                                    regexp_substr(contact, 'Country:(.*?)(;.*)?$', 1, 1, NULL, 1) 
+                               )
+                               as varchar2(100)
+                             ) as country
+  from bioqc_bioqc_success bs
+  join bioqc_gsm bg
+    on bg.gsm = bs.gsm
   join bioqc_normalize_tissues bnt
-    on bnt.tissue_orig = lower(bg.tissue_orig)
-  join bioqc_signatures bs
-    on bs.id = br.signature
-  where channel_count = 1
-  and bg.organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus');
+    on bnt.tissue_orig = lower(bg.tissue_orig)  
+  where channel_count = 1  
+  and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus');
   
-create /*+ parallel(16) */ index bioqc_res_fil_gsm
-  on bioqc_res_fil(gsm);
-create /*+ parallel(16) */ index bioqc_res_fil_signature
-  on bioqc_res_fil(signature);
-create index bioqc_res_fil_tissue 
-  on bioqc_res_fil(tissue);
-
-
-
-
---------------------------------------------------------------------------------
--- BIOQC_RES_FIL_TSET
---------------------------------------------------------------------------------
-
-CREATE MATERIALIZED VIEW bioqc_res_fil_tset
-parallel 16
-build immediate
-refresh force
-on demand
-as
- -- distinct, because the 'expected tissue' is omitted 
- -- which would result in duplicated rows
- select /*+ parallel(16) */ distinct  brf.gsm
-                                    , brf.tissue
-                                    , bts.tgroup
-                                    , bts.tissue_set 
-                                    , brf.signature
-                                    , brf.signature_name
-                                    , brf.pvalue
-  from bioqc_res_fil brf
-  join bioqc_tissue_set bts 
-    on bts.tissue = brf.tissue
-  -- make sure only the signature from the same signature_set are included. 
-  where brf.signature in (
-    select bts2.signature
-    from bioqc_tissue_set bts2
-    where bts2.tissue_set = bts.tissue_set
-  );
-create /*+ parallel(16) */ index bioqc_res_fil_tset_tissue_set
-  on bioqc_res_fil_tset(tissue_set);
-create /*+ parallel(16) */ index bioqc_res_fil_tset_tgroup
-  on bioqc_res_fil_tset(tgroup);
-create /*+ parallel(16) */ index bioqc_res_fil_tset_signature
-  on bioqc_res_fil_tset(signature);
+create /*+ parallel(16) */ index bss_gsm
+  on bioqc_selected_samples(gsm); 
+create /*+ parallel(16) */ index bss_tissue
+  on bioqc_selected_samples(tissue);
+create /*+ parallel(16) */ index bss_year
+  on bioqc_selected_samples(year);
+create /*+ parallel(16) */ index bss_country
+  on bioqc_selected_samples(country);
   
+  
+
+
 --------------------------------------------------------------------------------
--- BIOQC_RES_CONTAM
+-- ## Section: Tissue Enrichment
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- BIOQC_SELECTED_SAMPLES_TSET
 -- 
--- for each tissue set:
---     for each sample:
---        * add the expected signatures and their pvalues
---        * calculate the enrichment ratio
+-- add expected signatures to selected samples
 --------------------------------------------------------------------------------
-
-CREATE MATERIALIZED VIEW bioqc_res_contam 
+drop materialized view bioqc_selected_samples_tset;
+create materialized view bioqc_selected_samples_tset
 parallel 16
 build immediate
 refresh force
 on demand
-as
-  with 
-  expected_signatures as (
-    select  bts.* 
-          , bs.name as signature_name
-    from bioqc_tissue_set bts
+as 
+    select /*+ parallel(16) */   bss.gsm
+                               , bts.tissue
+                               , bts.tgroup
+                               , bts2.signature as exp_sig
+                               , bs.name as exp_sig_name
+                               , case 
+                                    when br.pvalue is NULL
+                                    then 0.05
+                                    else br.pvalue 
+                                  end 
+                                  as exp_sig_pvalue
+                               , bts.tissue_set
+    from bioqc_selected_samples bss
+    -- add tgroup to sample
+    join bioqc_tissue_set bts
+      on bts.tissue = bss.tissue
+    -- add exp_signature to tgroup
+    join bioqc_tissue_set bts2
+      on bts2.tgroup = bts.tgroup
+      and bts2.tissue_set = bts.tissue_set
     join bioqc_signatures bs
-      on bs.id = bts.signature
-  ),
-  bioqc_res_contam_pre as (
-    -- distinct because the tgroup in expected_signatures has multiple
-    -- tissues which are omitted and therefore lead to duplicate rows. 
-    select /*+ PARALLEL(16) */ distinct brf.gsm
-                                      , brf.tissue
-                                      , brf.tgroup
-                                      , brf.tissue_set
-                                      , brf.signature
-                                      , brf.signature_name
-                                      , brf.pvalue                            
-                                      , es.signature as exp_sig
-                                      , es.signature_name as exp_sig_name
-                                      -- if no pvalue existant for expected signature, assume that it is available at the cutoff value 0.05
-                                      , case 
-                                          when brf2.pvalue is NULL
-                                          then 0.05
-                                          else brf2.pvalue 
-                                        end 
-                                        as exp_sig_pvalue
-    from bioqc_res_fil_tset brf
-    
-    -- get all signatures related to tissue groups ("expected signatures")
-    join expected_signatures es 
-      on es.tgroup = brf.tgroup
-      and es.tissue_set = brf.tissue_set
-    
-    -- get pvalues of expected signatures. Match them to the respective sample.  
-    left outer join bioqc_res_fil brf2 
-      on brf2.gsm = brf.gsm 
-      and brf2.signature = es.signature 
-      
+      on bs.id = bts2.signature
+    left outer join bioqc_res_tissue br 
+      on br.gsm = bss.gsm 
+      and br.signature = bts2.signature;
+--    where bts.tissue_set = 'gtex_solid';  
+create /*+ parallel(16) */ index bsst_gsm
+  on bioqc_selected_samples_tset(gsm); 
+create /*+ parallel(16) */ index bsst_tissue
+  on bioqc_selected_samples_tset(tissue);
+create /*+ parallel(16) */ index bsst_tgroup
+  on bioqc_selected_samples_tset(tgroup);
+create /*+ parallel(16) */ index bsst_signature
+  on bioqc_selected_samples_tset(exp_sig);
+create /*+ parallel(16) */ index bsst_tissue_set
+  on bioqc_selected_samples_tset(tissue_set);
+
+
+--------------------------------------------------------------------------------
+-- BIOQC_RES_TSET
+--
+-- add tissue groups to bioqc results (pvalues)
+--------------------------------------------------------------------------------
+
+drop materialized view bioqc_res_tset;
+create materialized view bioqc_res_tset
+parallel 16
+build immediate
+refresh force
+on demand
+as 
+  select /*+ parallel(16) */ distinct br.gsm
+                           , br.signature as found_sig
+                           , br.pvalue as found_sig_pvalue
+                           , bs.name as found_sig_name
+                           , bts.tgroup as found_tgroup
+                           , bts.tissue_set
+  from bioqc_res_tissue br
+  join bioqc_signatures bs
+    on br.signature = bs.id
+  join bioqc_tissue_set bts
+    on bts.signature = br.signature
+  -- we can reduce the amount of data by only keeping values of selected samples
+  join bioqc_selected_samples_tset bss
+    on bss.tissue_set = bts.tissue_set
+    and bss.gsm = br.gsm;
+--  where bts.tissue_set = 'gtex_solid';
+create /*+ parallel(16) */ index brt_gsm
+  on bioqc_res_tset(gsm); 
+create /*+ parallel(16) */ index brt_signature
+  on bioqc_res_tset(signature);
+create /*+ parallel(16) */ index brt_tgroup
+  on bioqc_res_tset(tgroup);
+create /*+ parallel(16) */ index brt_tissue_set
+  on bioqc_res_tset(tissue_set);
+  
+
+
+--------------------------------------------------------------------------------
+-- BIOQC_TISSUE_ENRICHMENT
+-- 
+-- put samples and result together. 
+-- calculate enrichment score for each signature
+--------------------------------------------------------------------------------
+
+drop materialized view bioqc_tissue_enrichment;
+create materialized view bioqc_tissue_enrichment
+parallel 16
+build immediate
+refresh force
+on demand
+as 
+  with bioqc_tissue_enrichment_1 as (
+    select /*+ parallel(16) */  bss.gsm
+                               , bss.tissue_set
+                               , bss.tissue
+                               , bss.tgroup
+                               , bss.exp_sig
+                               , bss.exp_sig_name
+                               , bss.exp_sig_pvalue
+                               , br.found_sig
+                               , br.found_sig_pvalue
+                               , br.found_sig_name
+                               , br.found_tgroup
+    from bioqc_selected_samples_tset bss
+    left outer join bioqc_res_tset br
+      on br.gsm = bss.gsm 
+      and br.tissue_set = bss.tissue_set
     -- exclude expected signatures from found enriched signatures
     -- (e.g. tissue is colon, jejunum is found enriched but we don't see 
     -- that as contamination
-    where brf.signature not in (
-      select signature
-      from expected_signatures es2
-      where es2.tgroup = brf.tgroup
-      and es2.tissue_set = brf.tissue_set
-    )
-  )
-  -- add enrichment_ratio
-  select /*+ PARALLEL(16) */ brc.*
+    where br.found_sig is null 
+      or br.found_sig not in (
+        select signature
+        from bioqc_tissue_set bts
+        where bts.tissue_set = bss.tissue_set
+          and bts.tgroup = bss.tgroup
+      )
+  ) 
+  select /*+ PARALLEL(16) */ bre.*
                             , log(10, cast(
-                                        exp_sig_pvalue / pvalue
+                                        exp_sig_pvalue / found_sig_pvalue
                                         as binary_float))
                               as enrichment_ratio
-  from bioqc_res_contam_pre brc
-  order by gsm, signature; 
-  
-create /*+ parallel(16) */ index bioqc_res_contam_gsm
-  on bioqc_res_contam(gsm);
-create /*+ parallel(16) */ index bioqc_res_contam_tgroup
-  on bioqc_res_contam(tgroup);
-  
-  
-  
-  
-  
-  
+  from bioqc_tissue_enrichment_1 bre;
+ 
+create /*+ parallel(16) */ index bte_gsm
+  on bioqc_tissue_enrichment(gsm); 
+create /*+ parallel(16) */ index bte_tissue_set
+  on bioqc_tissue_enrichment(tissue_set);
+create /*+ parallel(16) */ index bte_tgroup
+  on bioqc_tissue_enrichment(tgroup);
+create /*+ parallel(16) */ index bte_exp_sig
+  on bioqc_tissue_enrichment(exp_sig);
+create /*+ parallel(16) */ index bte_found_sig
+  on bioqc_tissue_enrichment(found_sig);
+create /*+ parallel(16) */ index bte_found_sig_name
+  on bioqc_tissue_enrichment(found_sig_name);
+create /*+ parallel(16) */ index bte_found_tgroup
+  on bioqc_tissue_enrichment(found_tgroup);
+create /*+ parallel(16) */ index bte_enrichment_ratio
+  on bioqc_tissue_enrichment(enrichment_ratio);
+
+
+
 --------------------------------------------------------------------------------
--- BIOQC_CONTAMINED_SAMPLES
+-- BIOQC_TISSUE_ENRICHMENT2
 --
--- View containing all samples we defined as contamined 
--- (enrichment_ratio > 6)
+-- combine expected signature by taking the minimal enrichment ratio
+-- for each expected signature. 
 --
--- requires the enrichment ratio to be higher than the predefined
--- thershold for ALL expected signatuers
+-- Example:
+-- GSM    tissue    tgroup    expected  found         enrichment_ratio
+-- GSM888 jejunum   intestine colon     liver_fetal   12
+-- GSM888 jejunum   intestine colon     liver         8
+-- GSM888 jejunum   intestine jejunum   liver_fetal   5
+-- GSM888 jejunum   intestine jejunum   liver         4
 --
--- The only point of group by is creating the rank
+-- will be combined into
+-- GSM888           intestine           liver_fetal   5
+-- GSM888           intestine           liver         4
+--
+-- if multiple infiltrating tissues are found, a rank is calculated. 
 --------------------------------------------------------------------------------
 
-CREATE MATERIALIZED VIEW bioqc_contamined_samples 
+drop materialized view bioqc_tissue_enrichment2;
+CREATE MATERIALIZED VIEW bioqc_tissue_enrichment2 
 parallel 16
 build immediate
 refresh force
 on demand
-as
-  select /*+ parallel(16) */ gsm
-       , tgroup
-       , signature
-       , signature_name
-       , tissue_set
-       , min(enrichment_ratio) min_enrichment_ratio 
-       , ROW_NUMBER() over (
-           partition by gsm, tgroup, tissue_set 
-           order by min(enrichment_ratio) desc)
-           as rk
-  from bioqc_res_contam brc
-  group by gsm
-       , tgroup
-       , signature
-       , signature_name
-       , tissue_set
+as  
+ select /*+ parallel(16) */ bre.gsm
+                          , bre.tissue_set
+                          , bre.tgroup
+                          , bre.found_sig
+                          , bre.found_sig_name
+                          , min(enrichment_ratio) as min_enrichment_ratio
+                          , ROW_NUMBER() over (
+                             partition by gsm, tgroup, tissue_set 
+                             order by min(enrichment_ratio) desc)
+                             as rk
+    
+  from bioqc_tissue_enrichment bre
+  group by bre.gsm
+         , bre.tissue_set
+         , bre.tgroup
+         , bre.found_sig
+         , bre.found_sig_name
   order by gsm, tissue_set, rk;
   
-create /*+ parallel(16) */ index bioqc_cs_gsm
-  on bioqc_contamined_samples(gsm);
-create /*+ parallel(16) */ index bioqc_cs_tgroup
-  on bioqc_contamined_samples(tgroup);
-create /*+ parallel(16) */ index bioqc_cs_signature
-  on bioqc_contamined_samples(signature);
-create /*+ parallel(16) */ index bioqc_cs_min_er
-  on bioqc_contamined_samples(min_enrichment_ratio);
-create /*+ parallel(16) */ index bioqc_cs_rk
-  on bioqc_contamined_samples(rk);
+create /*+ parallel(16) */ index bte2_gsm
+  on bioqc_tissue_enrichment2(gsm);
+create /*+ parallel(16) */ index bte2_tgroup
+  on bioqc_tissue_enrichment2(tgroup);
+create /*+ parallel(16) */ index bte2_found_sig
+  on bioqc_tissue_enrichment2(found_sig);
+create /*+ parallel(16) */ index bte2_min_er
+  on bioqc_tissue_enrichment2(min_enrichment_ratio);
+create /*+ parallel(16) */ index bte2_rk
+  on bioqc_tissue_enrichment2(rk);
   
-  
-  
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- BIOQC_CONTAM_STATS
 -- 
 -- contamination stats with meta information
@@ -273,70 +316,43 @@ create /*+ parallel(16) */ index bioqc_cs_rk
 --   * meta information
 --   * boolean flag (null | 1) indicating whether the sample is contamined. 
 --------------------------------------------------------------------------------
-
-create or replace view bioqc_contam_stats as
-  select distinct brf.gsm
-                , bts.tissue_set
-                , bts.tissue
-                , brf.organism
-                , brf.year
-                , brf.country 
-                , cs.min_enrichment_ratio as enrichment_ratio
-                , cs.signature
-                , cs.signature_name
-  from bioqc_res_fil brf
-  join bioqc_tissue_set bts 
-    on bts.tissue = brf.tissue
-  left outer join bioqc_contamined_samples cs
-    on cs.gsm = brf.gsm
-    and cs.tissue_set = bts.tissue_set
+create or replace view bioqc_contam_stats
+as
+  select /*+ parallel(16) */ distinct bss.gsm
+                , bte.tissue_set
+                , bss.tissue
+                , bte.tgroup
+                , bte.found_sig
+                , bte.found_sig_name
+                , bte.min_enrichment_ratio as enrichment_ratio
+                , bss.organism
+                , bss.year
+                , bss.country
+  from bioqc_selected_samples bss
+  join bioqc_tissue_enrichment2 bte
+    on bte.gsm = bss.gsm
   where rk = 1;
-  
   
 --------------------------------------------------------------------------------
 -- BIOQC_TISSUE_MIGRATION
 --
 -- Create view that shows migration between the tissues. 
 --------------------------------------------------------------------------------
-
-create or replace view bioqc_tissue_migration as 
-  with res_tissue as (
-    select /*+ parallel(16) */ distinct gsm
-    from bioqc_res_fil 
-  )
-  select /*+ parallel(16) */  brf.gsm
-                            , brf.signature
-                            , brf.signature_name
-                            , brf.pvalue
-                            , brf.organism
-                            , brf.year
-                            , brf.country
-                            , bts.tgroup as origin 
-                            , bts.tissue_set
-                            , cs.min_enrichment_ratio as enrichment_ratio
-                            , cs.rk
-                            , bts2.tgroup as destination
-  from bioqc_res_fil brf
-  join bioqc_tissue_set bts 
-    on bts.tissue = brf.tissue
-  left outer join bioqc_contamined_samples cs 
-    on cs.gsm = brf.gsm 
-    and cs.signature = brf.signature
-    and cs.tissue_set = bts.tissue_set
-  join bioqc_tissue_set bts2
-    on bts2.tissue_set = bts.tissue_set
-    and bts2.signature = brf.signature
-  where rk = 1
---    and bts.tissue_set = 'gtex_solid'
-  order by brf.gsm, cs.tissue_set, cs.rk
-;
-
--- refresh script
-BEGIN 
-  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_TISSUE"','C');
-  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_FIL_TSET"','C');
-  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_FIL_TSET_GTEX"','C');
-  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_CONTAM"','C');
-  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_CONTAM_GTEX"','C');
-end;
-
+create or replace view bioqc_tissue_migration
+as
+  select /*+ parallel(16) */  distinct bte.gsm
+                          , bte.tissue_set
+                          , bte.tgroup as origin
+                          , bte.found_sig
+                          , bte.found_sig_name
+                          , bte.min_enrichment_ratio as enrichment_ratio
+                          , bte.rk 
+                          , case when bts.tgroup is null
+                              then bte.tgroup
+                              else bts.tgroup
+                            end as destination
+  from bioqc_tissue_enrichment2 bte
+  left outer join bioqc_tissue_set bts
+    on bts.signature = bte.found_sig
+    and bts.tissue_set = bte.tissue_set;
+  
