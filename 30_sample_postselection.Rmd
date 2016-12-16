@@ -21,43 +21,44 @@ The following processes are ressource intensive, therefore we execute them on a 
 3. We run *BioQC* on these studies use [run_bioqc.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/run_bioqc.R). 
 4. Finally, we prefilter BioQC's results for having a p-value < 0.05 and import them into the database. 
 
+## Update database
+we aggregate the bioqc results and import them manually in the DBS. 
+we collate all samples on which we successfully ran BioQC. This is our Background. 
 
-The failures during download and annotation reduce the number of samples available to our study. Moreover, there are 
-some, where none of the BioQC signatures generates a p-value < 0.05. This is number of samples and studies left in the database.
-Note, that we only consider the *original BioQC* signatures here, not the control signatures derived from GTEx. 
+
+## Sample Post-selection
+
+The failures during download and annotation reduce the number of samples available to our study.
 
 <!-- since there are muliple gpl and gsm in a gse, there might've been some gsm 
 inserted, that don't have a tissue annotated, albeit the gse was selected. -->
 
 ```{r after_failures, cache=TRUE}
 
-sql = "
-select /*+ USE_HASH(br, bg, bs, bnt, bgg) parallel(16) */ count(distinct bgg.gsm) as GSM
-                                                        , count(distinct bgg.gse) as GSE
-from bioqc_res_tissue br
-join bioqc_signatures bs
-  on bs.id = br.signature
+sql_select = "
+select /*+ USE_HASH(bs, bgg) parallel(16) */ count(distinct bg.gsm) as GSM
+                                           , count(distinct bgg.gse) as GSE"
+sql_from = "
+from bioqc_bioqc_success bs
 join bioqc_gsm bg
-  on bg.gsm = br.gsm
+  on bg.gsm = bs.gsm
 left outer join bioqc_gse_gsm bgg
-  on bgg.gsm = br.gsm
+  on bgg.gsm = bs.gsm 
 "
-sql_where = "
-where bg.tissue_orig is not NULL
-  and bs.source = 'expr.tissuemark.affy.roche.symbols.gmt'" # <- only consider the original BioQC signatures
-res = dbGetQuery(mydb, str_c(sql, sql_where, sep="\n"))
+sql_where = ""
+res = dbGetQuery(mydb, str_c(sql_select, sql_from, sql_where, sep="\n"))
 kable(res)
 ```
 
-## Sample Post-selection
 
 ### Excluding multi-channel microarrays
 
 Multi channel microarrays date back to the early age of gene expression studies. They don't provide absolute gene expression data and are not meaningful outside their experimental context. We therefore exclude these experiments:
 ```{r exclude_multichannel, cache=TRUE}
-sql2 = sql
-sql_where2 = str_c(sql_where, "and channel_count = 1", sep="\n")
-res = dbGetQuery(mydb, str_c(sql2, sql_where2, sep="\n"))
+sql_select2 = sql_select
+sql_from2 = sql_from
+sql_where2 = str_c(sql_where, "where channel_count = 1", sep="\n")
+res = dbGetQuery(mydb, str_c(sql_select2, sql_from2, sql_where2, sep="\n"))
 kable(res)
 ```
 
@@ -65,35 +66,24 @@ kable(res)
 We exclude samples that have a tissue annotated, but it is not mapped to a [normalized tissue](#tissue-normalization). 
 
 ```{r normalize_tissue, cache=TRUE}
-sql3 = str_c(sql, "
+sql_select3 = sql_select2
+sql_from3 = str_c(sql_from2, "
 join bioqc_normalize_tissues bnt
   on bnt.tissue_orig = lower(bg.tissue_orig)", sep="\n")
 sql_where3 = sql_where2
-res = dbGetQuery(mydb, str_c(sql3, sql_where3, sep="\n"))
+res = dbGetQuery(mydb, str_c(sql_select3, sql_from3, sql_where3, sep="\n"))
 kable(res)
 ```
 
 ### Select organisms
 We were interested in the organism distribution.
 ```{r filter_orga, cache=TRUE}
-sql_orga = "
-select /*+ USE_HASH(br, bg, bs, bnt, bgg) parallel(16) */ count(distinct br.gsm)  as GSM
-                                                        , count(distinct bgg.gse) as GSE 
-                                                        , bg.organism_ch1
-from bioqc_res_tissue br
-join bioqc_gsm bg
-  on bg.gsm = br.gsm
-join bioqc_signatures bs
-  on bs.id = br.signature
-join bioqc_normalize_tissues bnt
-  on bnt.tissue_orig = lower(bg.tissue_orig)
-left outer join bioqc_gse_gsm bgg
-  on bgg.gsm = br.gsm
-where channel_count = 1
-and bs.source = 'expr.tissuemark.affy.roche.symbols.gmt'
+sql_select4 = str_c(sql_select3, ", bg.organism_ch1", sep="\n")
+sql_from4 = sql_from3
+sql_where4 = sql_where3
+res = dbGetQuery(mydb, str_c(sql_select4, sql_from4, sql_where4, "
 group by organism_ch1
-order by gsm desc"
-res = dbGetQuery(mydb, sql_orga)
+order by gsm desc", sep="\n"))
 kable(res)
 ```
 
@@ -101,10 +91,11 @@ Results suggest that it makes sense to limit the analysis to the three main orga
 We are left with the following amount of samples: 
 
 ```{r filter_orga2, cache=TRUE}
-sql4 = sql3
-sql_where4 = str_c(sql_where3, "
+sql_select5 = sql_select3
+sql_from5 = sql_from4
+sql_where5 = str_c(sql_where4, "
   and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')", sep="\n")
-res = dbGetQuery(mydb, str_c(sql4, sql_where4, sep="\n"))
+res = dbGetQuery(mydb, str_c(sql_select5, sql_from5, sql_where5, sep="\n"))
 kable(res)
 ```
 

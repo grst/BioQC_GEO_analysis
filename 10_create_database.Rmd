@@ -1,4 +1,4 @@
-# Setup Database
+# Setup Database {#setup-database}
 
 ```{r, include=FALSE}
 source("lib/knitr.R")
@@ -13,7 +13,7 @@ library(data.table)
 library(readxl)
 ```
 
-We store meta information for GEO samples and BioQC results in 
+We store meta information for GEO samples and BioQC p-values in 
 an Oracle 11g database. We combine the metadata from [GEOmetadb](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html)
 with tables to store signature scores generated with 
 [BioQC](https://accio.github.io/BioQC) and manually curated annotations. 
@@ -39,10 +39,7 @@ The annotation of tissues is inconsistent within GEO. A "liver" sample can be te
 Signatures are essentially a list of genes, which are over-represented in a certain tissue, cell type, pathway, etc. A common way to save such signatures is the [GMT file format](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29). These GMT files can be imported into **BIOQC_SIGNATURES**. 
 
 ### Expected Signatures
-In order to find out which samples are 'contamined' by other tissues, we first need to define which signatures we would 'expect' in a certain tissue. We therefore manually mapped signatures to the respective tissue type in this 
-[Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx). For example, we map the signatures `Intestine_Colon_cecum_NR_0.7_3` and `Intestine_Colon_NR_0.7_3` to *colon*.  
-
-Moreover, we ran into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called *tissue sets*. For example, it is hard to distinguish *jejunum* from *colon*, but easy to distinguish the two from other tissues. We therefore created a tissue set *intestine*, which contains both *jejunum* and *colon* and references all signatures associated with the two tissues. This information is part of the same [Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx) which we imported into  **BIOQC_TISSUE_SET**. 
+ which we imported into  **BIOQC_TISSUE_SET**. 
 
 ### Results
 Our analysis creates a p-value for each sample in `BIOQC_GSM` and each signature in `BIOQC_SIGNATURES`. These p-values are stored in **BIOQC_RES**.

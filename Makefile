@@ -113,4 +113,13 @@ $(DATA_PATH)/bioqc_melt_all.uniq.tsv:  $(DATA_PATH)/bioqc_melt_all.tsv
 	# due to floating point inprecision, but identical up to 5 decimal digits (i checked)
 	bash_wrapper.sh 24 "sort --parallel 24 -u -k1,2 $< > $@ "
 
+$(DATA_PATH)/bioqc_success.txt:
+	# list of GSM on which the bioqc-run was successful. Serves as 'background' for 
+	# the analysis. 
+	rm -f $@.tmp
+	for f in $$(find $(DATA_PATH)/bioqc -iname "*bioqc_res.tab"); do head -n 1 $$f >> $@.tmp;	done
+	tr " " "\n" < $@.tmp | tr -d '"' | sort -u > $@
+	rm -f $@.tmp
+
+
 .FORCE:
