@@ -47,6 +47,9 @@ create table bioqc_tissue_set( signature number(10) not null
     
 ) tablespace srslight_d;
 create index bioqc_tissue_set_tgroup on bioqc_tissue_set(tgroup); 
+create index bioqc_tissue_set_tissue_set on bioqc_tissue_set(tissue_set); 
+create index bioqc_tissue_set_tissue on bioqc_tissue_set(tissue); 
+create index bioqc_tissue_set_signature on bioqc_tissue_set(signature); 
 
 /** for inserting tissue sets **/
 create global temporary table bioqc_tmp_tissue_set (
@@ -65,4 +68,8 @@ create table bioqc_res(gsm varchar2(10) not null
                      , pvalue binary_double
                      , primary key(gsm, signature)
 ) tablespace srslight_d;
+
+-- contain all samples on which we successfully ran bioqc.
+-- serves as background for contamination analysis
+create table bioqc_bioqc_success(gsm varchar2(10) not null references bioqc_gsm(gsm) primary key)
 

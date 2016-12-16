@@ -39,6 +39,7 @@ create /*+ parallel(16) */ index bioqc_res_tissue_signature
   on bioqc_res_tissue(signature);
 
 
+
 --------------------------------------------------------------------------------
 -- BIOQC_RES_FIL
 --
@@ -330,4 +331,12 @@ create or replace view bioqc_tissue_migration as
   order by brf.gsm, cs.tissue_set, cs.rk
 ;
 
+-- refresh script
+BEGIN 
+  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_TISSUE"','C');
+  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_FIL_TSET"','C');
+  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_FIL_TSET_GTEX"','C');
+  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_CONTAM"','C');
+  DBMS_SNAPSHOT.REFRESH( '"SRSLIGHT"."BIOQC_RES_CONTAM_GTEX"','C');
+end;
 
