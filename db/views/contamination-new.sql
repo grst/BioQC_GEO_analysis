@@ -181,8 +181,14 @@ create /*+ parallel(16) */ index brt_tgroup
 create /*+ parallel(16) */ index brt_tissue_set
   on bioqc_res_tset(tissue_set);
   
---------------------------------------------------------------------------------
 
+
+--------------------------------------------------------------------------------
+-- BIOQC_TISSUE_ENRICHMENT
+-- 
+-- put samples and result together. 
+-- calculate enrichment score for each signature
+--------------------------------------------------------------------------------
 
 drop materialized view bioqc_tissue_enrichment;
 create materialized view bioqc_tissue_enrichment
@@ -210,12 +216,13 @@ as
     -- exclude expected signatures from found enriched signatures
     -- (e.g. tissue is colon, jejunum is found enriched but we don't see 
     -- that as contamination
-    where br.found_sig not in (
-      select signature
-      from bioqc_tissue_set bts
-      where bts.tissue_set = bss.tissue_set
-        and bts.tgroup = bss.tgroup
-    )
+    where br.found_sig is null 
+      or br.found_sig not in (
+        select signature
+        from bioqc_tissue_set bts
+        where bts.tissue_set = bss.tissue_set
+          and bts.tgroup = bss.tgroup
+      )
   ) 
   select /*+ PARALLEL(16) */ bre.*
                             , log(10, cast(
@@ -240,6 +247,64 @@ create /*+ parallel(16) */ index bte_found_tgroup
   on bioqc_tissue_enrichment(found_tgroup);
 create /*+ parallel(16) */ index bte_enrichment_ratio
   on bioqc_tissue_enrichment(enrichment_ratio);
+
+
+
+--------------------------------------------------------------------------------
+-- BIOQC_TISSUE_ENRICHMENT2
+--
+-- combine expected signature by taking the minimal enrichment ratio
+-- for each expected signature. 
+--
+-- Example:
+-- GSM    tissue    tgroup    expected  found         enrichment_ratio
+-- GSM888 jejunum   intestine colon     liver_fetal   12
+-- GSM888 jejunum   intestine colon     liver         8
+-- GSM888 jejunum   intestine jejunum   liver_fetal   5
+-- GSM888 jejunum   intestine jejunum   liver         4
+--
+-- will be combined into
+-- GSM888           intestine           liver_fetal   5
+-- GSM888           intestine           liver         4
+--
+-- if multiple infiltrating tissues are found, a rank is calculated. 
+--------------------------------------------------------------------------------
+
+drop materialized view bioqc_tissue_enrichment2;
+CREATE MATERIALIZED VIEW bioqc_tissue_enrichment2 
+parallel 16
+build immediate
+refresh force
+on demand
+as  
+ select /*+ parallel(16) */ bre.gsm
+                          , bre.tissue_set
+                          , bre.tgroup
+                          , bre.found_sig
+                          , bre.found_sig_name
+                          , min(enrichment_ratio) as min_enrichment_ratio
+                          , ROW_NUMBER() over (
+                             partition by gsm, tgroup, tissue_set 
+                             order by min(enrichment_ratio) desc)
+                             as rk
+    
+  from bioqc_tissue_enrichment bre
+  group by bre.gsm
+         , bre.tissue_set
+         , bre.tgroup
+         , bre.found_sig
+         , bre.found_sig_name
+  order by gsm, tissue_set, rk;
   
+create /*+ parallel(16) */ index bte2_gsm
+  on bioqc_tissue_enrichment2(gsm);
+create /*+ parallel(16) */ index bte2_tgroup
+  on bioqc_tissue_enrichment2(tgroup);
+create /*+ parallel(16) */ index bte2_found_sig
+  on bioqc_tissue_enrichment2(found_sig);
+create /*+ parallel(16) */ index bte2_min_er
+  on bioqc_tissue_enrichment2(min_enrichment_ratio);
+create /*+ parallel(16) */ index bte2_rk
+  on bioqc_tissue_enrichment2(rk);
   
   
