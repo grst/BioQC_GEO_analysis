@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-
-<link rel="next" href="curating-data.html">
+<link rel="prev" href="index.html">
+<link rel="next" href="validating-tissue-signatures.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -163,29 +163,21 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<!--bookdown:title:end-->
-<!--bookdown:title:start-->
-<div id="bioqc-geo-analysis" class="section level1">
-<h1><span class="header-section-number">1</span> BioQC GEO Analysis</h1>
-<p>Systematically testing the GEO for <em>tissue heterogeneity</em>.</p>
-<p><em>Manuscript in preparation</em></p>
-<div id="introduction" class="section level2">
-<h2><span class="header-section-number">1.1</span> Introduction</h2>
-<p>Recently we created a software tool, BioQC, that detects tissue heterogeneity in gene expression data and shared it with the community of genome researchers via Bioconductor. The concept of tissue heterogeneity stems from our observations that gene expression data is often compromised by cells originating from other tissues than the target tissue of profiling. Tissue heterogeneity can be caused by physiological or pathological processes, such as immune cell infiltration. Alternatively, they can be caused by technical imperfection to separate complex or nearby tissues or even human errors. Failures in detecting tissue heterogeneity may have profound implications on data interpretation and reproducibility.</p>
-<p>As bioinformaticians working on drug discovery in the pharma industry, we are convinced that gene expression data available in publicly available databases such as NCBI Gene Expression Omnibus (GEO) or EBI ArrayExpress has great potential to catalyse new therapeutic agents. Disease signatures derived from disease models or patient biopsies, for instance, can be used to assess cellular models used for discovery and to guide compound selection. Molecular phenotypes of compounds, in another example, can be used to validate both efficacy and pre-clinical safety of compounds. Apparently all such applications depend critically on the quality of gene expression data. Several groups have scrutinised publicly available datasets and have identified deleterious factors of data quality such as batch effects, human error, and even data manipulation and faking. However, tissue heterogeneity has not been explicitly addressed so far and there is neither data nor knowledge about its prevalence. To fill this gap, we undertake a systematic investigation of publicly available gene expression datasets.</p>
-<p>We first explain how we curated samples from GEO and mapped the tissue annotation to signatures. Second, we show how we use <em>pygenesig</em> to independently create and validate signatures. Third, we provide technical information about our data storage stragegy using a DBS.</p>
+<div id="curating-data" class="section level1">
+<h1><span class="header-section-number">2</span> Curating Data</h1>
+<div id="selecting-samples-by-metadata" class="section level2">
+<h2><span class="header-section-number">2.1</span> Selecting Samples by Metadata</h2>
+<p><a href="https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html">GEOmetadb</a> is a SQLite database containing metadata associated with samples and studies from GEO. This database has proven to be tremendously helpful for selecting samples by tissue and organism. We integrate the database into the <a href="setup-database.html#setup-database">study’s DBS</a> and describe how we select samples in detail in <a href="sample-selection.html#sample-selection">Sample selection</a>.</p>
 </div>
-<div id="bioqc" class="section level2">
-<h2><span class="header-section-number">1.2</span> BioQC</h2>
-<p>BioQC implements a computationally efficient Wilcoxon-Mann-Whitney (WMW) test.</p>
+<div id="normalize-tissues" class="section level2">
+<h2><span class="header-section-number">2.2</span> Normalize Tissues</h2>
+<p>The annotation of tissues is inconsistent within GEO. A “liver” sample can be termed <em>e.g.</em> “liver”, “liver biopsy” or “primary liver”. We therefore need a way to “normalize” the tissue name. We did this manually for the most abundant tissues in this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx">Excel sheet</a>.</p>
 </div>
-<div id="signatures" class="section level2">
-<h2><span class="header-section-number">1.3</span> Signatures</h2>
-<p>Tissue signatures are essentially a list of genes which are enriched in a certain tissue.</p>
-</div>
-<div id="the-experiment-in-brief" class="section level2">
-<h2><span class="header-section-number">1.4</span> The Experiment in Brief</h2>
-<p>We take all samples from GEO which have the required annotation. We run BioQC on each of the samples. We compare the tissue predicted by BioQC with the annotated tissue and call a sample ‘contamined’ if the prediction does not match the annotation.</p>
+<div id="map-tissues-to-signatures" class="section level2">
+<h2><span class="header-section-number">2.3</span> Map tissues to signatures</h2>
+<p>In order to find out which samples are ‘contamined’ by other tissues, we first need to define which signatures we would ‘expect’ in a certain tissue. We therefore manually mapped signatures to the respective tissue type in this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a>. For example, we map the signatures <code>Intestine_Colon_cecum_NR_0.7_3</code> and <code>Intestine_Colon_NR_0.7_3</code> to <em>colon</em>.</p>
+<p>We mapped all <em>normalized tissues</em> from above to the respective signatures, which have at least 500 samples. We mapped tissues with a lower sample count only if they formed a subset of an already mapped tissue (<em>e.g.</em> we mapped <em>prefrontal cortex</em> to brain although having less than 500 samples, because we already mapped signatures to <em>brain</em>.)</p>
+<p>Moreover, we ran into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called <em>tissue sets</em>. For example, it is hard to distinguish <em>jejunum</em> from <em>colon</em>, but easy to distinguish the two from other tissues. We therefore created a tissue set <em>intestine</em>, which contains both <em>jejunum</em> and <em>colon</em> and references all signatures associated with the two tissues. This information is part of the same <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a> and combine them into groups.</p>
 
 </div>
 </div>
@@ -194,8 +186,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           </div>
         </div>
       </div>
-
-<a href="curating-data.html" class="navigation navigation-next navigation-unique" aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="validating-tissue-signatures.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
+<link rel="prev" href="sample-selection.html">
 
-<link rel="next" href="curating-data.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -163,39 +163,131 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<!--bookdown:title:end-->
-<!--bookdown:title:start-->
-<div id="bioqc-geo-analysis" class="section level1">
-<h1><span class="header-section-number">1</span> BioQC GEO Analysis</h1>
-<p>Systematically testing the GEO for <em>tissue heterogeneity</em>.</p>
-<p><em>Manuscript in preparation</em></p>
-<div id="introduction" class="section level2">
-<h2><span class="header-section-number">1.1</span> Introduction</h2>
-<p>Recently we created a software tool, BioQC, that detects tissue heterogeneity in gene expression data and shared it with the community of genome researchers via Bioconductor. The concept of tissue heterogeneity stems from our observations that gene expression data is often compromised by cells originating from other tissues than the target tissue of profiling. Tissue heterogeneity can be caused by physiological or pathological processes, such as immune cell infiltration. Alternatively, they can be caused by technical imperfection to separate complex or nearby tissues or even human errors. Failures in detecting tissue heterogeneity may have profound implications on data interpretation and reproducibility.</p>
-<p>As bioinformaticians working on drug discovery in the pharma industry, we are convinced that gene expression data available in publicly available databases such as NCBI Gene Expression Omnibus (GEO) or EBI ArrayExpress has great potential to catalyse new therapeutic agents. Disease signatures derived from disease models or patient biopsies, for instance, can be used to assess cellular models used for discovery and to guide compound selection. Molecular phenotypes of compounds, in another example, can be used to validate both efficacy and pre-clinical safety of compounds. Apparently all such applications depend critically on the quality of gene expression data. Several groups have scrutinised publicly available datasets and have identified deleterious factors of data quality such as batch effects, human error, and even data manipulation and faking. However, tissue heterogeneity has not been explicitly addressed so far and there is neither data nor knowledge about its prevalence. To fill this gap, we undertake a systematic investigation of publicly available gene expression datasets.</p>
-<p>We first explain how we curated samples from GEO and mapped the tissue annotation to signatures. Second, we show how we use <em>pygenesig</em> to independently create and validate signatures. Third, we provide technical information about our data storage stragegy using a DBS.</p>
-</div>
-<div id="bioqc" class="section level2">
-<h2><span class="header-section-number">1.2</span> BioQC</h2>
-<p>BioQC implements a computationally efficient Wilcoxon-Mann-Whitney (WMW) test.</p>
-</div>
-<div id="signatures" class="section level2">
-<h2><span class="header-section-number">1.3</span> Signatures</h2>
-<p>Tissue signatures are essentially a list of genes which are enriched in a certain tissue.</p>
-</div>
-<div id="the-experiment-in-brief" class="section level2">
-<h2><span class="header-section-number">1.4</span> The Experiment in Brief</h2>
-<p>We take all samples from GEO which have the required annotation. We run BioQC on each of the samples. We compare the tissue predicted by BioQC with the annotated tissue and call a sample ‘contamined’ if the prediction does not match the annotation.</p>
+<div id="tissue-migration" class="section level1">
+<h1><span class="header-section-number">6</span> Tissue Migration</h1>
+<p>Now, detect samples we defined as contamined: * highly siginificant BioQC scores (min score per sample &gt;6) * signature outside ‘expected’ signature that is at least 6 higher than the highest score in expected signatures. * (outlier in study)</p>
+<p>We can find contamined studies with SQL only. To speed up things, we create a temporary table (rather a materialized view, but that’s not available on our old postgres server) filtering for samples, where a non-expected signature exceeds all expected signatures by a certain threshold (BioQC score &gt; 6, aka. ‘enrichment-ratio’). This table is created in <code>db/queries/mk-extended_bioqc_res_table2.sql</code>.</p>
+<p>We create a view <code>contamined_samples</code> that contains all contamined samples in <code>db/queries/get_contamined_samples.sql</code>.</p>
+<p>Second, we retrieve the information we need for the migration chart from that temporary table.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">query =<span class="st"> &quot;</span>
+<span class="st">select origin</span>
+<span class="st">     , destination</span>
+<span class="st">     , count(gsm) as </span><span class="ch">\&quot;</span><span class="st">count</span><span class="ch">\&quot;</span>
+<span class="st">from bioqc_tissue_migration </span>
+<span class="st">where enrichment_ratio &gt; 4</span>
+<span class="st">  and rk = 1</span>
+<span class="st">  and tissue_set = &#39;gtex_solid&#39;</span>
+<span class="st">group by origin, destination</span>
+<span class="st">order by origin, destination&quot;</span>
+migration =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, query)
+<span class="kw">set.seed</span>(<span class="dv">42</span>)
+col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw">length</span>(<span class="kw">unique</span>(migration$ORIGIN)))
+<span class="kw">chordDiagram</span>(migration, <span class="dt">grid.col=</span>col, <span class="dt">annotationTrack=</span><span class="st">&quot;grid&quot;</span>, <span class="dt">preAllocateTracks=</span><span class="dv">1</span>)
+<span class="kw">circos.trackPlotRegion</span>(<span class="dt">track.index=</span><span class="dv">1</span>, <span class="dt">panel.fun =</span> function(x, y) {
+  xlim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;xlim&quot;</span>)
+  ylim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;ylim&quot;</span>)
+  sector.name =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;sector.index&quot;</span>)
+  <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] +<span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))
+  <span class="kw">circos.axis</span>(<span class="dt">h =</span> <span class="st">&quot;top&quot;</span>, <span class="dt">labels.cex =</span> <span class="fl">0.5</span>, <span class="dt">major.tick.percentage =</span> <span class="fl">0.2</span>, <span class="dt">sector.index =</span> sector.name, <span class="dt">track.index =</span> <span class="dv">2</span>)
+}, <span class="dt">bg.border =</span> <span class="ot">NA</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">chordDiagram</span>(migration[migration$ORIGIN !=<span class="st"> &#39;blood&#39;</span> &amp;<span class="st"> </span>migration$DESTINATION!=<span class="st">&#39;blood&#39;</span>,])</code></pre></div>
+<p>Contamination in total:</p>
+<p>We can also compose statistics about the origin of samples</p>
+<p>By time</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byYear =<span class="st"> &quot;</span>
+<span class="st">with contam_stats as (</span>
+<span class="st">  select bcs.*</span>
+<span class="st">       , case when enrichment_ratio &gt; 4</span>
+<span class="st">           then 1</span>
+<span class="st">           else null</span>
+<span class="st">         end as is_contam </span>
+<span class="st">  from bioqc_contam_stats bcs</span>
+<span class="st">)</span>
+<span class="st">select  year</span>
+<span class="st">       , tgroup</span>
+<span class="st">       , count(gsm) as total</span>
+<span class="st">       , count(is_contam) as contamined</span>
+<span class="st">       , count(is_contam)/cast(count(gsm) as float) as ratio</span>
+<span class="st">from contam_stats</span>
+<span class="st">where tissue_set = &#39;gtex_solid&#39;</span>
+<span class="st">group by year, tgroup</span>
+<span class="st">order by ratio desc</span>
+<span class="st">&quot;</span>
+
+year =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, byYear)
+
+<span class="kw">ggplot</span>(<span class="dt">data=</span>year, <span class="kw">aes</span>(<span class="dt">x=</span>YEAR, <span class="dt">y=</span>RATIO)) +<span class="st"> </span><span class="kw">stat_summary</span>(<span class="dt">fun.y=</span><span class="st">&quot;mean&quot;</span>, <span class="dt">geom=</span><span class="st">&quot;bar&quot;</span>)</code></pre></div>
+<p>By country (that’s nice figures, but it’s not very representative… tissue-bias, statistical significance, …)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byCountry =<span class="st"> &quot;</span>
+<span class="st">with contam_stats as (</span>
+<span class="st">  select bcs.*</span>
+<span class="st">       , case when enrichment_ratio &gt; 4</span>
+<span class="st">           then 1</span>
+<span class="st">           else null</span>
+<span class="st">         end as is_contam </span>
+<span class="st">  from bioqc_contam_stats bcs</span>
+<span class="st">)</span>
+<span class="st">select  country</span>
+<span class="st">       , tgroup</span>
+<span class="st">       , count(gsm) as total</span>
+<span class="st">       , count(is_contam) as contamined</span>
+<span class="st">       , count(is_contam)/cast(count(gsm) as float) as ratio</span>
+<span class="st">from contam_stats</span>
+<span class="st">where tissue_set = &#39;gtex_solid&#39;</span>
+<span class="st">group by country, tgroup</span>
+<span class="st">order by ratio desc</span>
+<span class="st">&quot;</span>
+
+country =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, byCountry)
+country<span class="fl">.2</span> =<span class="st"> </span>country[country$TGROUP ==<span class="st"> &#39;liver&#39;</span>,]
+<span class="co">#country.2 = ddply(country[country$total &gt; 2000,], ~country,summarise,ratio=mean(ratio))</span>
+
+spdf &lt;-<span class="st"> </span><span class="kw">joinCountryData2Map</span>(country<span class="fl">.2</span>, <span class="dt">joinCode=</span><span class="st">&quot;NAME&quot;</span>, <span class="dt">nameJoinColumn=</span><span class="st">&quot;COUNTRY&quot;</span>)
+<span class="kw">mapCountryData</span>(spdf, <span class="dt">nameColumnToPlot=</span><span class="st">&quot;RATIO&quot;</span>, <span class="dt">catMethod=</span><span class="st">&quot;fixedWidth&quot;</span>)</code></pre></div>
+<p>By organism</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byOrganism =<span class="st"> &quot;</span>
+<span class="st">with contam_stats as (</span>
+<span class="st">  select bcs.*</span>
+<span class="st">       , case when enrichment_ratio &gt; 4</span>
+<span class="st">           then 1</span>
+<span class="st">           else null</span>
+<span class="st">         end as is_contam </span>
+<span class="st">  from bioqc_contam_stats bcs</span>
+<span class="st">)</span>
+<span class="st">select  organism</span>
+<span class="st">       , tgroup</span>
+<span class="st">       , count(gsm) as total</span>
+<span class="st">       , count(is_contam) as contamined</span>
+<span class="st">       , count(is_contam)/cast(count(gsm) as float) as ratio</span>
+<span class="st">from contam_stats</span>
+<span class="st">where tissue_set = &#39;gtex_solid&#39;</span>
+<span class="st">group by organism, tgroup</span>
+<span class="st">order by ratio desc</span>
+<span class="st">&quot;</span>
+
+organism =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, byOrganism)
+tissues =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;blood&quot;</span>, <span class="st">&quot;brain&quot;</span>, <span class="st">&quot;kidney&quot;</span>, <span class="st">&quot;liver&quot;</span>)
+organism<span class="fl">.2</span> =<span class="st"> </span>organism[organism$TGROUP %in%<span class="st"> </span>tissues, ]
+
+<span class="co">#ggplot(data=organism.2, aes(x=ORGANISM, y=RATIO)) + stat_summary(fun.y=&quot;mean&quot;, geom=&quot;bar&quot;)</span>
+<span class="kw">ggplot</span>(<span class="dt">data=</span>organism<span class="fl">.2</span>, <span class="kw">aes</span>(<span class="dt">x=</span>ORGANISM, <span class="dt">y=</span>RATIO)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_boxplot</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color=</span>TGROUP))</code></pre></div>
 
 </div>
-</div>
+
+
+
+
+
+
             </section>
 
           </div>
         </div>
       </div>
+<a href="sample-selection.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 
-<a href="curating-data.html" class="navigation navigation-next navigation-unique" aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

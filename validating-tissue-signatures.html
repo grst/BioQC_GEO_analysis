@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-
-<link rel="next" href="curating-data.html">
+<link rel="prev" href="curating-data.html">
+<link rel="next" href="setup-database.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -163,29 +163,19 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<!--bookdown:title:end-->
-<!--bookdown:title:start-->
-<div id="bioqc-geo-analysis" class="section level1">
-<h1><span class="header-section-number">1</span> BioQC GEO Analysis</h1>
-<p>Systematically testing the GEO for <em>tissue heterogeneity</em>.</p>
-<p><em>Manuscript in preparation</em></p>
-<div id="introduction" class="section level2">
-<h2><span class="header-section-number">1.1</span> Introduction</h2>
-<p>Recently we created a software tool, BioQC, that detects tissue heterogeneity in gene expression data and shared it with the community of genome researchers via Bioconductor. The concept of tissue heterogeneity stems from our observations that gene expression data is often compromised by cells originating from other tissues than the target tissue of profiling. Tissue heterogeneity can be caused by physiological or pathological processes, such as immune cell infiltration. Alternatively, they can be caused by technical imperfection to separate complex or nearby tissues or even human errors. Failures in detecting tissue heterogeneity may have profound implications on data interpretation and reproducibility.</p>
-<p>As bioinformaticians working on drug discovery in the pharma industry, we are convinced that gene expression data available in publicly available databases such as NCBI Gene Expression Omnibus (GEO) or EBI ArrayExpress has great potential to catalyse new therapeutic agents. Disease signatures derived from disease models or patient biopsies, for instance, can be used to assess cellular models used for discovery and to guide compound selection. Molecular phenotypes of compounds, in another example, can be used to validate both efficacy and pre-clinical safety of compounds. Apparently all such applications depend critically on the quality of gene expression data. Several groups have scrutinised publicly available datasets and have identified deleterious factors of data quality such as batch effects, human error, and even data manipulation and faking. However, tissue heterogeneity has not been explicitly addressed so far and there is neither data nor knowledge about its prevalence. To fill this gap, we undertake a systematic investigation of publicly available gene expression datasets.</p>
-<p>We first explain how we curated samples from GEO and mapped the tissue annotation to signatures. Second, we show how we use <em>pygenesig</em> to independently create and validate signatures. Third, we provide technical information about our data storage stragegy using a DBS.</p>
-</div>
-<div id="bioqc" class="section level2">
-<h2><span class="header-section-number">1.2</span> BioQC</h2>
-<p>BioQC implements a computationally efficient Wilcoxon-Mann-Whitney (WMW) test.</p>
-</div>
-<div id="signatures" class="section level2">
-<h2><span class="header-section-number">1.3</span> Signatures</h2>
-<p>Tissue signatures are essentially a list of genes which are enriched in a certain tissue.</p>
-</div>
-<div id="the-experiment-in-brief" class="section level2">
-<h2><span class="header-section-number">1.4</span> The Experiment in Brief</h2>
-<p>We take all samples from GEO which have the required annotation. We run BioQC on each of the samples. We compare the tissue predicted by BioQC with the annotated tissue and call a sample ‘contamined’ if the prediction does not match the annotation.</p>
+<div id="validating-tissue-signatures" class="section level1">
+<h1><span class="header-section-number">3</span> Validating Tissue Signatures</h1>
+<p>The authors of <em>BioQC</em> have taken three independent approaches to show that their signatures are valid and biologically meaningful. However, they did not break down the predictive performance (<em>i.e.</em> is the signature able to identify its tissue) of each signature with quantitative performance measures.</p>
+<p>To address this, we independently derived signatures on the GTEx dataset using <em>gini-index</em> and performed both a 10-fold cross validation on the same dataset and a cross-species, cross-platform validation on a different dataset. To this end, we created the python package <a href="https://github.com/grst/pygenesig">pygenesig</a>, a framework to create and validate signatures.</p>
+<div id="data" class="section level2">
+<h2><span class="header-section-number">3.1</span> Data</h2>
+<ul>
+<li>GTEx</li>
+<li>GNF Mouse GeneAtlas V3 <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246" class="uri">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246</a>
+<ul>
+<li>platform Affymetrix Mouse Genome 430 2.0 Array (GPL1261)</li>
+</ul></li>
+</ul>
 
 </div>
 </div>
@@ -194,8 +184,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           </div>
         </div>
       </div>
-
-<a href="curating-data.html" class="navigation navigation-next navigation-unique" aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="curating-data.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="setup-database.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
