@@ -121,5 +121,20 @@ $(DATA_PATH)/bioqc_success.txt:
 	tr " " "\n" < $@.tmp | tr -d '"' | sort -u > $@
 	rm -f $@.tmp
 
+##################################
+# Calculate Mean and quantiles for each ExpressionSet. 
+# This is useful for finding out whether the samples have
+# been normalized. 
+#################################
+
+.PHONY: test_for_normalization 
+test_for_normalization: results/gse_lists/annotated_esets.txt 
+	rm -fr $(CHUNKSUB_PATH)/test_for_normalization
+	awk '{print "$(DATA_PATH)/geo_annot/"$$0}' < $< | $(CHUNKSUB) -d $(CWD) -s 50 -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N test_for_normalization -j $(CHUNKSUB_PATH) "$(CWD)/scripts/test_for_normalization.R $(DATA_PATH)/test_for_normalization/ {}" 
+
+$(DATA_PATH)/study_stats.txt: 
+	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | head -n 1 | xargs head -n 1 > $@ 
+	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | xargs awk 'FNR==2{print FILENAME $$0}' >> $@
+
 
 .FORCE:

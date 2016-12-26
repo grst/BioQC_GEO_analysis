@@ -5,7 +5,7 @@
 #   run_bioqc.R <outputDir> [<gmtFile>] <chunkFile> 
 # where chunkFile is a file containing paths to Rdata objects storing
 # ExpressionSets, one file per line. The ExpressionSet in the Rdata object
-# must be named 'eset'. 
+# must be named 'eset_res'. 
 #
 # If gmtFile is omitted, the default BioQC gmt file will be used. 
 #
