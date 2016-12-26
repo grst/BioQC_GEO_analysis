@@ -1,4 +1,4 @@
-## Sample Processing with BioQC
+## Sample Processing with BioQC {#sample-processing}
 
 
 
@@ -7,11 +7,7 @@ The following processes are ressource intensive, therefore we execute them on a 
 1. We download the studies with [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) and store them as R [ExpressionSet](https://bioconductor.org/packages/devel/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) using the R script [geo_to_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/geo_to_eset.R). For some series, the download is not successful. 
 2. We annotated human orthologous genes for all studies using [ribiosAnnotation](https://github.com/Accio/ribios) in [annotate_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/annotate_eset.R). This is necessary as the tissue signatures are built on a human dataset. The annotation failes for species which are not in the *ribios* database. 
 3. We run *BioQC* on these studies use [run_bioqc.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/run_bioqc.R). 
-4. Finally, we prefilter BioQC's results for having a p-value < 0.05 and import them into the database. 
-
-## Update database
-we aggregate the bioqc results and import them manually in the DBS. 
-we collate all samples on which we successfully ran BioQC. This is our Background. 
+4. Finally, we prefilter BioQC's results for having a p-value < 0.05 and [import them into the database](#import-bioqc-results). 
 
 
 ## Sample Post-selection
@@ -30,7 +26,7 @@ sql_from = "
 from bioqc_bioqc_success bs
 join bioqc_gsm bg
   on bg.gsm = bs.gsm
-left outer join bioqc_gse_gsm bgg
+join bioqc_gse_gsm bgg
   on bgg.gsm = bs.gsm 
 "
 sql_where = ""
@@ -40,7 +36,7 @@ kable(res)
 
     GSM    GSE
 -------  -----
- 253714   8083
+ 253210   8083
 
 
 ### Excluding multi-channel microarrays
@@ -57,7 +53,7 @@ kable(res)
 
     GSM    GSE
 -------  -----
- 235741   7561
+ 235237   7561
 
 ### Exclude non-mapped tissues
 We exclude samples that have a tissue annotated, but it is not mapped to a [normalized tissue](#tissue-normalization). 
@@ -75,7 +71,7 @@ kable(res)
 
     GSM    GSE
 -------  -----
- 135877   3770
+ 135670   3770
 
 ### Select organisms
 We were interested in the organism distribution.
@@ -94,8 +90,8 @@ kable(res)
 
    GSM    GSE  ORGANISM_CH1                             
 ------  -----  -----------------------------------------
- 65944   1201  Homo sapiens                             
- 38128   2267  Mus musculus                             
+ 65769   1201  Homo sapiens                             
+ 38096   2267  Mus musculus                             
  29909    278  Rattus norvegicus                        
   1082     24  Macaca mulatta                           
    259      7  Macaca fascicularis                      
@@ -109,8 +105,8 @@ kable(res)
     19      1  Mus spretus                              
     18      1  Capra hircus                             
     16      1  Phodopus sungorus                        
-    12      1  Mus musculus musculus x M. m. castaneus  
     12      1  Papio hamadryas                          
+    12      1  Mus musculus musculus x M. m. castaneus  
      8      1  Macaca nemestrina                        
      6      1  Mus musculus musculus                    
      6      1  Mus musculus castaneus                   
@@ -131,19 +127,58 @@ kable(res)
 
     GSM    GSE
 -------  -----
- 133981   3727
+ 133774   3727
 
-We create a materialized view `BIOQC_RES_FIL` with bioqc results that are filted according 
-to these criteria in `db/views/bioqc_res_fil.sql`, except that it also contains the GTEx signatures. ``
+### Exclude normalized studies
+
+```r
+sql = "
+select study_median
+from bioqc_gse_gpl
+where study_median is not null"
+
+res = dbGetQuery(mydb, sql)
+sm = res$STUDY_MEDIAN
+hist(sm[sm > -5 & sm < 30], breaks=seq(-5, 30, .2))
+```
+
+<img src="30_sample_postselection_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display:block; margin: auto" style="display: block; margin: auto;" />
+
+We observe three peaks, the first and second
+have been normalized in some way. We focus on the studies 
+with a median between 3 and 9. 
+
+*TODO do proper fit of distributions and rationale based on standard deviation* 
 
 
-### Select tissues
+```r
+sql_select6 = sql_select5
+sql_from6 = str_c(sql_from5, "
+  join bioqc_gse_gpl bgl on 
+  bgg.gse = bgl.gse and bg.gpl = bgl.gpl", sep="\n")
+sql_where6 = str_c(sql_where5, "
+  and study_median between 3 and 9", sep="\n")
+res = dbGetQuery(mydb, str_c(sql_select6, sql_from6, sql_where6, sep="\n"))
+kable(res)
+```
 
-Of which tissues are enough samples available that we can make a meaningful statement about contamination? 
+
+
+   GSM    GSE
+------  -----
+ 82933   1837
+
+This is the 'background' of samples on which we test for tissue contamination. 
+We store the selected samples alongside with meta information required for the analysis in the materialized view `BIOQC_SELECTED_SAMPLES` in our DBS. [Here](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/views/sample_selection.sql) is the SQL script generating the materialized view. 
+
+
+### Tissue abundance
+
+The following table shows how many samples are available for each tissue: 
 
 ```r
 sqlTissue = "
-select /*+ parallel(16) */ tissue, count(distinct gsm) as samples from bioqc_res_fil
+select /*+ parallel(16) */ tissue, count(distinct gsm) as samples from bioqc_selected_samples
 group by tissue
 order by samples desc"
 resTissue = dbGetQuery(mydb, sqlTissue)
@@ -154,50 +189,50 @@ kable(resTissue)
 
 TISSUE               SAMPLES
 ------------------  --------
-blood                  32548
-liver                  26732
-lung                    9553
-kidney                  7507
-bone marrow             6536
-brain                   5719
-heart                   4813
-breast tumor            3990
-spleen                  3506
+blood                  33055
+liver                  27029
+lung                    9732
+kidney                  7588
+bone marrow             6581
+brain                   5824
+heart                   4819
+breast tumor            4238
+spleen                  3518
 adipose                 2857
-skeletal muscle         2445
-skin                    2271
-hippocampus             2053
-colon                   1914
-hepatocyte              1870
-tumor                   1627
-white blood cells       1535
+skeletal muscle         2474
+skin                    2326
+hippocampus             2059
+colon                   1954
+hepatocyte              1874
+tumor                   1679
+white blood cells       1551
 lymph node              1335
-breast                  1205
-cerebellum              1175
-testis                  1128
+breast                  1227
+cerebellum              1200
+testis                  1131
 pbmc                     936
 frontal cortex           805
+pancreas                 770
 placenta                 766
-pancreas                 746
-retina                   711
-pancreatic islets        645
-thymus                   638
-ovary                    549
-prostate                 522
-hypothalamus             468
-mammary gland            464
-jejunum                  446
-prefrontal cortex        409
-cortex                   328
-embryo                   257
-uterus                   239
-cervix                   147
+retina                   714
+pancreatic islets        647
+thymus                   642
+ovary                    570
+prostate                 523
+mammary gland            479
+hypothalamus             470
+jejunum                  456
+prefrontal cortex        410
+cortex                   336
+embryo                   290
+uterus                   246
+cervix                   148
 stomach                  139
-salivary gland           128
+salivary gland           133
 bladder                  123
 ventral midbrain          78
 eye                       69
 adrenal gland             67
 monocyte                  59
-neuroblastoma             27
+neuroblastoma             45
 plasma                     9

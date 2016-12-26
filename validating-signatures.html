@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="validating-signatures.html">
-<link rel="next" href="setup-database.html">
+<link rel="prev" href="index.html">
+<link rel="next" href="curating-data.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -172,22 +172,27 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="curating-data" class="section level1">
-<h1><span class="header-section-number">3</span> Curating Data</h1>
-<div id="selecting-samples-by-metadata" class="section level2">
-<h2><span class="header-section-number">3.1</span> Selecting Samples by Metadata</h2>
-<p><a href="https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html">GEOmetadb</a> is a SQLite database containing metadata associated with samples and studies from GEO. This database has proven to be tremendously helpful for selecting samples by tissue and organism. We integrate the database into the <a href="setup-database.html#setup-database">study’s DBS</a> and describe how we select samples in detail in <a href="sample-selection.html#sample-selection">Sample selection</a>.</p>
+<div id="validating-signatures" class="section level1">
+<h1><span class="header-section-number">2</span> Validating Tissue Signatures</h1>
+<p>The authors of <em>BioQC</em> have taken three independent approaches to show that their signatures are valid and biologically meaningful. However, they did not break down the predictive performance (<em>i.e.</em> is the signature able to identify its tissue) of each signature with quantitative performance measures.</p>
+<p>To address this, we independently derived signatures on the GTEx dataset using <em>gini-index</em> and performed both a 10-fold cross validation on the same dataset and a cross-species, cross-platform validation on a different dataset. To this end, we created the python package <a href="https://github.com/grst/pygenesig">pygenesig</a>, a framework to create and validate signatures.</p>
+<div id="data" class="section level2">
+<h2><span class="header-section-number">2.1</span> Data</h2>
+<ul>
+<li>GTEx</li>
+<li>GNF Mouse GeneAtlas V3 <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246" class="uri">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246</a>
+<ul>
+<li>platform Affymetrix Mouse Genome 430 2.0 Array (GPL1261)</li>
+</ul></li>
+</ul>
 </div>
-<div id="normalize-tissues" class="section level2">
-<h2><span class="header-section-number">3.2</span> Normalize Tissues</h2>
-<p>The annotation of tissues is inconsistent within GEO. A “liver” sample can be termed <em>e.g.</em> “liver”, “liver biopsy” or “primary liver”. We therefore need a way to “normalize” the tissue name. We did this manually for the most abundant tissues in this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx">Excel sheet</a>.</p>
-</div>
-<div id="tissue-signatures" class="section level2">
-<h2><span class="header-section-number">3.3</span> Map tissues to signatures</h2>
-<p>In order to find out which samples are ‘contamined’ by other tissues, we first need to define which signatures we would ‘expect’ in a certain tissue. We therefore manually mapped signatures to the respective tissue type in this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a>. For example, we map the signatures <code>Intestine_Colon_cecum_NR_0.7_3</code> and <code>Intestine_Colon_NR_0.7_3</code> to <em>colon</em>.</p>
-<p>We mapped all <em>normalized tissues</em> from above to the respective signatures, which have at least 500 samples. We mapped tissues with a lower sample count only if they formed a subset of an already mapped tissue (<em>e.g.</em> we mapped <em>prefrontal cortex</em> to brain although having less than 500 samples, because we already mapped signatures to <em>brain</em>.)</p>
-<p>Moreover, we ran into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called <em>tissue sets</em> to combine them into groups. For example, it is hard to distinguish <em>jejunum</em> from <em>colon</em>, but easy to distinguish the two from other tissues. We therefore created a tissue set <em>intestine</em>, which contains both <em>jejunum</em> and <em>colon</em> and references all signatures associated with the two tissues. This information is part of the same <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a>.</p>
-<p>We created a tissue set <code>bioqc_all</code> which maps all tissues to all signatures provided by the authors of <em>BioQC</em> and a high-confidence tissue-set <code>gtex_solid</code> which only maps tissues to signatures that we could validate as high-confidence signatures in <a href="validating-signatures.html#validating-signatures">Validate Tissue Signatures</a>.</p>
+<div id="validation" class="section level2">
+<h2><span class="header-section-number">2.2</span> Validation</h2>
+<ul>
+<li><a href="https://github.com/grst/pygenesig/blob/master/notebooks/validate_gini.ipynb">GTEx crossvalidation</a></li>
+<li><a href="https://github.com/grst/pygenesig/blob/master/notebooks/validate-mouse.ipynb">GTEx on mouse</a></li>
+</ul>
+<p><em>TODO: include notebooks in this book.</em></p>
 
 </div>
 </div>
@@ -196,8 +201,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           </div>
         </div>
       </div>
-<a href="validating-signatures.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="setup-database.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="curating-data.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

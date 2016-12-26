@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="validating-signatures.html">
-<link rel="next" href="setup-database.html">
+<link rel="prev" href="sample-selection.html">
+<link rel="next" href="tissue-migration.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -172,23 +172,83 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="curating-data" class="section level1">
-<h1><span class="header-section-number">3</span> Curating Data</h1>
-<div id="selecting-samples-by-metadata" class="section level2">
-<h2><span class="header-section-number">3.1</span> Selecting Samples by Metadata</h2>
-<p><a href="https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html">GEOmetadb</a> is a SQLite database containing metadata associated with samples and studies from GEO. This database has proven to be tremendously helpful for selecting samples by tissue and organism. We integrate the database into the <a href="setup-database.html#setup-database">study’s DBS</a> and describe how we select samples in detail in <a href="sample-selection.html#sample-selection">Sample selection</a>.</p>
+<div id="contamination-analysis" class="section level1">
+<h1><span class="header-section-number">6</span> Analyse Contamination</h1>
+<p>The heartpiece of the study is <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/views/contamination.sql">this sql script</a> which identifies heterogenous samples. In this section we will go through the different analysis steps performed in the script.</p>
+<p><img src="db/design/contamination-views.svg" /><!-- --></p>
+<div id="input-tables" class="section level2">
+<h2><span class="header-section-number">6.1</span> Input Tables</h2>
+<ul>
+<li><code>BIOQC_SELECTED_SAMPLES</code>: the samples resulting from the <a href="#selecting%20samples">selection process</a> including metadata</li>
+<li><code>BIOQC_TISSUE_SET</code>: the <a href="#tissues-signatures">manual mapping</a> of tissues to signatures (“expected signatures”)</li>
+<li><code>BIOQC_RES</code>: the p-values for each sample and signature (pre-filtered for having a p-value &lt; 0.05)</li>
+</ul>
 </div>
-<div id="normalize-tissues" class="section level2">
-<h2><span class="header-section-number">3.2</span> Normalize Tissues</h2>
-<p>The annotation of tissues is inconsistent within GEO. A “liver” sample can be termed <em>e.g.</em> “liver”, “liver biopsy” or “primary liver”. We therefore need a way to “normalize” the tissue name. We did this manually for the most abundant tissues in this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx">Excel sheet</a>.</p>
+<div id="processing-steps-explained" class="section level2">
+<h2><span class="header-section-number">6.2</span> Processing Steps explained</h2>
+<div id="bioqc_selected_samples_tset" class="section level3">
+<h3><span class="header-section-number">6.2.1</span> BIOQC_SELECTED_SAMPLES_TSET</h3>
+<p>We join <code>BIOQC_SELECTED_SAMPLES</code> on <code>BIOQC_TISSUE_SET</code> to attach the tissue group and the respective signatures to each sample.</p>
+<p>Example: The table rows for the colon sample <code>GSM1234</code> could look like:</p>
+<pre><code>GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME 
+GSM1234   colon     gtex_all    colon     543             Colon
+GSM1234   colon     gtex_solid  intestine 543             Colon
+GSM1234   colon     gtex_solid  intestine 544             Jejunum</code></pre>
 </div>
-<div id="tissue-signatures" class="section level2">
-<h2><span class="header-section-number">3.3</span> Map tissues to signatures</h2>
-<p>In order to find out which samples are ‘contamined’ by other tissues, we first need to define which signatures we would ‘expect’ in a certain tissue. We therefore manually mapped signatures to the respective tissue type in this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a>. For example, we map the signatures <code>Intestine_Colon_cecum_NR_0.7_3</code> and <code>Intestine_Colon_NR_0.7_3</code> to <em>colon</em>.</p>
-<p>We mapped all <em>normalized tissues</em> from above to the respective signatures, which have at least 500 samples. We mapped tissues with a lower sample count only if they formed a subset of an already mapped tissue (<em>e.g.</em> we mapped <em>prefrontal cortex</em> to brain although having less than 500 samples, because we already mapped signatures to <em>brain</em>.)</p>
-<p>Moreover, we ran into the issue, that some tissue signatures are not as specific as the annotation in the GEO. We therefore curated so-called <em>tissue sets</em> to combine them into groups. For example, it is hard to distinguish <em>jejunum</em> from <em>colon</em>, but easy to distinguish the two from other tissues. We therefore created a tissue set <em>intestine</em>, which contains both <em>jejunum</em> and <em>colon</em> and references all signatures associated with the two tissues. This information is part of the same <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">Excel sheet</a>.</p>
-<p>We created a tissue set <code>bioqc_all</code> which maps all tissues to all signatures provided by the authors of <em>BioQC</em> and a high-confidence tissue-set <code>gtex_solid</code> which only maps tissues to signatures that we could validate as high-confidence signatures in <a href="validating-signatures.html#validating-signatures">Validate Tissue Signatures</a>.</p>
+<div id="bioqc_res_tset" class="section level3">
+<h3><span class="header-section-number">6.2.2</span> BIOQC_RES_TSET</h3>
+<p>We join the BioQC results (pvalue for each signature and sample) from <code>BIOQC_RES</code> with <code>BIOQC_TISSUE_SET</code> to map the signatures back to their tissue group.</p>
+<p>Example: For a result</p>
+<pre><code>GSM       SIGNATURE     PVALUE
+GSM1234   544           1e-10
+GSM1234   543           1e-5</code></pre>
+<p>the table rows could look like</p>
+<pre><code>GSM       FOUND_SIG     PVALUE    FOUND_SIG_NAME  FOUND_TGROUP  TISSUE_SET
+GSM1234   544           1e-10     Jejunum         jejunum       gtex_all
+GSM1234   544           1e-10     Jejunum         intestine     gtex_solid
+GSM1234   543           1e-5      Colon           colon         gtex_all
+GSM1234   543           1e-5      Colon           intestine     gtex_solid</code></pre>
+</div>
+<div id="bioqc_tissue_enrichment" class="section level3">
+<h3><span class="header-section-number">6.2.3</span> BIOQC_TISSUE_ENRICHMENT</h3>
+<p>We now match the found onto the expected tissue groups by joining <code>BIOQC_SELECTED_SAMPES_TSET</code> with <code>BIOQC_RES_TSET</code> on <code>GSM</code> and <code>TISSUE_SET</code>. We calculate the <em>Enrichment Ratio</em> as <span class="math inline">\(\log_{10}(p_{expected\_sig} / p_{found\_sig})\)</span>.</p>
+<p>For the above example tables, we would get:</p>
+<pre><code>GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO
+GSM1234   colon     gtex_all    colon     543             Colon               543        Colon           0.0
+GSM1234   colon     gtex_all    colon     543             Colon               544        Jejunum         5.0
+...</code></pre>
+<p>We filter out rows where the found signature is in the list of <em>expected sigantures</em> for the respective tissue group:</p>
+<pre><code>GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO
+GSM1234   colon     gtex_all    colon     543             Colon               544        Jejunum         5.0
+...</code></pre>
+</div>
+<div id="bioqc_tissue_enrichment2" class="section level3">
+<h3><span class="header-section-number">6.2.4</span> BIOQC_TISSUE_ENRICHMENT2</h3>
+<p>combine expected signature by taking the minimal enrichment ratio for each expected signature.</p>
+<p>Example:</p>
+<pre><code>GSM    TISSUE    TGROUP    EXPECTED  FOUND         ENRICHMENT_RATIO
+GSM888 jejunum   intestine colon     liver_fetal   12
+GSM888 jejunum   intestine colon     liver         8
+GSM888 jejunum   intestine jejunum   liver_fetal   5
+GSM888 jejunum   intestine jejunum   liver         4</code></pre>
+<p>will be combined into</p>
+<pre><code>GSM              TGROUP    EXPECTED  FOUND         ENRICHMENT_RATIO  RANK
+GSM888           intestine           liver_fetal   5                 1
+GSM888           intestine           liver         4                 1</code></pre>
+<p>if multiple infiltrating tissues are found, a rank is calculated.</p>
+</div>
+<div id="bioqc_contam_stats" class="section level3">
+<h3><span class="header-section-number">6.2.5</span> BIOQC_CONTAM_STATS</h3>
+<p>Add year, country and organism to each sample from <code>BIOQC_TISSUE_ENRICHMENT2</code>.</p>
+</div>
+<div id="bioqc_tissue_migration" class="section level3">
+<h3><span class="header-section-number">6.2.6</span> BIOQC_TISSUE_MIGRATION</h3>
+<p>Add <em>origin</em> and <em>destination</em> tissue groups for each sample by mapping the found signatures back to tissue groups.</p>
+<p>Example:</p>
+<pre><code>GSM       TISSUE_SET  ORIGIN  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO   DESTINATION
+GSM1234   gtex_all    colon   544        Jejunum         5                  jejunum</code></pre>
 
+</div>
 </div>
 </div>
             </section>
@@ -196,8 +256,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           </div>
         </div>
       </div>
-<a href="validating-signatures.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="setup-database.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="sample-selection.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="tissue-migration.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

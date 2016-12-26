@@ -7,8 +7,7 @@ an Oracle 11g database. We combine the metadata from [GEOmetadb](https://www.bio
 with tables to store signature scores generated with 
 [BioQC](https://accio.github.io/BioQC) and manually curated annotations. 
 
-[GEOmetadb](https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html) 
-is an SQLite database containing metadata associated with samples and studies from GEO. 
+The following figure shows the database scheme used for the study as entity-relationship (ER) diagram: 
 
 <div class="figure" style="text-align: center">
 <img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
@@ -22,17 +21,13 @@ is an SQLite database containing metadata associated with samples and studies fr
 * **BIOQC_GPL**: *from GEOmetadb*, list of all platforms (*e.g.* different types of microarrays) referenced in GEO. 
 * **BIOQC_GSE**: *from GEOmetadb*, list of *Series* (collections of samples) in GEO. 
 
-### Tissue Annotation {#tissue-normalization}
-The annotation of tissues is inconsistent within GEO. A "liver" sample can be termed *e.g.* "liver", "liver biopsy" or "primary liver". We therefore need a way to "normalize" the tissue name. We did this manually for the most abundant tissues in this [Excel sheet](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx) which is then imported into the **BIOQC_NORMALIZE_TISSUES** table. **BIOQC_TISSUES** is simply a unique list of all curated tissues. 
-
-### Signatures
-Signatures are essentially a list of genes, which are over-represented in a certain tissue, cell type, pathway, etc. A common way to save such signatures is the [GMT file format](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29). These GMT files can be imported into **BIOQC_SIGNATURES**. 
-
-### Expected Signatures
- which we imported into  **BIOQC_TISSUE_SET**. 
-
-### Results
-Our analysis creates a p-value for each sample in `BIOQC_GSM` and each signature in `BIOQC_SIGNATURES`. These p-values are stored in **BIOQC_RES**.
+### BioQC
+* **BIOQC_TISSUES**: List of all tissues manually annotated in [Normalize Tissues](#normalize-tissues)
+* **BIOQC_NORMALIZE_TISSUES**: Stores the [manually curated](#normalize-tissues) mapping of the original tissue name to a normalized tissue name.
+* **BIOQC_SIGNATURES**: Stores gene signatures imported from a  [GMT file](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29)
+* **BIOQC_TISSUE_SET**: Stores the [manually curated](#tissue-signatures) mapping of tissues to 'expected signatures'. 
+* **BIOQC_RES**: Stores the p-value generated with *BioQC* for each signature in **BIOQC_SIGNATURES** and each samples in **BIOQC_GSM**. 
+* **BIOQC_BIOQC_SUCCESS**: List of all studies on which we successfully ran *BioQC*. This serves as 'background' for our analysis. 
 
 
 ## Import GEOmetadb
@@ -177,5 +172,36 @@ signatureset2db(gtex_solid, "gtex_solid")
 signatureset2db(gtex_all, "gtex_all")
 ```
 
+### BioQC results {#import-bioqc-results}
+Once we [ran the analysis](#sample-processing), we manually import the list of samples on which we successfully applied BioQC and the respective p-values into the tables **BIOQC_BIOQC_SUCCESS** and **BIOQC_RES**:
 
+```
+bioqc_melt_all.uniq.tsv
+bioqc_success.txt
+```
 
+Additionally, we import the study means for each study on each platform: 
+
+```r
+study_stats = read_lines("/pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot/study_stats.txt", skip=1)
+study_stats_split = lapply(study_stats, function(x) {
+  return(str_split(x, "\\s+")[[1]][1:7])
+})
+study_stats_df = data.table(do.call(rbind.data.frame, study_stats_split))
+for (i in 2:7) {
+  study_stats_df[[i]] = as.numeric(as.character(study_stats_df[[i]]))
+}
+study_stats_df = study_stats_df[,GSE:=sapply(as.character(study_stats_df[[1]]), geoIdFromPath)]
+study_stats_df = study_stats_df[,GPL:=lapply(as.character(study_stats_df[[1]]), gplFromPath)]
+setcolorder(study_stats_df, c(8, 9, 1:7))
+study_stats_df[[3]] = NULL # remove file name
+colnames(study_stats_df) = as.character(1:ncol(study_stats_df)) # valid colnames for db
+
+dbSendUpdate(mydb, "truncate table bioqc_tmp_gse_gpl")
+dbAppendDf("BIOQC_TMP_GSE_GPL", study_stats_df)
+dbSendUpdate(mydb, "update bioqc_gse_gpl a
+              set (study_min, study_25, study_median, study_mean, study_75, study_max) = (select study_min, study_25, study_median, study_mean, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))")
+```
+
+## Store results
+We do not only use the database as pure data storage, but also as data analysis engine, harvesting the power of SQL. (See sections [sample selection](#sample-selection) and [contamination analysis](#contamination-analysis)). We save intermediate results of time-consuming queries in so-called [*materialized views*](https://docs.oracle.com/cd/B10501_01/server.920/a96567/repmview.htm), which are pysical snapshots of a query's result. 
