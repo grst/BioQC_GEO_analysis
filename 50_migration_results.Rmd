@@ -1,4 +1,4 @@
-# Tissue Migration
+# Tissue Migration {#tissue-migration}
 
 ```{r setup, include=FALSE}
 source("lib/knitr.R")
@@ -31,7 +31,7 @@ select origin
 from bioqc_tissue_migration 
 where enrichment_ratio > 4
   and rk = 1
-  and tissue_set = 'gtex_solid'
+  and tissue_set = 'bioqc_all'
 group by origin, destination
 order by origin, destination"
 migration = dbGetQuery(mydb, query)

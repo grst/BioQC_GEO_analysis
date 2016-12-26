@@ -1,4 +1,4 @@
-# Validating Tissue Signatures
+# Validating Tissue Signatures {#validating-signatures}
 
 The authors of *BioQC* have taken three independent approaches to show that their signatures are valid and biologically meaningful. However, they did not break down the predictive performance (*i.e.* is the signature able to identify its tissue) of each signature with quantitative performance measures. 
 
@@ -9,3 +9,9 @@ To address this, we independently derived signatures on the GTEx dataset using *
  * GTEx
  * GNF Mouse GeneAtlas V3 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246
     - platform Affymetrix Mouse Genome 430 2.0 Array (GPL1261)
+    
+## Validation
+ * [GTEx crossvalidation](https://github.com/grst/pygenesig/blob/master/notebooks/validate_gini.ipynb)
+ * [GTEx on mouse](https://github.com/grst/pygenesig/blob/master/notebooks/validate-mouse.ipynb)
+ 
+*TODO: include notebooks in this book.* 
