@@ -48,9 +48,17 @@ attachOrthologousSymbols = function(eset) {
 }
 
 geoIdFromPath = function(path) {
-  pat = "((GSE|GDS)\\d+)(_\\d+)?(.*).(.*)"  
+  pat = "((GSE|GDS)\\d+)([-_]GPL\\d+)?(.*).(.*)"  
   id = sub(pat, "\\1", basename(path))
   return(id)
 }
-
+gplFromPath = function(path) {
+  pat = "(.*)(GPL\\d+)(.*).(.*)"  
+  id = sub(pat, "\\2", basename(path))
+  if(id == basename(path)) { 
+    return ("")
+  } else {
+    return(id)
+  }
+}
 

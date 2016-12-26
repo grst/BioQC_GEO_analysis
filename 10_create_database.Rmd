@@ -185,5 +185,27 @@ bioqc_melt_all.uniq.tsv
 bioqc_success.txt
 ```
 
+Additionally, we import the study means for each study on each platform: 
+```{r}
+study_stats = read_lines("/pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot/study_stats.txt", skip=1)
+study_stats_split = lapply(study_stats, function(x) {
+  return(str_split(x, "\\s+")[[1]][1:7])
+})
+study_stats_df = data.table(do.call(rbind.data.frame, study_stats_split))
+for (i in 2:7) {
+  study_stats_df[[i]] = as.numeric(as.character(study_stats_df[[i]]))
+}
+study_stats_df = study_stats_df[,GSE:=sapply(as.character(study_stats_df[[1]]), geoIdFromPath)]
+study_stats_df = study_stats_df[,GPL:=lapply(as.character(study_stats_df[[1]]), gplFromPath)]
+setcolorder(study_stats_df, c(8, 9, 1:7))
+study_stats_df[[3]] = NULL # remove file name
+colnames(study_stats_df) = as.character(1:ncol(study_stats_df)) # valid colnames for db
+
+dbSendUpdate(mydb, "truncate table bioqc_tmp_gse_gpl")
+dbAppendDf("BIOQC_TMP_GSE_GPL", study_stats_df)
+dbSendUpdate(mydb, "update bioqc_gse_gpl a
+              set (study_min, study_25, study_median, study_mean, study_75, study_max) = (select study_min, study_25, study_median, study_mean, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))")
+```
+
 ## Store results
 We do not only use the database as pure data storage, but also as data analysis engine, harvesting the power of SQL. (See sections [sample selection](#sample-selection) and [contamination analysis](#contamination-analysis)). We save intermediate results of time-consuming queries in so-called [*materialized views*](https://docs.oracle.com/cd/B10501_01/server.920/a96567/repmview.htm), which are pysical snapshots of a query's result. 

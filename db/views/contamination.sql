@@ -215,10 +215,7 @@ create /*+ parallel(16) */ index bte2_rk
 -- BIOQC_CONTAM_STATS
 -- 
 -- contamination stats with meta information
---
--- List of all samples with
---   * meta information
---   * boolean flag (null | 1) indicating whether the sample is contamined. 
+-- 
 --------------------------------------------------------------------------------
 create or replace view bioqc_contam_stats
 as
