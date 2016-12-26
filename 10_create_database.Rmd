@@ -9,6 +9,7 @@ source("lib/geo_annotation.R")
 source("lib/db_io.R")
 library(RSQLite)
 library(testthat)
+library(readr)
 library(data.table)
 library(readxl)
 ```
@@ -186,7 +187,7 @@ bioqc_success.txt
 ```
 
 Additionally, we import the study means for each study on each platform: 
-```{r}
+```{r eval=FALSE}
 study_stats = read_lines("/pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot/study_stats.txt", skip=1)
 study_stats_split = lapply(study_stats, function(x) {
   return(str_split(x, "\\s+")[[1]][1:7])

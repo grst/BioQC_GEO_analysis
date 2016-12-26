@@ -3,12 +3,12 @@
 ```{r setup, include=FALSE}
 source("lib/knitr.R")
 library(BioQC)
-library(rworldmap)
 library(VennDiagram)
 library(data.table)
 library(grid)
 library(gridBase)
 library(stringr)
+library(readr)
 library(testthat)
 source("lib/plots.R")
 source("lib/db.R")
@@ -38,7 +38,7 @@ sql_from = "
 from bioqc_bioqc_success bs
 join bioqc_gsm bg
   on bg.gsm = bs.gsm
-left outer join bioqc_gse_gsm bgg
+join bioqc_gse_gsm bgg
   on bgg.gsm = bs.gsm 
 "
 sql_where = ""
@@ -92,6 +92,35 @@ sql_from5 = sql_from4
 sql_where5 = str_c(sql_where4, "
   and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')", sep="\n")
 res = dbGetQuery(mydb, str_c(sql_select5, sql_from5, sql_where5, sep="\n"))
+kable(res)
+```
+
+### Exclude normalized studies
+```{r }
+sql = "
+select study_median
+from bioqc_gse_gpl
+where study_median is not null"
+
+res = dbGetQuery(mydb, sql)
+sm = res$STUDY_MEDIAN
+hist(sm[sm > -5 & sm < 30], breaks=seq(-5, 30, .2))
+```
+
+We observe three peaks, the first and second
+have been normalized in some way. We focus on the studies 
+with a median between 3 and 9. 
+
+*TODO do proper fit of distributions and rationale based on standard deviation* 
+
+```{r filter_median, cache=TRUE}
+sql_select6 = sql_select5
+sql_from6 = str_c(sql_from5, "
+  join bioqc_gse_gpl bgl on 
+  bgg.gse = bgl.gse and bg.gpl = bgl.gpl", sep="\n")
+sql_where6 = str_c(sql_where5, "
+  and study_median between 3 and 9", sep="\n")
+res = dbGetQuery(mydb, str_c(sql_select6, sql_from6, sql_where6, sep="\n"))
 kable(res)
 ```
 

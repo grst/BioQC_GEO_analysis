@@ -72,10 +72,16 @@ as
   from bioqc_bioqc_success bs
   join bioqc_gsm bg
     on bg.gsm = bs.gsm
+  join bioqc_gse_gsm bgg
+    on bgg.gsm = bs.gsm 
   join bioqc_normalize_tissues bnt
-    on bnt.tissue_orig = lower(bg.tissue_orig)  
-  where channel_count = 1  
-  and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus');
+    on bnt.tissue_orig = lower(bg.tissue_orig)
+  join bioqc_gse_gpl bgl
+    on bgg.gse = bgl.gse
+    and bg.gpl = bgl.gpl
+  where channel_count = 1
+  and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')
+  and study_median between 3 and 9;
   
 create /*+ parallel(16) */ index bss_gsm
   on bioqc_selected_samples(gsm); 
