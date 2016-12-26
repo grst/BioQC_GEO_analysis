@@ -41,6 +41,32 @@ circos.trackPlotRegion(track.index=1, panel.fun = function(x, y) {
 }, bg.border = NA)
 ```
 
+### same with 'gtex_solid' signatures
+
+```r
+query = "
+select origin
+     , destination
+     , count(gsm) as \"count\"
+from bioqc_tissue_migration 
+where enrichment_ratio > 4
+  and rk = 1
+  and tissue_set = 'gtex_solid'
+group by origin, destination
+order by origin, destination"
+migration = dbGetQuery(mydb, query)
+set.seed(42)
+col = rand_color(length(unique(migration$ORIGIN)))
+chordDiagram(migration, grid.col=col, annotationTrack="grid", preAllocateTracks=1)
+circos.trackPlotRegion(track.index=1, panel.fun = function(x, y) {
+  xlim = get.cell.meta.data("xlim")
+  ylim = get.cell.meta.data("ylim")
+  sector.name = get.cell.meta.data("sector.index")
+  circos.text(mean(xlim), ylim[1] + .1, sector.name, facing = "clockwise", niceFacing = TRUE, adj = c(0, 0.5))
+  circos.axis(h = "top", labels.cex = 0.5, major.tick.percentage = 0.2, sector.index = sector.name, track.index = 2)
+}, bg.border = NA)
+```
+
 
 ```r
 chordDiagram(migration[migration$ORIGIN != 'blood' & migration$DESTINATION!='blood',])
@@ -48,6 +74,32 @@ chordDiagram(migration[migration$ORIGIN != 'blood' & migration$DESTINATION!='blo
 
 Contamination in total: 
 
+```r
+byTissue = "
+with contam_stats as (
+  select bcs.*
+       , case when enrichment_ratio > 4
+           then 1
+           else null
+         end as is_contam 
+  from bioqc_contam_stats bcs
+)
+select  tgroup
+       , count(gsm) as total
+       , count(is_contam) as contamined
+       , count(is_contam)/cast(count(gsm) as float) as ratio
+from contam_stats
+where tissue_set = 'gtex_solid'
+group by tgroup
+order by ratio desc
+"
+
+tissue = data.table(dbGetQuery(mydb, byTissue))
+tissue[,TGROUP:=factor(TGROUP, levels=TGROUP)]
+ggplot(data=tissue, aes(x=TGROUP, y=RATIO)) +
+  geom_bar(stat="identity") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
 
 We can also compose statistics about the origin of samples
 

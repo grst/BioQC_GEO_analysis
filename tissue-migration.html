@@ -154,7 +154,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="6.2.6" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_migration"><i class="fa fa-check"></i><b>6.2.6</b> BIOQC_TISSUE_MIGRATION</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="tissue-migration.html"><a href="tissue-migration.html"><i class="fa fa-check"></i><b>7</b> Tissue Migration</a></li>
+<li class="chapter" data-level="7" data-path="tissue-migration.html"><a href="tissue-migration.html"><i class="fa fa-check"></i><b>7</b> Tissue Migration</a><ul>
+<li class="chapter" data-level="7.0.1" data-path="tissue-migration.html"><a href="tissue-migration.html#same-with-gtex_solid-signatures"><i class="fa fa-check"></i><b>7.0.1</b> same with ‘gtex_solid’ signatures</a></li>
+</ul></li>
 </ul>
 
       </nav>
@@ -199,8 +201,55 @@ col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw
   <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] +<span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))
   <span class="kw">circos.axis</span>(<span class="dt">h =</span> <span class="st">&quot;top&quot;</span>, <span class="dt">labels.cex =</span> <span class="fl">0.5</span>, <span class="dt">major.tick.percentage =</span> <span class="fl">0.2</span>, <span class="dt">sector.index =</span> sector.name, <span class="dt">track.index =</span> <span class="dv">2</span>)
 }, <span class="dt">bg.border =</span> <span class="ot">NA</span>)</code></pre></div>
+<div id="same-with-gtex_solid-signatures" class="section level3">
+<h3><span class="header-section-number">7.0.1</span> same with ‘gtex_solid’ signatures</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">query =<span class="st"> &quot;</span>
+<span class="st">select origin</span>
+<span class="st">     , destination</span>
+<span class="st">     , count(gsm) as </span><span class="ch">\&quot;</span><span class="st">count</span><span class="ch">\&quot;</span>
+<span class="st">from bioqc_tissue_migration </span>
+<span class="st">where enrichment_ratio &gt; 4</span>
+<span class="st">  and rk = 1</span>
+<span class="st">  and tissue_set = &#39;gtex_solid&#39;</span>
+<span class="st">group by origin, destination</span>
+<span class="st">order by origin, destination&quot;</span>
+migration =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, query)
+<span class="kw">set.seed</span>(<span class="dv">42</span>)
+col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw">length</span>(<span class="kw">unique</span>(migration$ORIGIN)))
+<span class="kw">chordDiagram</span>(migration, <span class="dt">grid.col=</span>col, <span class="dt">annotationTrack=</span><span class="st">&quot;grid&quot;</span>, <span class="dt">preAllocateTracks=</span><span class="dv">1</span>)
+<span class="kw">circos.trackPlotRegion</span>(<span class="dt">track.index=</span><span class="dv">1</span>, <span class="dt">panel.fun =</span> function(x, y) {
+  xlim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;xlim&quot;</span>)
+  ylim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;ylim&quot;</span>)
+  sector.name =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;sector.index&quot;</span>)
+  <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] +<span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))
+  <span class="kw">circos.axis</span>(<span class="dt">h =</span> <span class="st">&quot;top&quot;</span>, <span class="dt">labels.cex =</span> <span class="fl">0.5</span>, <span class="dt">major.tick.percentage =</span> <span class="fl">0.2</span>, <span class="dt">sector.index =</span> sector.name, <span class="dt">track.index =</span> <span class="dv">2</span>)
+}, <span class="dt">bg.border =</span> <span class="ot">NA</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">chordDiagram</span>(migration[migration$ORIGIN !=<span class="st"> &#39;blood&#39;</span> &amp;<span class="st"> </span>migration$DESTINATION!=<span class="st">&#39;blood&#39;</span>,])</code></pre></div>
 <p>Contamination in total:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byTissue =<span class="st"> &quot;</span>
+<span class="st">with contam_stats as (</span>
+<span class="st">  select bcs.*</span>
+<span class="st">       , case when enrichment_ratio &gt; 4</span>
+<span class="st">           then 1</span>
+<span class="st">           else null</span>
+<span class="st">         end as is_contam </span>
+<span class="st">  from bioqc_contam_stats bcs</span>
+<span class="st">)</span>
+<span class="st">select  tgroup</span>
+<span class="st">       , count(gsm) as total</span>
+<span class="st">       , count(is_contam) as contamined</span>
+<span class="st">       , count(is_contam)/cast(count(gsm) as float) as ratio</span>
+<span class="st">from contam_stats</span>
+<span class="st">where tissue_set = &#39;gtex_solid&#39;</span>
+<span class="st">group by tgroup</span>
+<span class="st">order by ratio desc</span>
+<span class="st">&quot;</span>
+
+tissue =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">dbGetQuery</span>(mydb, byTissue))
+tissue[,TGROUP:<span class="er">=</span><span class="kw">factor</span>(TGROUP, <span class="dt">levels=</span>TGROUP)]
+<span class="kw">ggplot</span>(<span class="dt">data=</span>tissue, <span class="kw">aes</span>(<span class="dt">x=</span>TGROUP, <span class="dt">y=</span>RATIO)) +
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))</code></pre></div>
 <p>We can also compose statistics about the origin of samples</p>
 <p>By time</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byYear =<span class="st"> &quot;</span>
@@ -283,6 +332,7 @@ organism<span class="fl">.2</span> =<span class="st"> </span>organism[organism$T
 <span class="st">  </span><span class="kw">geom_boxplot</span>() +
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color=</span>TGROUP))</code></pre></div>
 
+</div>
 </div>
 
 
