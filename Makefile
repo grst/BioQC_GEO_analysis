@@ -30,6 +30,7 @@ clean:
 	rm -rfv *_book 
 	rm -rfv _bookdown_files/*_files
 	rm -fv _main*
+	rm -rfv _notebooks/*
 
 .PHONY: wipe
 wipe: clean
@@ -40,6 +41,14 @@ wipe: clean
 .PHONY: heatmaps
 heatmaps: 
 	Rscript scripts/make_sample_heatmaps.R
+
+# convert jupyter notebooks to markdown 
+05_signature_creation.Rmd: _notebooks/validate_gini.md
+
+_notebooks/%.md: notebooks/%.ipynb
+	jupyter nbconvert --to markdown --output-dir _notebooks $< 
+	# adjust realtive paths for images. 
+	sed -i -r "s#!\[(.*)\]\((.*)\)#!\[\1\]\(_notebooks/\2\)#g" $@
 
 
 
