@@ -64,10 +64,10 @@ create global temporary table bioqc_tmp_tissue_set (
 CREATE global temporary TABLE bioqc_tmp_gse_gpl 
 ( gse varchar2(15),
 	gpl varchar2(15),
+  study_mean float, 
   study_min float,
   study_25 float,
   study_median float, 
-  study_mean float, 
   study_75 float,
   study_max float
 ) on commit preserve rows;

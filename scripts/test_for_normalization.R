@@ -32,7 +32,7 @@ runFile = function(esetFile) {
   load(esetFile)
   eset_mean = apply(exprs(eset_res), 1, mean)
   s = c(mean(eset_mean), quantile(eset_mean, c(0, .25, .5, .75, 1)))
-  names(s) = c("mean", "min", "25%", "median", "75%", "max")
+  names(s) = c("mean", "min", "q25", "median", "q75", "max")
   out_file = sprintf(outPath, tools::file_path_sans_ext(basename(esetFile)))
   write_tsv(data.frame(t(s)), out_file)
   print(sprintf("%s written to %s.", esetFile, out_file))
