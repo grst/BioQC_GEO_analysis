@@ -1,8 +1,8 @@
 R=R
 RMD_FILES= $(wildcard *.Rmd) 
 PREVIEW_FILES = $(patsubst %,%.preview,$(RMD_FILES))
-DATA_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
-CHUNKSUB_PATH= /pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/chunksub
+DATA_PATH= /pstore/data/biostats/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
+CHUNKSUB_PATH= /pstore/data/biostats/users/sturmg/BioQC_GEO_analysis/chunksub
 SHELL= /bin/bash
 CHUNKSUB= /pstore/home/sturmg/.local/bin/chunksub
 CWD= $(shell pwd)
@@ -130,11 +130,13 @@ $(DATA_PATH)/bioqc_success.txt:
 .PHONY: test_for_normalization 
 test_for_normalization: results/gse_lists/annotated_esets.txt 
 	rm -fr $(CHUNKSUB_PATH)/test_for_normalization
+	rm -fr $(DATA_PATH)/test_for_normalization
+	mkdir -p $(DATA_PATH)/test_for_normalization
 	awk '{print "$(DATA_PATH)/geo_annot/"$$0}' < $< | $(CHUNKSUB) -d $(CWD) -s 50 -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N test_for_normalization -j $(CHUNKSUB_PATH) "$(CWD)/scripts/test_for_normalization.R $(DATA_PATH)/test_for_normalization/ {}" 
 
 $(DATA_PATH)/study_stats.txt: 
-	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | head -n 1 | xargs awk 'FNR==1{print "#filename " $$0}' > $@ 
-	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | xargs awk 'FNR==2{print FILENAME " " $$0}' >> $@
+	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | head -n 1 | xargs awk 'FNR==1{print "filename\t" $$0}' > $@ 
+	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | xargs awk 'FNR==2{print FILENAME "\t" $$0}' >> $@
 
 
 .FORCE:

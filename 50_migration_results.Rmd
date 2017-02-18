@@ -23,7 +23,7 @@ signature exceeds all expected signatures by a certain threshold (BioQC score > 
 We create a view `contamined_samples` that contains all contamined samples in `db/queries/get_contamined_samples.sql`. 
 
 Second, we retrieve the information we need for the migration chart from that temporary table. 
-```{r migration_chart, fig.width=8, fig.height=8, eval=TRUE} 
+```{r migration_chart, fig.width=8, fig.height=8, eval=FALSE} 
 query = "
 select origin
      , destination
@@ -48,7 +48,7 @@ circos.trackPlotRegion(track.index=1, panel.fun = function(x, y) {
 ```
 
 ### same with 'gtex_solid' signatures
-```{r migration_chart, fig.width=8, fig.height=8, eval=TRUE} 
+```{r migration_chart_solid, fig.width=8, fig.height=8, eval=FALSE} 
 query = "
 select origin
      , destination
@@ -77,7 +77,7 @@ chordDiagram(migration[migration$ORIGIN != 'blood' & migration$DESTINATION!='blo
 ```
 
 Contamination in total: 
-```{r, eval=TRUE, include=FALSE}
+```{r, eval=FALSE, include=TRUE}
 byTissue = "
 with contam_stats as (
   select bcs.*

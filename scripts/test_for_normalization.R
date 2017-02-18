@@ -30,9 +30,11 @@ esetFiles = readLines(chunkFile)
 
 runFile = function(esetFile) {
   load(esetFile)
-  s = summary(apply(exprs(eset_res), 1, mean))
+  eset_mean = apply(exprs(eset_res), 1, mean)
+  s = c(mean(eset_mean), quantile(eset_mean, c(0, .25, .5, .75, 1)))
+  names(s) = c("mean", "min", "25%", "median", "75%", "max")
   out_file = sprintf(outPath, tools::file_path_sans_ext(basename(esetFile)))
-  capture.output(s, file=out_file)
+  write_tsv(data.frame(t(s)), out_file)
   print(sprintf("%s written to %s.", esetFile, out_file))
 }
 
