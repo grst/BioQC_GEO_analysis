@@ -14,29 +14,25 @@ library(BioQC)
 library(scales)
 
 tissues = dbGetQuery(mydb, "
-  select distinct bnt.tissue
-  from bioqc_gsm bg
-  join bioqc_normalize_tissues bnt on bnt.tissue_orig = lower(bg.tissue_orig)
-  join bioqc_tissue_set bts on bts.tissue = bnt.tissue
-  where bts.tissue_set = 'gtex_all'")
+  select distinct tgroup
+  from bioqc_tissue_set 
+  where tissue_set = 'gtex_all'")
 
 getTissueSamples = function(tissue) {
   # get all samples belonging to one tissue and filter for siginifant 
   # signatures in one sql query! 
   query = "
-  with gmt_signatures as (
-    select * from bioqc_signatures 
-    where source = 'gtex_ngs_0.85_5.gmt'
-  )
-  select /*+ parallel(16) */ br.gsm
-         , br.tissue
-        -- , ur.signature
-         , gs.name as SIGNATURE
-         , br.pvalue
-    from bioqc_res_fil br
-    join gmt_signatures gs on gs.id = br.signature
-    where tissue = ?
-    order by gsm
+  select /*+ parallel(16) */ bsst.gsm
+         , bsst.tgroup
+         , found_sig_name as SIGNATURE
+         , found_sig_pvalue as PVALUE
+    from bioqc_selected_samples_tset bsst
+    join bioqc_res_tset brt 
+      on brt.gsm = bsst.gsm
+      and brt.tissue_set = bsst.tissue_set
+    where bsst.tgroup = ?
+    and bsst.tissue_set = 'gtex_all'
+    
   "
   data = dbGetQuery(mydb, query, tissue)
   data = data.frame(data, pvalue.log=absLog10p(as.numeric(data[,"PVALUE"])))
@@ -44,7 +40,7 @@ getTissueSamples = function(tissue) {
   return(data)
 }
 
-for(tissue in tissues$TISSUE) {
+for(tissue in tissues$TGROUP) {
   data = data.table(getTissueSamples(tissue))
   data$GSM = factor(data$GSM, levels=unique(data$GSM))
   data$SIGNATURE = factor(data$SIGNATURE, levels=sort(unique(data$SIGNATURE), decreasing = TRUE))
