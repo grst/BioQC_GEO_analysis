@@ -12,15 +12,14 @@ In this chapter, we
 
 
 ## Data
- * **GTEx**: The [Genotype Tissue Expression](http://gtexportal.org) project is a comprehensive resource of tissue-specific gene expression data. We use this dataset to derive tissue-specific signatures. The data is human only and was generated using Illumina sequencing. 
+ * The [**Genotype Tissue Expression (GTEx)**](http://gtexportal.org) project is a comprehensive resource of tissue-specific gene expression data. We use this dataset to derive tissue-specific signatures. The data is human only and was generated using Illumina sequencing. 
  * We use the [**GNF Mouse GeneAtlas V3**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246) as a control dataset to demonstrate that the gini-method is robust over multiple platforms and species. This dataset originates from mouse and was generated using the *Affymetrix Mouse Genome 430 2.0 Array (GPL1261)*.
     
-## Validation
+## Cross-Validation of signatures on the GTEx dataset 
 
 ```{r child="_notebooks/validate_gini.md"}
 ```
 
- * [GTEx crossvalidation](https://github.com/grst/pygenesig/blob/master/notebooks/validate_gini.ipynb)
- * [GTEx on mouse](https://github.com/grst/pygenesig/blob/master/notebooks/validate-mouse.ipynb)
- 
-*TODO: include notebooks in this book.* 
+## Cross-species Cross-platform validation on mouse
+```{r child="_notebooks/validate_mouse.md"}
+```

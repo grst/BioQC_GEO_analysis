@@ -43,7 +43,7 @@ heatmaps:
 	Rscript scripts/make_sample_heatmaps.R
 
 # convert jupyter notebooks to markdown 
-05_signature_creation.Rmd: _notebooks/validate_gini.md
+05_signature_creation.Rmd: _notebooks/validate_gini.md _notebooks/validate_mouse.md
 
 _notebooks/%.md: notebooks/%.ipynb
 	jupyter nbconvert --to markdown --output-dir _notebooks $< 
@@ -148,4 +148,5 @@ $(DATA_PATH)/study_stats.txt:
 	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | xargs awk 'FNR==2{print FILENAME "\t" $$0}' >> $@
 
 
+# empty target can be used to force regeneration of files
 .FORCE:
