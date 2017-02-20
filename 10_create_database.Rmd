@@ -124,6 +124,24 @@ dbSendUpdate(mydb, sql)
 
 We compared the two approaches in [Sample Selection](#sample-selection). 
 
+### Import summary statistics for each study 
+
+To perform a preliminary quality control on each study we calculated the quartiles and the mean of the expression values 
+of each study in GEO and import these values into the database: 
+
+```{r, eval=FALSE}
+study_stats = data.table(read_tsv(file.path(DATA_DIR, "gse_tissue_annot/study_stats.txt")))
+study_stats = study_stats[,GSE:=sapply(as.character(study_stats[[1]]), geoIdFromPath)]
+study_stats = study_stats[,GPL:=lapply(as.character(study_stats[[1]]), gplFromPath)]
+setcolorder(study_stats, c(8, 9, 1:7))
+study_stats[, 'filename'] = NULL # remove file name
+
+dbSendUpdate(mydb, "truncate table bioqc_tmp_gse_gpl")
+dbAppendDf("BIOQC_TMP_GSE_GPL", study_stats)
+dbSendUpdate(mydb, "update bioqc_gse_gpl a
+              set (study_mean, study_min, study_25, study_median, study_75, study_max) = (select study_mean, study_min, study_25, study_median, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))")
+```
+
 ## Import BioQC data
 We install the BioQC schema using this [SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/bioqc_schema.sql). 
 
@@ -184,20 +202,6 @@ Once we [ran the analysis](#sample-processing), we manually import the list of s
 ```
 bioqc_melt_all.uniq.tsv
 bioqc_success.txt
-```
-
-Additionally, we import the study means for each study on each platform: 
-```{r eval=FALSE}
-study_stats = data.table(read_tsv(file.path(DATA_DIR, "gse_tissue_annot/study_stats.txt")))
-study_stats = study_stats[,GSE:=sapply(as.character(study_stats[[1]]), geoIdFromPath)]
-study_stats = study_stats[,GPL:=lapply(as.character(study_stats[[1]]), gplFromPath)]
-setcolorder(study_stats, c(8, 9, 1:7))
-study_stats[, 'filename'] = NULL # remove file name
-
-dbSendUpdate(mydb, "truncate table bioqc_tmp_gse_gpl")
-dbAppendDf("BIOQC_TMP_GSE_GPL", study_stats)
-dbSendUpdate(mydb, "update bioqc_gse_gpl a
-              set (study_mean, study_min, study_25, study_median, study_75, study_max) = (select study_mean, study_min, study_25, study_median, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))")
 ```
 
 ## Store results

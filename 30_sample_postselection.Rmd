@@ -10,6 +10,7 @@ library(gridBase)
 library(stringr)
 library(readr)
 library(testthat)
+library(Hmisc)
 source("lib/plots.R")
 source("lib/db.R")
 ```
@@ -96,7 +97,10 @@ kable(res)
 ```
 
 ### Exclude normalized studies
-```{r }
+
+To some of the studies in GEO a per-gene normalization has been applied. These studies cannot be analysed with BioQC as the ranking information of genes within one sample is lost. We identify normalized studies by the median gene expression.
+
+```{r study_median, }
 sql = "
 select study_median
 from bioqc_gse_gpl
@@ -104,14 +108,16 @@ where study_median is not null"
 
 res = dbGetQuery(mydb, sql)
 sm = res$STUDY_MEDIAN
-hist(sm[sm > -5 & sm < 30], breaks=seq(-5, 30, .2))
+hist(sm[sm > -5 & sm < 30],
+     breaks=seq(-5, 30, .2), 
+     main="Histogram of median gene expression per study",
+     xlab="median gene expression (only values between -5 and 30)")
+minor.tick(nx=5)
 ```
 
-We observe three peaks, the first and second
-have been normalized in some way. We focus on the studies 
-with a median between 3 and 9. 
+We observe three major peaks: The peaks at 0 and 1 represent the studies that have been normalized to 0 and 1 respectively. The majority of all other studies appear to have a median gene expression between 2 and 10.
 
-*TODO do proper fit of distributions and rationale based on standard deviation* 
+We therefore decided to limit our analysis to studies with a median gene expression between 3 and 9 which equals approximately 2 standard deviations of the gaussian fitted to the third peak. 
 
 ```{r filter_median, cache=TRUE}
 sql_select6 = sql_select5
