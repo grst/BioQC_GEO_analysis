@@ -156,8 +156,11 @@ study are `expr.tissuemark.affy.roche.symbols.gmt` and the `gtex` signatures.
 gmt2db("data/expr.tissuemark.affy.roche.symbols.gmt")
 
 # control signatures generated from GTEx using *pygenesig*
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
+gmt2db("../pygenesig/results/gtex_ngs_0.7_3.gmt")
+gmt2db("../pygenesig/results/gtex_ngs_0.85_5.gmt")
+
+# baseline signatures (random/housekeeping)
+gmt2db("../pygenesig/results/baseline_signatures.gmt")
 
 # pathway gene sets not relevant for this study 
 gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
