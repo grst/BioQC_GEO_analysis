@@ -32,7 +32,7 @@ getTissueSamples = function(tissue) {
       and brt.tissue_set = bsst.tissue_set
     where bsst.tgroup = ?
     and bsst.tissue_set = 'gtex_all'
-    
+    order by gsm
   "
   data = dbGetQuery(mydb, query, tissue)
   data = data.frame(data, pvalue.log=absLog10p(as.numeric(data[,"PVALUE"])))
