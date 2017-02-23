@@ -13,6 +13,10 @@ library(data.table)
 library(BioQC)
 library(scales)
 
+prepend_control = Vectorize(function(str) {
+  return(str_c("0", str, sep = "_"))
+})
+
 tissues = dbGetQuery(mydb, "
   select distinct tgroup
   from bioqc_tissue_set 
@@ -34,16 +38,40 @@ getTissueSamples = function(tissue) {
     and bsst.tissue_set = 'gtex_all'
     order by gsm
   "
-  data = dbGetQuery(mydb, query, tissue)
-  data = data.frame(data, pvalue.log=absLog10p(as.numeric(data[,"PVALUE"])))
-  data$GSM = as.character(data$GSM)
+  data = data.table(dbGetQuery(mydb, query, tissue))
+  data[,pvalue.log:=absLog10p(as.numeric(PVALUE))]
+  data[,GSM:=as.character(GSM)]
   return(data)
 }
 
+getReferenceSamples = function(tissue) { 
+  query = "
+  select /*+ parallel(16) */ bsst.gsm
+                           , bsst.tgroup
+                           , bs.name as SIGNATURE
+                           , br.pvalue as PVALUE
+  from bioqc_selected_samples_tset bsst
+  join bioqc_res br
+    on br.gsm = bsst.gsm
+  join bioqc_signatures bs
+    on bs.id = br.signature
+  where bsst.tgroup = ?
+  and bsst.tissue_set = 'gtex_all'
+  and bs.source = 'baseline_signatures.gmt'
+  and bs.name in ('random_10_0', 'random_10_1', 'random_100_0', 'random_100_1', 'awesome_housekeepers', 'enzyme_goslim')
+  "
+  data = data.table(dbGetQuery(mydb, query, tissue))
+  data[,pvalue.log:=absLog10p(as.numeric(PVALUE))]
+  data[,GSM:=as.character(GSM)]
+  data[,SIGNATURE:=prepend_control(SIGNATURE)]
+  return(data)  
+}
+
 for(tissue in tissues$TGROUP) {
-  data = data.table(getTissueSamples(tissue))
-  data$GSM = factor(data$GSM, levels=unique(data$GSM))
-  data$SIGNATURE = factor(data$SIGNATURE, levels=sort(unique(data$SIGNATURE), decreasing = TRUE))
+  data = getTissueSamples(tissue)
+  data = rbind(data, getReferenceSamples(tissue))
+  data[,GSM:=factor(GSM, levels=unique(GSM))]
+  data[,SIGNATURE:=factor(SIGNATURE, levels=sort(unique(SIGNATURE), decreasing = TRUE))]
   print(tissue)
   hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
   sampids = levels(data$GSM)
