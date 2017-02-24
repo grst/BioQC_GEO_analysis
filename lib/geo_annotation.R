@@ -14,7 +14,7 @@ stopifnot(suppressPackageStartupMessages(require(stringr)))
 #' @param platform.id
 #' @return eset with addtional BioqcGeneSymbol column. 
 attachGeneSymbols = function(eset, platform.id=NULL) {
-  annotation.package = dbGetQuery(mydb, "select bioc_package from gpl where gpl = ?", platform.id)
+  annotation.package = dbGetQuery(mydb, "select bioc_package from bioqc_gpl where gpl = ?", platform.id)
   if(nrow(annotation.package) > 0 && !is.na(annotation.package[1,1])) {
     assert_that(nrow(annotation.package) == 1)
     package.name = sprintf("%s.db", annotation.package[1,1])
