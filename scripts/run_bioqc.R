@@ -43,10 +43,14 @@ runFile = function(esetFile) {
   load(esetFile)
   # run BioQC
   if(!all(is.na(fData(eset_res)[["BioqcGeneSymbol"]]))) {
+      # filter expression set for probe ids with gene symbol only
+      # Taking all probeids as background is a Bias towards each signature in general 
+      # as probeids with gene symbol tend to be higher expressed in general. 
+      eset_res = eset_res[!is.na(fData(eset_res)$BioqcGeneSymbol),]
       bioqcRes = wmwTest(eset_res, gmt, valType="p.greater", col="BioqcGeneSymbol")
       return(bioqcRes)
   } else {
-      stop("Gene Symbols could not be annotated.")
+      stop("No Gene Symbols annotated. ")
   }
 }
 
