@@ -12,6 +12,7 @@
 -- reasons. 
 --------------------------------------------------------------------------------
 
+drop materialized view bioqc_res_tissue;
 create materialized view bioqc_res_tissue
 parallel 16
 build immediate
@@ -46,6 +47,7 @@ create /*+ parallel(16) */ index bioqc_res_tissue_signature
 -- "background" 
 --------------------------------------------------------------------------------
 
+drop materialized view bioqc_selected_samples;
 create materialized view bioqc_selected_samples
 parallel 16
 build immediate
@@ -81,7 +83,8 @@ as
     and bg.gpl = bgl.gpl
   where channel_count = 1
   and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')
-  and study_median between 3 and 9;
+  and study_median between 3 and 9
+  and ABS(study_75 - study_25) >= 1; -- IQR to ensure sufficient variance. 
   
 create /*+ parallel(16) */ index bss_gsm
   on bioqc_selected_samples(gsm); 
