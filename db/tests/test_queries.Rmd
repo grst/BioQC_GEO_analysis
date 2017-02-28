@@ -1,0 +1,88 @@
+---
+title: "SQL Unit testing"
+output: html_notebook
+---
+
+This notebook serves for testing the SQL queries used to calculate the contamination. 
+
+```{r}
+library(data.table)
+library(stringr)
+library(readr)
+library(magrittr)
+
+setwd("../..")
+source("lib/knitr.R")
+source("lib/db.R")
+```
+
+
+
+```{r}
+#' function to translate queries to the mock table space
+replace_table_name = function(query) {
+  return(str_replace_all(query, fixed('bioqc_', ignore_case = TRUE), 'BIOQC_MOCK_'))
+}
+#' parse sql scripts s.t. we can execute them through R
+split_script = function(query) {
+  query = str_trim(query)
+  query = str_replace(query, ';$', '') # remove trailing semicolon
+  query = str_replace(query, 'TEST_EXCLUDE_START([\\w\\W]*?)TEST_EXCLUDE_END', '') # remove exclusion blocks
+  # remove comments
+  query = lapply(str_split(query, "\n")[[1]], function(line) {
+    str_split(line, "--")[[1]][1]
+  }) %>%
+    str_join(collapse="\n")
+  return(str_split(query, ';[ \n\t]')[[1]])
+}
+```
+
+First, we need to setup the mock database: 
+
+```{r}
+# delete all mock tables
+query = "
+BEGIN
+  FOR c IN ( SELECT table_name FROM user_tables WHERE table_name LIKE 'BIOQC_MOCK_%' )
+  LOOP
+    BEGIN
+      EXECUTE IMMEDIATE 'DROP TABLE ' || c.table_name || ' CASCADE CONSTRAINTS';
+    EXCEPTION
+       WHEN OTHERS THEN
+          IF SQLCODE != -942 THEN
+             RAISE;
+          END IF;
+    END;
+  END LOOP;
+END;
+"
+dbSendUpdate(mydb, query)
+
+create_geometadb = read_file("../../db/geometadb_schema.sql") %>%
+    replace_table_name %>%
+    split_script
+
+update_geometadb = read_file("../../db/update_geometabase.sql") %>%
+    replace_table_name %>%
+    split_script
+
+create_bioqc = read_file("../../db/bioqc_schema.sql") %>%
+    replace_table_name %>%
+    split_script
+
+for(stmt in create_geometadb) {
+  print(stmt)
+  dbSendUpdate(mydb, stmt)
+}
+  
+for(stmt in update_geometadb) {
+  print(stmt)
+  dbSendUpdate(mydb, stmt)
+}
+
+for(stmt in create_bioqc) {
+  print(stmt)
+  dbSendUpdate(mydb, stmt)
+}
+
+```
