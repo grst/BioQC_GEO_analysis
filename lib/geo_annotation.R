@@ -62,3 +62,16 @@ gplFromPath = function(path) {
   }
 }
 
+#' Filter genes with annotation from expression set. 
+#' 
+#' This is done to have the correct background for BioQC.
+#' Taking all probeids as background is a Bias towards each signature in general 
+#' as probeids with gene symbol tend to be higher expressed in general. 
+filter_eset = function(eset) {
+  gene_symbols = fData(eset)$BioqcGeneSymbol
+  # remove lines that have no gene set
+  eset = eset[(!is.na(gene_symbols)) & gene_symbols != '-',]
+  eset = eset[keepMaxStatRowInd(exprs(eset), fData(eset)$BioqcGeneSymbol),]
+  return(eset)
+}
+

@@ -21,6 +21,7 @@ stopifnot(suppressPackageStartupMessages(require(assertthat)))
 stopifnot(suppressPackageStartupMessages(require(readr)))
 source("lib/lib.R")
 source("lib/db_io.R")
+source("lib/geo_annotation.R")
 
 
 args = commandArgs(trailingOnly=TRUE)
@@ -46,7 +47,7 @@ runFile = function(esetFile) {
       # filter expression set for probe ids with gene symbol only
       # Taking all probeids as background is a Bias towards each signature in general 
       # as probeids with gene symbol tend to be higher expressed in general. 
-      eset_res = eset_res[!is.na(fData(eset_res)$BioqcGeneSymbol),]
+      eset_res = filter_eset(eset_res)
       bioqcRes = wmwTest(eset_res, gmt, valType="p.greater", col="BioqcGeneSymbol")
       return(bioqcRes)
   } else {
