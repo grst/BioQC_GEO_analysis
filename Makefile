@@ -37,11 +37,6 @@ wipe: clean
 	rm -rfv _bookdown_files
 
 
-# make contamination heatmaps for all samples
-.PHONY: heatmaps
-heatmaps: 
-	Rscript scripts/make_sample_heatmaps.R
-
 # convert jupyter notebooks to markdown 
 05_signature_creation.Rmd: _notebooks/validate_gini.md _notebooks/validate_mouse.md
 
@@ -50,6 +45,24 @@ _notebooks/%.md: notebooks/%.ipynb
 	# adjust realtive paths for images. 
 	sed -i -r "s#!\[(.*)\]\((.*)\)#!\[\1\]\(_notebooks/\2\)#g" $@
 
+
+
+##############################################
+# make contamination heatmaps for all samples
+##############################################
+
+.PHONY: heatmaps
+heatmaps: 
+	rm -rfv results/heatmaps_db/*
+	Rscript scripts/make_sample_heatmaps.R
+
+
+#############################################
+# download hgnc_symbols for BioQC filtering. 
+#############################################
+.PHONY: download_hgnc_symbols
+download_hgnc_symbols:
+	curl "ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" | cut -f2 > lib/res/hgnc_symbols.tsv
 
 
 ##################################
@@ -103,6 +116,14 @@ annotate_gse: results/gse_lists/missing_annotation.txt
 #
 # Import the bioqc_melt_all_uniq.tsv manually using Sqldeveloper. 
 #################################
+
+.PHONY: clean_bioqc
+clean_bioqc: 
+	rm -rfv $(DATA_PATH)/bioqc_melt_all*.tsv
+	rm -rfv $(DATA_PATH)/bioqc
+	mkdir -p $(DATA_PATH)/bioqc
+	rm -rfv $(DATA_PATH)/bioqc_success.csv
+
 results/gse_lists/bioqced_esets.txt: .FORCE
 	find $(DATA_PATH)/bioqc | grep -oP "GSE(.*)_bioqc_res_melt\.tab" | sort -u > $@
 
@@ -122,7 +143,7 @@ $(DATA_PATH)/bioqc_melt_all.uniq.tsv:  $(DATA_PATH)/bioqc_melt_all.tsv
 	# due to floating point inprecision, but identical up to 5 decimal digits (i checked)
 	bash_wrapper.sh 24 "sort --parallel 24 -u -k1,2 $< > $@ "
 
-$(DATA_PATH)/bioqc_success.txt:
+$(DATA_PATH)/bioqc_success.csv:
 	# list of GSM on which the bioqc-run was successful. Serves as 'background' for 
 	# the analysis. 
 	rm -f $@.tmp
