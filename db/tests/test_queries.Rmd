@@ -10,6 +10,9 @@ library(data.table)
 library(stringr)
 library(readr)
 library(magrittr)
+library(readxl)
+library(tibble)
+library(assertthat)
 
 setwd("../..")
 source("lib/knitr.R")
@@ -21,7 +24,7 @@ source("lib/db.R")
 ```{r}
 #' function to translate queries to the mock table space
 replace_table_name = function(query) {
-  return(str_replace_all(query, fixed('bioqc_', ignore_case = TRUE), 'BIOQC_MOCK_'))
+  return(str_replace_all(query, fixed('bioqc_', ignore_case = TRUE), 'BIOQC_T_'))
 }
 #' parse sql scripts s.t. we can execute them through R
 split_script = function(query) {
@@ -33,7 +36,7 @@ split_script = function(query) {
     str_split(line, "--")[[1]][1]
   }) %>%
     str_join(collapse="\n")
-  return(str_split(query, ';[ \n\t]')[[1]])
+  return(str_split(query, ';[ \n\t\r]')[[1]])
 }
 ```
 
@@ -43,7 +46,19 @@ First, we need to setup the mock database:
 # delete all mock tables
 query = "
 BEGIN
-  FOR c IN ( SELECT table_name FROM user_tables WHERE table_name LIKE 'BIOQC_MOCK_%' )
+  FOR c IN ( SELECT table_name FROM all_snapshots WHERE table_name LIKE 'BIOQC#_T#_%' escape '#' )
+  LOOP
+    BEGIN
+      EXECUTE IMMEDIATE 'DROP MATERIALIZED VIEW ' || c.table_name;
+    EXCEPTION
+       WHEN OTHERS THEN
+          IF SQLCODE != -12003 THEN
+             RAISE;
+          END IF;
+    END;
+  END LOOP;
+
+  FOR c IN ( SELECT table_name FROM user_tables WHERE table_name LIKE 'BIOQC#_T#_%' escape '#' )
   LOOP
     BEGIN
       EXECUTE IMMEDIATE 'DROP TABLE ' || c.table_name || ' CASCADE CONSTRAINTS';
@@ -86,3 +101,80 @@ for(stmt in create_bioqc) {
 }
 
 ```
+
+```{r}
+query = "
+create table BIOQC_T_SELECTED_SAMPLES(
+    gsm varchar2(20)
+  , organism varchar2(80)
+  , tissue_orig varchar2(80)
+  , tissue varchar2(80)
+  , year number(4)
+  , country varchar2(100)
+)
+"
+dbSendUpdate(mydb, query)
+```
+
+## Load fake data
+```{r}
+bioqc_selected_samples = read_excel("mock_data.xlsx", sheet = 1)
+bioqc_tissue_set = read_excel("mock_data.xlsx", sheet = 2)
+bioqc_signatures = read_excel("mock_data.xlsx", sheet = 3)
+bioqc_res = read_excel("mock_data.xlsx", sheet = 4)
+bioqc_tissues = read_excel("mock_data.xlsx", sheet = 5)
+bioqc_gsm = read_excel("mock_data.xlsx", sheet = 6)
+
+dbAppendDf("BIOQC_T_SELECTED_SAMPLES", bioqc_selected_samples)
+dbAppendDf("BIOQC_T_SIGNATURES", bioqc_signatures)
+dbAppendDf("BIOQC_T_TISSUES", bioqc_tissues)
+dbAppendDf("BIOQC_T_TISSUE_SET", bioqc_tissue_set)
+dbAppendDf("BIOQC_T_GSM", bioqc_gsm)
+dbAppendDf("BIOQC_T_RES", bioqc_res)
+
+```
+
+## Execute contamination script (=script to test)
+```{r}
+contamination = read_file("../../db/views/contamination.sql") %>%
+    replace_table_name %>%
+    split_script
+
+for(stmt in contamination) {
+  print(stmt)
+  # ignore drop statements, since all data is cleared beforehand anyway. 
+  if(is.na(str_match(stmt, 'drop')[1,1])) {
+      dbSendUpdate(mydb, stmt)
+  }
+}
+```
+
+## Check values. 
+```{r}
+assert_tibble_equal = function(expected, actual) {
+  expected$comment = NULL
+  assert_that(nrow(expected) == nrow(actual))
+  assert_that(ncol(expected) == ncol(actual))
+  data_types = sapply(expected, class)
+  for(i in seq_along(actual)) {
+    actual[[i]] = as(actual[[i]], data_types[[i]])
+  }
+  result = all.equal(expected, actual)
+  if(isTRUE(result)) {
+    return(TRUE)
+  } else {
+    stop(result)
+  }
+}
+
+```
+
+```{r}
+exp_bioqc_selected_samples_tset = read_excel("mock_results.xlsx", sheet = 1)
+exp_bioqc_res_tset = read_excel("mock_results.xlsx", sheet = 2)
+
+bioqc_selected_samples_tset = as_tibble(dbGetQuery(mydb, "select * from bioqc_t_selected_samples_tset"))
+
+assert_tibble_equal(exp_bioqc_selected_samples_tset, bioqc_selected_samples_tset)
+```
+
