@@ -12,32 +12,32 @@
 -- reasons. 
 --------------------------------------------------------------------------------
 
-drop materialized view bioqc_res_tissue;
-create materialized view bioqc_res_tissue
-parallel 16
-build immediate
-refresh force
-on demand
-as 
-  with relevant_signatures as (
-      select distinct bs.source
-      from bioqc_tissue_set bts
-      join bioqc_signatures bs
-        on bs.id = bts.signature
-  )
-  select /*+ parallel(16)  */  br.* 
-  from bioqc_res br
-  join bioqc_signatures bs
-    on bs.id = br.signature
-  where bs.source in (
-    --'gtex_ngs_0.85_5.gmt', 'exp.tissuemark.affy.roche.symbols.gmt'
-    select  /*+ CARDINALITY(relevant_signatures, 2) */ source
-    from relevant_signatures
-  );
-create /*+ parallel(16) */ index bioqc_res_tissue_gsm
-  on bioqc_res_tissue(gsm);
-create /*+ parallel(16) */ index bioqc_res_tissue_signature
-  on bioqc_res_tissue(signature);
+--drop materialized view bioqc_res_tissue;
+--create materialized view bioqc_res_tissue
+--parallel 16
+--build immediate
+--refresh force
+--on demand
+--as 
+--  with relevant_signatures as (
+--      select distinct bs.source
+--      from bioqc_tissue_set bts
+--      join bioqc_signatures bs
+--        on bs.id = bts.signature
+--  )
+--  select /*+ parallel(16)  */  br.* 
+--  from bioqc_res br
+--  join bioqc_signatures bs
+--    on bs.id = br.signature
+--  where bs.source in (
+--    --'gtex_ngs_0.85_5.gmt', 'exp.tissuemark.affy.roche.symbols.gmt'
+--    select  /*+ CARDINALITY(relevant_signatures, 2) */ source
+--    from relevant_signatures
+--  );
+--create /*+ parallel(16) */ index bioqc_res_tissue_gsm
+--  on bioqc_res_tissue(gsm);
+--create /*+ parallel(16) */ index bioqc_res_tissue_signature
+--  on bioqc_res_tissue(signature);
   
 
 
@@ -81,10 +81,14 @@ as
   join bioqc_gse_gpl bgl
     on bgg.gse = bgl.gse
     and bg.gpl = bgl.gpl
+  join bioqc_res br
+    on br.gsm = bg.gsm
   where channel_count = 1
   and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')
-  and study_median between 3 and 9
-  and ABS(study_75 - study_25) >= 1; -- IQR to ensure sufficient variance. 
+  -- and study_median between 3 and 9
+  and ABS(study_75 - study_25) >= .5 -- IQR to ensure sufficient variance. 
+  and signature = 54911 --awesome housekeepers
+  and pvalue < 1e-5;
   
 create /*+ parallel(16) */ index bss_gsm
   on bioqc_selected_samples(gsm); 
