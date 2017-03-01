@@ -60,9 +60,8 @@ heatmaps:
 #############################################
 # download hgnc_symbols for BioQC filtering. 
 #############################################
-.PHONY: download_hgnc_symbols
-download_hgnc_symbols:
-	curl "ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" | cut -f2 > lib/res/hgnc_symbols.tsv
+lib/res/hgnc_symbols.tsv:
+	curl "ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/hgnc_complete_set.txt" | cut -f2 > $@
 
 
 ##################################

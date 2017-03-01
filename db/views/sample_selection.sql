@@ -85,7 +85,6 @@ as
     on br.gsm = bg.gsm
   where channel_count = 1
   and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')
-  -- and study_median between 3 and 9
   and ABS(study_75 - study_25) >= .5 -- IQR to ensure sufficient variance. 
   and signature = 54911 --awesome housekeepers
   and pvalue < 1e-5;
