@@ -7,6 +7,8 @@ stopifnot(suppressPackageStartupMessages(require(assertthat)))
 stopifnot(suppressPackageStartupMessages(require(ribiosAnnotation)))
 stopifnot(suppressPackageStartupMessages(require(ribiosUtils)))
 stopifnot(suppressPackageStartupMessages(require(stringr)))
+stopifnot(suppressPackageStartupMessages(require(readr)))
+
 
 #' Retrieve Gene Symbols for BioQC with the Bioconductor packages. 
 #' 
@@ -65,12 +67,13 @@ gplFromPath = function(path) {
 #' Filter genes with annotation from expression set. 
 #' 
 #' This is done to have the correct background for BioQC.
-#' Taking all probeids as background is a Bias towards each signature in general 
+#' Taking all probeids as background is a bias towards each signature in general 
 #' as probeids with gene symbol tend to be higher expressed in general. 
 filter_eset = function(eset) {
   gene_symbols = fData(eset)$BioqcGeneSymbol
+  hgnc_symbols = read_tsv("results/hgnc_symbols.tsv")
   # remove lines that have no gene set
-  eset = eset[(!is.na(gene_symbols)) & gene_symbols != '-',]
+  eset = eset[(!is.na(gene_symbols)) & (gene_symbols != '-') & (gene_symbols %in% hgnc_symbols$hgnc_symbols),]
   eset = eset[keepMaxStatRowInd(exprs(eset), fData(eset)$BioqcGeneSymbol),]
   return(eset)
 }
