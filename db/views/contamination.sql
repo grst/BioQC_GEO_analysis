@@ -110,8 +110,8 @@ as
                                , bss.exp_sig_name
                                , bss.exp_sig_pvalue
                                , br.found_sig
-                               , br.found_sig_pvalue
                                , br.found_sig_name
+                               , br.found_sig_pvalue                               
                                , br.found_tgroup
     from bioqc_selected_samples_tset bss
     left outer join bioqc_res_tset br

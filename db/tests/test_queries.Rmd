@@ -172,9 +172,24 @@ assert_tibble_equal = function(expected, actual) {
 ```{r}
 exp_bioqc_selected_samples_tset = read_excel("mock_results.xlsx", sheet = 1)
 exp_bioqc_res_tset = read_excel("mock_results.xlsx", sheet = 2)
+exp_bioqc_tissue_enrichment = read_excel("mock_results.xlsx", sheet = 3)
+exp_bioqc_tissue_enrichment2 = read_excel("mock_results.xlsx", sheet = 4)
+exp_bioqc_contam_stats = read_excel("mock_results.xlsx", sheet = 5)
+exp_bioqc_tissue_migration = read_excel("mock_results.xlsx", sheet = 6)
 
 bioqc_selected_samples_tset = as_tibble(dbGetQuery(mydb, "select * from bioqc_t_selected_samples_tset"))
+bioqc_res_tset = as_tibble(dbGetQuery(mydb, "select * from bioqc_t_res_tset"))
+bioqc_tissue_enrichment = as_tibble(dbGetQuery(mydb, "select * from bioqc_t_tissue_enrichment"))
+bioqc_tissue_enrichment2 = as_tibble(dbGetQuery(mydb, "select * from bioqc_t_tissue_enrichment2"))
+bioqc_contam_stats = as_tibble(dbGetQuery(mydb, "select * from bioqc_t_contam_stats"))
+bioqc_tissue_migration = as_tibble(dbGetQuery(mydb, "select * from bioqc_t_tissue_migration"))
 
 assert_tibble_equal(exp_bioqc_selected_samples_tset, bioqc_selected_samples_tset)
+assert_tibble_equal(exp_bioqc_res_tset, bioqc_res_tset)
+assert_tibble_equal(exp_bioqc_tissue_enrichment, bioqc_tissue_enrichment)
+assert_tibble_equal(exp_bioqc_tissue_enrichment2, bioqc_tissue_enrichment2)
+assert_tibble_equal(exp_bioqc_contam_stats, bioqc_contam_stats)
+assert_tibble_equal(exp_bioqc_tissue_migration, bioqc_tissue_migration)
+
 ```
 
