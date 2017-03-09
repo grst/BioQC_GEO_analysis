@@ -104,7 +104,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li class="chapter" data-level="2" data-path="validating-signatures.html"><a href="validating-signatures.html"><i class="fa fa-check"></i><b>2</b> Validating Tissue Signatures</a><ul>
 <li class="chapter" data-level="2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#data"><i class="fa fa-check"></i><b>2.1</b> Data</a></li>
-<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#validation"><i class="fa fa-check"></i><b>2.2</b> Validation</a></li>
+<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#signature-overlap-between-the-folds"><i class="fa fa-check"></i><b>2.2.1</b> Signature overlap between the folds</a></li>
+<li class="chapter" data-level="2.2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#confusion-matrix"><i class="fa fa-check"></i><b>2.2.2</b> Confusion Matrix</a></li>
+<li class="chapter" data-level="2.2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#performance-measures-per-tissue"><i class="fa fa-check"></i><b>2.2.3</b> Performance Measures per Tissue</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-species-cross-platform-validation-on-mouse"><i class="fa fa-check"></i><b>2.3</b> Cross-species Cross-platform validation on mouse</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="validating-signatures.html"><a href="validating-signatures.html#make-signatures"><i class="fa fa-check"></i><b>2.3.1</b> Make Signatures</a></li>
+<li class="chapter" data-level="2.3.2" data-path="validating-signatures.html"><a href="validating-signatures.html#test-signatures"><i class="fa fa-check"></i><b>2.3.2</b> Test Signatures</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="curating-data.html"><a href="curating-data.html"><i class="fa fa-check"></i><b>3</b> Curating Data</a><ul>
 <li class="chapter" data-level="3.1" data-path="curating-data.html"><a href="curating-data.html#selecting-samples-by-metadata"><i class="fa fa-check"></i><b>3.1</b> Selecting Samples by Metadata</a></li>
@@ -120,6 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.2.1" data-path="setup-database.html"><a href="setup-database.html#fix-foreign-key-constraints"><i class="fa fa-check"></i><b>4.2.1</b> Fix foreign key constraints</a></li>
 <li class="chapter" data-level="4.2.2" data-path="setup-database.html"><a href="setup-database.html#extract-tissue-annotation"><i class="fa fa-check"></i><b>4.2.2</b> Extract Tissue annotation</a></li>
 <li class="chapter" data-level="4.2.3" data-path="setup-database.html"><a href="setup-database.html#load-annotation-information"><i class="fa fa-check"></i><b>4.2.3</b> Load annotation information</a></li>
+<li class="chapter" data-level="4.2.4" data-path="setup-database.html"><a href="setup-database.html#import-summary-statistics-for-each-study"><i class="fa fa-check"></i><b>4.2.4</b> Import summary statistics for each study</a></li>
 </ul></li>
 <li class="chapter" data-level="4.3" data-path="setup-database.html"><a href="setup-database.html#import-bioqc-data"><i class="fa fa-check"></i><b>4.3</b> Import BioQC data</a><ul>
 <li class="chapter" data-level="4.3.1" data-path="setup-database.html"><a href="setup-database.html#signatures"><i class="fa fa-check"></i><b>4.3.1</b> Signatures</a></li>
@@ -139,7 +148,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="5.3.1" data-path="sample-selection.html"><a href="sample-selection.html#excluding-multi-channel-microarrays"><i class="fa fa-check"></i><b>5.3.1</b> Excluding multi-channel microarrays</a></li>
 <li class="chapter" data-level="5.3.2" data-path="sample-selection.html"><a href="sample-selection.html#exclude-non-mapped-tissues"><i class="fa fa-check"></i><b>5.3.2</b> Exclude non-mapped tissues</a></li>
 <li class="chapter" data-level="5.3.3" data-path="sample-selection.html"><a href="sample-selection.html#select-organisms"><i class="fa fa-check"></i><b>5.3.3</b> Select organisms</a></li>
-<li class="chapter" data-level="5.3.4" data-path="sample-selection.html"><a href="sample-selection.html#exclude-normalized-studies"><i class="fa fa-check"></i><b>5.3.4</b> Exclude normalized studies</a></li>
+<li class="chapter" data-level="5.3.4" data-path="sample-selection.html"><a href="sample-selection.html#quality-control"><i class="fa fa-check"></i><b>5.3.4</b> Quality control</a></li>
 <li class="chapter" data-level="5.3.5" data-path="sample-selection.html"><a href="sample-selection.html#tissue-abundance"><i class="fa fa-check"></i><b>5.3.5</b> Tissue abundance</a></li>
 </ul></li>
 </ul></li>
@@ -192,13 +201,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="st">order by origin, destination&quot;</span>
 migration =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, query)
 <span class="kw">set.seed</span>(<span class="dv">42</span>)
-col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw">length</span>(<span class="kw">unique</span>(migration$ORIGIN)))
+col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw">length</span>(<span class="kw">unique</span>(migration<span class="op">$</span>ORIGIN)))
+<span class="kw">names</span>(col) =<span class="st"> </span><span class="kw">unique</span>(migration<span class="op">$</span>ORIGIN)
 <span class="kw">chordDiagram</span>(migration, <span class="dt">grid.col=</span>col, <span class="dt">annotationTrack=</span><span class="st">&quot;grid&quot;</span>, <span class="dt">preAllocateTracks=</span><span class="dv">1</span>)
-<span class="kw">circos.trackPlotRegion</span>(<span class="dt">track.index=</span><span class="dv">1</span>, <span class="dt">panel.fun =</span> function(x, y) {
+<span class="kw">circos.trackPlotRegion</span>(<span class="dt">track.index=</span><span class="dv">1</span>, <span class="dt">panel.fun =</span> <span class="cf">function</span>(x, y) {
   xlim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;xlim&quot;</span>)
   ylim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;ylim&quot;</span>)
   sector.name =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;sector.index&quot;</span>)
-  <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] +<span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))
+  <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))
   <span class="kw">circos.axis</span>(<span class="dt">h =</span> <span class="st">&quot;top&quot;</span>, <span class="dt">labels.cex =</span> <span class="fl">0.5</span>, <span class="dt">major.tick.percentage =</span> <span class="fl">0.2</span>, <span class="dt">sector.index =</span> sector.name, <span class="dt">track.index =</span> <span class="dv">2</span>)
 }, <span class="dt">bg.border =</span> <span class="ot">NA</span>)</code></pre></div>
 <div id="same-with-gtex_solid-signatures" class="section level3">
@@ -208,28 +218,29 @@ col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw
 <span class="st">     , destination</span>
 <span class="st">     , count(gsm) as </span><span class="ch">\&quot;</span><span class="st">count</span><span class="ch">\&quot;</span>
 <span class="st">from bioqc_tissue_migration </span>
-<span class="st">where enrichment_ratio &gt; 4</span>
+<span class="st">where enrichment_ratio &gt; .2</span>
 <span class="st">  and rk = 1</span>
 <span class="st">  and tissue_set = &#39;gtex_solid&#39;</span>
 <span class="st">group by origin, destination</span>
 <span class="st">order by origin, destination&quot;</span>
 migration =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, query)
 <span class="kw">set.seed</span>(<span class="dv">42</span>)
-col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw">length</span>(<span class="kw">unique</span>(migration$ORIGIN)))
+col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw">length</span>(<span class="kw">unique</span>(migration<span class="op">$</span>ORIGIN)))
+<span class="kw">names</span>(col) =<span class="st"> </span><span class="kw">unique</span>(migration<span class="op">$</span>ORIGIN)
 <span class="kw">chordDiagram</span>(migration, <span class="dt">grid.col=</span>col, <span class="dt">annotationTrack=</span><span class="st">&quot;grid&quot;</span>, <span class="dt">preAllocateTracks=</span><span class="dv">1</span>)
-<span class="kw">circos.trackPlotRegion</span>(<span class="dt">track.index=</span><span class="dv">1</span>, <span class="dt">panel.fun =</span> function(x, y) {
+<span class="kw">circos.trackPlotRegion</span>(<span class="dt">track.index=</span><span class="dv">1</span>, <span class="dt">panel.fun =</span> <span class="cf">function</span>(x, y) {
   xlim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;xlim&quot;</span>)
   ylim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;ylim&quot;</span>)
   sector.name =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;sector.index&quot;</span>)
-  <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] +<span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))
+  <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))
   <span class="kw">circos.axis</span>(<span class="dt">h =</span> <span class="st">&quot;top&quot;</span>, <span class="dt">labels.cex =</span> <span class="fl">0.5</span>, <span class="dt">major.tick.percentage =</span> <span class="fl">0.2</span>, <span class="dt">sector.index =</span> sector.name, <span class="dt">track.index =</span> <span class="dv">2</span>)
 }, <span class="dt">bg.border =</span> <span class="ot">NA</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">chordDiagram</span>(migration[migration$ORIGIN !=<span class="st"> &#39;blood&#39;</span> &amp;<span class="st"> </span>migration$DESTINATION!=<span class="st">&#39;blood&#39;</span>,])</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">chordDiagram</span>(migration[migration<span class="op">$</span>ORIGIN <span class="op">!=</span><span class="st"> &#39;blood&#39;</span> <span class="op">&amp;</span><span class="st"> </span>migration<span class="op">$</span>DESTINATION<span class="op">!=</span><span class="st">&#39;blood&#39;</span>,])</code></pre></div>
 <p>Contamination in total:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byTissue =<span class="st"> &quot;</span>
 <span class="st">with contam_stats as (</span>
 <span class="st">  select bcs.*</span>
-<span class="st">       , case when enrichment_ratio &gt; 4</span>
+<span class="st">       , case when enrichment_ratio &gt; .2</span>
 <span class="st">           then 1</span>
 <span class="st">           else null</span>
 <span class="st">         end as is_contam </span>
@@ -246,9 +257,9 @@ col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw
 <span class="st">&quot;</span>
 
 tissue =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">dbGetQuery</span>(mydb, byTissue))
-tissue[,TGROUP:<span class="er">=</span><span class="kw">factor</span>(TGROUP, <span class="dt">levels=</span>TGROUP)]
-<span class="kw">ggplot</span>(<span class="dt">data=</span>tissue, <span class="kw">aes</span>(<span class="dt">x=</span>TGROUP, <span class="dt">y=</span>RATIO)) +
-<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>) +<span class="st"> </span>
+tissue[,TGROUP<span class="op">:</span><span class="er">=</span><span class="kw">factor</span>(TGROUP, <span class="dt">levels=</span>TGROUP)]
+<span class="kw">ggplot</span>(<span class="dt">data=</span>tissue, <span class="kw">aes</span>(<span class="dt">x=</span>TGROUP, <span class="dt">y=</span>RATIO)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>) <span class="op">+</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))</code></pre></div>
 <p>We can also compose statistics about the origin of samples</p>
 <p>By time</p>
@@ -274,34 +285,7 @@ tissue[,TGROUP:<span class="er">=</span><span class="kw">factor</span>(TGROUP, <
 
 year =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, byYear)
 
-<span class="kw">ggplot</span>(<span class="dt">data=</span>year, <span class="kw">aes</span>(<span class="dt">x=</span>YEAR, <span class="dt">y=</span>RATIO)) +<span class="st"> </span><span class="kw">stat_summary</span>(<span class="dt">fun.y=</span><span class="st">&quot;mean&quot;</span>, <span class="dt">geom=</span><span class="st">&quot;bar&quot;</span>)</code></pre></div>
-<p>By country (that’s nice figures, but it’s not very representative… tissue-bias, statistical significance, …)</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byCountry =<span class="st"> &quot;</span>
-<span class="st">with contam_stats as (</span>
-<span class="st">  select bcs.*</span>
-<span class="st">       , case when enrichment_ratio &gt; 4</span>
-<span class="st">           then 1</span>
-<span class="st">           else null</span>
-<span class="st">         end as is_contam </span>
-<span class="st">  from bioqc_contam_stats bcs</span>
-<span class="st">)</span>
-<span class="st">select  country</span>
-<span class="st">       , tgroup</span>
-<span class="st">       , count(gsm) as total</span>
-<span class="st">       , count(is_contam) as contamined</span>
-<span class="st">       , count(is_contam)/cast(count(gsm) as float) as ratio</span>
-<span class="st">from contam_stats</span>
-<span class="st">where tissue_set = &#39;gtex_solid&#39;</span>
-<span class="st">group by country, tgroup</span>
-<span class="st">order by ratio desc</span>
-<span class="st">&quot;</span>
-
-country =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, byCountry)
-country<span class="fl">.2</span> =<span class="st"> </span>country[country$TGROUP ==<span class="st"> &#39;liver&#39;</span>,]
-<span class="co">#country.2 = ddply(country[country$total &gt; 2000,], ~country,summarise,ratio=mean(ratio))</span>
-
-spdf &lt;-<span class="st"> </span><span class="kw">joinCountryData2Map</span>(country<span class="fl">.2</span>, <span class="dt">joinCode=</span><span class="st">&quot;NAME&quot;</span>, <span class="dt">nameJoinColumn=</span><span class="st">&quot;COUNTRY&quot;</span>)
-<span class="kw">mapCountryData</span>(spdf, <span class="dt">nameColumnToPlot=</span><span class="st">&quot;RATIO&quot;</span>, <span class="dt">catMethod=</span><span class="st">&quot;fixedWidth&quot;</span>)</code></pre></div>
+<span class="kw">ggplot</span>(<span class="dt">data=</span>year, <span class="kw">aes</span>(<span class="dt">x=</span>YEAR, <span class="dt">y=</span>RATIO)) <span class="op">+</span><span class="st"> </span><span class="kw">stat_summary</span>(<span class="dt">fun.y=</span><span class="st">&quot;mean&quot;</span>, <span class="dt">geom=</span><span class="st">&quot;bar&quot;</span>)</code></pre></div>
 <p>By organism</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">byOrganism =<span class="st"> &quot;</span>
 <span class="st">with contam_stats as (</span>
@@ -325,11 +309,11 @@ spdf &lt;-<span class="st"> </span><span class="kw">joinCountryData2Map</span>(c
 
 organism =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, byOrganism)
 tissues =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;blood&quot;</span>, <span class="st">&quot;brain&quot;</span>, <span class="st">&quot;kidney&quot;</span>, <span class="st">&quot;liver&quot;</span>)
-organism<span class="fl">.2</span> =<span class="st"> </span>organism[organism$TGROUP %in%<span class="st"> </span>tissues, ]
+organism.<span class="dv">2</span> =<span class="st"> </span>organism[organism<span class="op">$</span>TGROUP <span class="op">%in%</span><span class="st"> </span>tissues, ]
 
 <span class="co">#ggplot(data=organism.2, aes(x=ORGANISM, y=RATIO)) + stat_summary(fun.y=&quot;mean&quot;, geom=&quot;bar&quot;)</span>
-<span class="kw">ggplot</span>(<span class="dt">data=</span>organism<span class="fl">.2</span>, <span class="kw">aes</span>(<span class="dt">x=</span>ORGANISM, <span class="dt">y=</span>RATIO)) +<span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_boxplot</span>() +
+<span class="kw">ggplot</span>(<span class="dt">data=</span>organism.<span class="dv">2</span>, <span class="kw">aes</span>(<span class="dt">x=</span>ORGANISM, <span class="dt">y=</span>RATIO)) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_boxplot</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color=</span>TGROUP))</code></pre></div>
 
 </div>

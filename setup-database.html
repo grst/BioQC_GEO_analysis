@@ -104,7 +104,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li class="chapter" data-level="2" data-path="validating-signatures.html"><a href="validating-signatures.html"><i class="fa fa-check"></i><b>2</b> Validating Tissue Signatures</a><ul>
 <li class="chapter" data-level="2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#data"><i class="fa fa-check"></i><b>2.1</b> Data</a></li>
-<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#validation"><i class="fa fa-check"></i><b>2.2</b> Validation</a></li>
+<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#signature-overlap-between-the-folds"><i class="fa fa-check"></i><b>2.2.1</b> Signature overlap between the folds</a></li>
+<li class="chapter" data-level="2.2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#confusion-matrix"><i class="fa fa-check"></i><b>2.2.2</b> Confusion Matrix</a></li>
+<li class="chapter" data-level="2.2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#performance-measures-per-tissue"><i class="fa fa-check"></i><b>2.2.3</b> Performance Measures per Tissue</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-species-cross-platform-validation-on-mouse"><i class="fa fa-check"></i><b>2.3</b> Cross-species Cross-platform validation on mouse</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="validating-signatures.html"><a href="validating-signatures.html#make-signatures"><i class="fa fa-check"></i><b>2.3.1</b> Make Signatures</a></li>
+<li class="chapter" data-level="2.3.2" data-path="validating-signatures.html"><a href="validating-signatures.html#test-signatures"><i class="fa fa-check"></i><b>2.3.2</b> Test Signatures</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="curating-data.html"><a href="curating-data.html"><i class="fa fa-check"></i><b>3</b> Curating Data</a><ul>
 <li class="chapter" data-level="3.1" data-path="curating-data.html"><a href="curating-data.html#selecting-samples-by-metadata"><i class="fa fa-check"></i><b>3.1</b> Selecting Samples by Metadata</a></li>
@@ -120,6 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.2.1" data-path="setup-database.html"><a href="setup-database.html#fix-foreign-key-constraints"><i class="fa fa-check"></i><b>4.2.1</b> Fix foreign key constraints</a></li>
 <li class="chapter" data-level="4.2.2" data-path="setup-database.html"><a href="setup-database.html#extract-tissue-annotation"><i class="fa fa-check"></i><b>4.2.2</b> Extract Tissue annotation</a></li>
 <li class="chapter" data-level="4.2.3" data-path="setup-database.html"><a href="setup-database.html#load-annotation-information"><i class="fa fa-check"></i><b>4.2.3</b> Load annotation information</a></li>
+<li class="chapter" data-level="4.2.4" data-path="setup-database.html"><a href="setup-database.html#import-summary-statistics-for-each-study"><i class="fa fa-check"></i><b>4.2.4</b> Import summary statistics for each study</a></li>
 </ul></li>
 <li class="chapter" data-level="4.3" data-path="setup-database.html"><a href="setup-database.html#import-bioqc-data"><i class="fa fa-check"></i><b>4.3</b> Import BioQC data</a><ul>
 <li class="chapter" data-level="4.3.1" data-path="setup-database.html"><a href="setup-database.html#signatures"><i class="fa fa-check"></i><b>4.3.1</b> Signatures</a></li>
@@ -139,7 +148,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="5.3.1" data-path="sample-selection.html"><a href="sample-selection.html#excluding-multi-channel-microarrays"><i class="fa fa-check"></i><b>5.3.1</b> Excluding multi-channel microarrays</a></li>
 <li class="chapter" data-level="5.3.2" data-path="sample-selection.html"><a href="sample-selection.html#exclude-non-mapped-tissues"><i class="fa fa-check"></i><b>5.3.2</b> Exclude non-mapped tissues</a></li>
 <li class="chapter" data-level="5.3.3" data-path="sample-selection.html"><a href="sample-selection.html#select-organisms"><i class="fa fa-check"></i><b>5.3.3</b> Select organisms</a></li>
-<li class="chapter" data-level="5.3.4" data-path="sample-selection.html"><a href="sample-selection.html#exclude-normalized-studies"><i class="fa fa-check"></i><b>5.3.4</b> Exclude normalized studies</a></li>
+<li class="chapter" data-level="5.3.4" data-path="sample-selection.html"><a href="sample-selection.html#quality-control"><i class="fa fa-check"></i><b>5.3.4</b> Quality control</a></li>
 <li class="chapter" data-level="5.3.5" data-path="sample-selection.html"><a href="sample-selection.html#tissue-abundance"><i class="fa fa-check"></i><b>5.3.5</b> Tissue abundance</a></li>
 </ul></li>
 </ul></li>
@@ -179,9 +188,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>We store meta information for GEO samples and BioQC p-values in an Oracle 11g database. We combine the metadata from <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/GEOmetadb/inst/doc/GEOmetadb.html">GEOmetadb</a> with tables to store signature scores generated with <a href="https://accio.github.io/BioQC">BioQC</a> and manually curated annotations.</p>
 <p>The following figure shows the database scheme used for the study as entity-relationship (ER) diagram:</p>
 <div class="figure" style="text-align: center"><span id="fig:unnamed-chunk-2"></span>
-<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
+<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
 <p class="caption">
-Figure 4.1: Entitiy relationship diagram of the <em>BioQC</em> database scheme. Click the <a href="https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf">here</a> for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (…) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study.
+Figure 4.1: Entitiy relationship diagram of the <em>BioQC</em> database scheme. Click the <a href="https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf">here</a> for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (…) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study.
 </p>
 </div>
 <div id="tables-explained" class="section level2">
@@ -216,7 +225,7 @@ tables =<span class="st"> </span><span class="kw">dbListTables</span>(gdb)
 <p>We adjusted the <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/geometadb_schema.sql">GEOmetadb schema</a> to match Oracle datatypes.</p>
 <p>Once the tables are imported, we check if all the tables have the same number of rows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># check for consistency </span>
-for(table in tables) {
+<span class="cf">for</span>(table <span class="cf">in</span> tables) {
   count.query =<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;select count(*) from %s&quot;</span>, table)
   count.query.ora =<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;select count(*) from bioqc_%s&quot;</span>, table)
   <span class="kw">print</span>(count.query)
@@ -259,26 +268,43 @@ sql =<span class="st"> &quot;drop table bioqc_gpl_annot&quot;</span>
 <span class="kw">dbSendUpdate</span>(mydb, sql)</code></pre></div>
 <p>We compared the two approaches in <a href="sample-selection.html#sample-selection">Sample Selection</a>.</p>
 </div>
+<div id="import-summary-statistics-for-each-study" class="section level3">
+<h3><span class="header-section-number">4.2.4</span> Import summary statistics for each study</h3>
+<p>To perform a preliminary quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R">test_for_normalization.R</a> and the projects <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile">Makefile</a>. We import the results into the database:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">study_stats =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">read_tsv</span>(<span class="kw">file.path</span>(DATA_DIR, <span class="st">&quot;gse_tissue_annot/study_stats.txt&quot;</span>)))
+study_stats =<span class="st"> </span>study_stats[,GSE<span class="op">:</span><span class="er">=</span><span class="kw">sapply</span>(<span class="kw">as.character</span>(study_stats[[<span class="dv">1</span>]]), geoIdFromPath)]
+study_stats =<span class="st"> </span>study_stats[,GPL<span class="op">:</span><span class="er">=</span><span class="kw">lapply</span>(<span class="kw">as.character</span>(study_stats[[<span class="dv">1</span>]]), gplFromPath)]
+<span class="kw">setcolorder</span>(study_stats, <span class="kw">c</span>(<span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">7</span>))
+study_stats[, <span class="st">&#39;filename&#39;</span>] =<span class="st"> </span><span class="ot">NULL</span> <span class="co"># remove file name</span>
+
+<span class="kw">dbSendUpdate</span>(mydb, <span class="st">&quot;truncate table bioqc_tmp_gse_gpl&quot;</span>)
+<span class="kw">dbAppendDf</span>(<span class="st">&quot;BIOQC_TMP_GSE_GPL&quot;</span>, study_stats)
+<span class="kw">dbSendUpdate</span>(mydb, <span class="st">&quot;update bioqc_gse_gpl a</span>
+<span class="st">              set (study_mean, study_min, study_25, study_median, study_75, study_max) = (select study_mean, study_min, study_25, study_median, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))&quot;</span>)</code></pre></div>
+</div>
 </div>
 <div id="import-bioqc-data" class="section level2">
 <h2><span class="header-section-number">4.3</span> Import BioQC data</h2>
 <p>We install the BioQC schema using this <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/bioqc_schema.sql">SQL script</a>.</p>
 <div id="signatures" class="section level3">
 <h3><span class="header-section-number">4.3.1</span> Signatures</h3>
-<p>Import signatures into the database and create a single, consolidated gmt file. Tissue signature relevant for this study are <code>expr.tissuemark.affy.roche.symbols.gmt</code> and the <code>gtex</code> signatures.</p>
+<p>Import signatures into the database and create a single, consolidated gmt file.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Signatures shipped with BioQC (updated version from 2016-12-08)</span>
 <span class="co"># download.file(&quot;http://bioinfo.bas.roche.com:8080/apps/gsea/genesets/exp.tissuemark.bioqc.roche.symbols.gmt&quot;,</span>
 <span class="co">#              &quot;data/expr.tissuemark.affy.roche.symbols.gmt&quot;)</span>
-<span class="kw">gmt2db</span>(<span class="st">&quot;data/expr.tissuemark.affy.roche.symbols.gmt&quot;</span>)
+<span class="kw">gmt2db</span>(<span class="kw">file.path</span>(DATA_DIR, <span class="st">&quot;expr.tissuemark.affy.roche.symbols.gmt&quot;</span>))
 
 <span class="co"># control signatures generated from GTEx using *pygenesig*</span>
-<span class="kw">gmt2db</span>(<span class="st">&quot;../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt&quot;</span>)
-<span class="kw">gmt2db</span>(<span class="st">&quot;../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt&quot;</span>)
+<span class="kw">gmt2db</span>(<span class="st">&quot;../pygenesig/results/gtex_ngs_0.7_3.gmt&quot;</span>)
+<span class="kw">gmt2db</span>(<span class="st">&quot;../pygenesig/results/gtex_ngs_0.85_5.gmt&quot;</span>)
+
+<span class="co"># baseline signatures (random/housekeeping)</span>
+<span class="kw">gmt2db</span>(<span class="st">&quot;../pygenesig/results/baseline_signatures.gmt&quot;</span>)
 
 <span class="co"># pathway gene sets not relevant for this study </span>
-<span class="kw">gmt2db</span>(<span class="st">&quot;../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq&quot;</span>)
-<span class="kw">gmt2db</span>(<span class="st">&quot;../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt&quot;</span>)
-<span class="kw">gmt2db</span>(<span class="st">&quot;../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii&quot;</span>)
+<span class="co"># gmt2db(&quot;../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq&quot;)</span>
+<span class="co"># gmt2db(&quot;../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt&quot;)</span>
+<span class="co"># gmt2db(&quot;../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii&quot;)</span>
 
 <span class="co"># save imported signatures to consolidated gmt file</span>
 <span class="kw">db2gmt</span>(<span class="st">&quot;results/gmt_all.gmt&quot;</span>)</code></pre></div>
@@ -287,8 +313,8 @@ sql =<span class="st"> &quot;drop table bioqc_gpl_annot&quot;</span>
 <h3><span class="header-section-number">4.3.2</span> Tissue Annotation</h3>
 <p>Import the <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx">manually curated tissues</a> from Excel into the database.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">normalized_tissues =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">read_excel</span>(<span class="st">&quot;manual_annotation/tissue_annotation.xlsx&quot;</span>, <span class="dt">sheet =</span> <span class="dv">1</span>))
-tissues =<span class="st"> </span><span class="kw">unique</span>(normalized_tissues[!<span class="kw">is.na</span>(TISSUE_NORMALIZED),<span class="st">&quot;TISSUE_NORMALIZED&quot;</span>, <span class="dt">with=</span><span class="ot">FALSE</span>])
-tab_normalized =<span class="st"> </span>normalized_tissues[!<span class="kw">is.na</span>(TISSUE_NORMALIZED),<span class="kw">c</span>(<span class="st">&quot;TISSUE&quot;</span>, <span class="st">&quot;TISSUE_NORMALIZED&quot;</span>), with=<span class="ot">FALSE</span>]
+tissues =<span class="st"> </span><span class="kw">unique</span>(normalized_tissues[<span class="op">!</span><span class="kw">is.na</span>(TISSUE_NORMALIZED),<span class="st">&quot;TISSUE_NORMALIZED&quot;</span>, <span class="dt">with=</span><span class="ot">FALSE</span>])
+tab_normalized =<span class="st"> </span>normalized_tissues[<span class="op">!</span><span class="kw">is.na</span>(TISSUE_NORMALIZED),<span class="kw">c</span>(<span class="st">&quot;TISSUE&quot;</span>, <span class="st">&quot;TISSUE_NORMALIZED&quot;</span>), with=<span class="ot">FALSE</span>]
 
 <span class="kw">dbAppendDf</span>(<span class="st">&quot;BIOQC_TISSUES&quot;</span>, tissues)
 <span class="kw">dbAppendDf</span>(<span class="st">&quot;BIOQC_NORMALIZE_TISSUES&quot;</span>, tab_normalized)</code></pre></div>
@@ -297,8 +323,8 @@ tab_normalized =<span class="st"> </span>normalized_tissues[!<span class="kw">is
 <h3><span class="header-section-number">4.3.3</span> Tissue Sets</h3>
 <p>Import the <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx">manually curated tissue sets</a> from Excel into the database.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bioqc_all =<span class="st"> </span><span class="kw">read_excel</span>(<span class="st">&quot;manual_annotation/tissue_annotation.xlsx&quot;</span>, <span class="dt">sheet =</span> <span class="dv">3</span>)
-gtex_all =<span class="st"> </span><span class="kw">read_excel</span>(<span class="st">&quot;manual_annotation/tissue_annotation.xlsx&quot;</span>, <span class="dt">sheet=</span><span class="dv">4</span>)
-gtex_solid =<span class="st"> </span><span class="kw">read_excel</span>(<span class="st">&quot;manual_annotation/tissue_annotation.xlsx&quot;</span>, <span class="dt">sheet=</span><span class="dv">5</span>)
+gtex_all =<span class="st"> </span><span class="kw">read_excel</span>(<span class="st">&quot;manual_annotation/tissue_annotation.xlsx&quot;</span>, <span class="dt">sheet =</span> <span class="dv">4</span>)
+gtex_solid =<span class="st"> </span><span class="kw">read_excel</span>(<span class="st">&quot;manual_annotation/tissue_annotation.xlsx&quot;</span>, <span class="dt">sheet =</span> <span class="dv">5</span>)
 
 <span class="kw">signatureset2db</span>(bioqc_all, <span class="st">&quot;bioqc_all&quot;</span>)
 <span class="kw">signatureset2db</span>(gtex_solid, <span class="st">&quot;gtex_solid&quot;</span>)
@@ -309,25 +335,6 @@ gtex_solid =<span class="st"> </span><span class="kw">read_excel</span>(<span cl
 <p>Once we <a href="sample-selection.html#sample-processing">ran the analysis</a>, we manually import the list of samples on which we successfully applied BioQC and the respective p-values into the tables <strong>BIOQC_BIOQC_SUCCESS</strong> and <strong>BIOQC_RES</strong>:</p>
 <pre><code>bioqc_melt_all.uniq.tsv
 bioqc_success.txt</code></pre>
-<p>Additionally, we import the study means for each study on each platform:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">study_stats =<span class="st"> </span><span class="kw">read_lines</span>(<span class="st">&quot;/pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot/study_stats.txt&quot;</span>, <span class="dt">skip=</span><span class="dv">1</span>)
-study_stats_split =<span class="st"> </span><span class="kw">lapply</span>(study_stats, function(x) {
-  <span class="kw">return</span>(<span class="kw">str_split</span>(x, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">s+&quot;</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>:<span class="dv">7</span>])
-})
-study_stats_df =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">do.call</span>(rbind.data.frame, study_stats_split))
-for (i in <span class="dv">2</span>:<span class="dv">7</span>) {
-  study_stats_df[[i]] =<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as.character</span>(study_stats_df[[i]]))
-}
-study_stats_df =<span class="st"> </span>study_stats_df[,GSE:<span class="er">=</span><span class="kw">sapply</span>(<span class="kw">as.character</span>(study_stats_df[[<span class="dv">1</span>]]), geoIdFromPath)]
-study_stats_df =<span class="st"> </span>study_stats_df[,GPL:<span class="er">=</span><span class="kw">lapply</span>(<span class="kw">as.character</span>(study_stats_df[[<span class="dv">1</span>]]), gplFromPath)]
-<span class="kw">setcolorder</span>(study_stats_df, <span class="kw">c</span>(<span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">1</span>:<span class="dv">7</span>))
-study_stats_df[[<span class="dv">3</span>]] =<span class="st"> </span><span class="ot">NULL</span> <span class="co"># remove file name</span>
-<span class="kw">colnames</span>(study_stats_df) =<span class="st"> </span><span class="kw">as.character</span>(<span class="dv">1</span>:<span class="kw">ncol</span>(study_stats_df)) <span class="co"># valid colnames for db</span>
-
-<span class="kw">dbSendUpdate</span>(mydb, <span class="st">&quot;truncate table bioqc_tmp_gse_gpl&quot;</span>)
-<span class="kw">dbAppendDf</span>(<span class="st">&quot;BIOQC_TMP_GSE_GPL&quot;</span>, study_stats_df)
-<span class="kw">dbSendUpdate</span>(mydb, <span class="st">&quot;update bioqc_gse_gpl a</span>
-<span class="st">              set (study_min, study_25, study_median, study_mean, study_75, study_max) = (select study_min, study_25, study_median, study_mean, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))&quot;</span>)</code></pre></div>
 </div>
 </div>
 <div id="store-results" class="section level2">

@@ -104,7 +104,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li class="chapter" data-level="2" data-path="validating-signatures.html"><a href="validating-signatures.html"><i class="fa fa-check"></i><b>2</b> Validating Tissue Signatures</a><ul>
 <li class="chapter" data-level="2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#data"><i class="fa fa-check"></i><b>2.1</b> Data</a></li>
-<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#validation"><i class="fa fa-check"></i><b>2.2</b> Validation</a></li>
+<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a><ul>
+<li class="chapter" data-level="2.2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#signature-overlap-between-the-folds"><i class="fa fa-check"></i><b>2.2.1</b> Signature overlap between the folds</a></li>
+<li class="chapter" data-level="2.2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#confusion-matrix"><i class="fa fa-check"></i><b>2.2.2</b> Confusion Matrix</a></li>
+<li class="chapter" data-level="2.2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#performance-measures-per-tissue"><i class="fa fa-check"></i><b>2.2.3</b> Performance Measures per Tissue</a></li>
+</ul></li>
+<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-species-cross-platform-validation-on-mouse"><i class="fa fa-check"></i><b>2.3</b> Cross-species Cross-platform validation on mouse</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="validating-signatures.html"><a href="validating-signatures.html#make-signatures"><i class="fa fa-check"></i><b>2.3.1</b> Make Signatures</a></li>
+<li class="chapter" data-level="2.3.2" data-path="validating-signatures.html"><a href="validating-signatures.html#test-signatures"><i class="fa fa-check"></i><b>2.3.2</b> Test Signatures</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="curating-data.html"><a href="curating-data.html"><i class="fa fa-check"></i><b>3</b> Curating Data</a><ul>
 <li class="chapter" data-level="3.1" data-path="curating-data.html"><a href="curating-data.html#selecting-samples-by-metadata"><i class="fa fa-check"></i><b>3.1</b> Selecting Samples by Metadata</a></li>
@@ -120,6 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.2.1" data-path="setup-database.html"><a href="setup-database.html#fix-foreign-key-constraints"><i class="fa fa-check"></i><b>4.2.1</b> Fix foreign key constraints</a></li>
 <li class="chapter" data-level="4.2.2" data-path="setup-database.html"><a href="setup-database.html#extract-tissue-annotation"><i class="fa fa-check"></i><b>4.2.2</b> Extract Tissue annotation</a></li>
 <li class="chapter" data-level="4.2.3" data-path="setup-database.html"><a href="setup-database.html#load-annotation-information"><i class="fa fa-check"></i><b>4.2.3</b> Load annotation information</a></li>
+<li class="chapter" data-level="4.2.4" data-path="setup-database.html"><a href="setup-database.html#import-summary-statistics-for-each-study"><i class="fa fa-check"></i><b>4.2.4</b> Import summary statistics for each study</a></li>
 </ul></li>
 <li class="chapter" data-level="4.3" data-path="setup-database.html"><a href="setup-database.html#import-bioqc-data"><i class="fa fa-check"></i><b>4.3</b> Import BioQC data</a><ul>
 <li class="chapter" data-level="4.3.1" data-path="setup-database.html"><a href="setup-database.html#signatures"><i class="fa fa-check"></i><b>4.3.1</b> Signatures</a></li>
@@ -139,7 +148,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="5.3.1" data-path="sample-selection.html"><a href="sample-selection.html#excluding-multi-channel-microarrays"><i class="fa fa-check"></i><b>5.3.1</b> Excluding multi-channel microarrays</a></li>
 <li class="chapter" data-level="5.3.2" data-path="sample-selection.html"><a href="sample-selection.html#exclude-non-mapped-tissues"><i class="fa fa-check"></i><b>5.3.2</b> Exclude non-mapped tissues</a></li>
 <li class="chapter" data-level="5.3.3" data-path="sample-selection.html"><a href="sample-selection.html#select-organisms"><i class="fa fa-check"></i><b>5.3.3</b> Select organisms</a></li>
-<li class="chapter" data-level="5.3.4" data-path="sample-selection.html"><a href="sample-selection.html#exclude-normalized-studies"><i class="fa fa-check"></i><b>5.3.4</b> Exclude normalized studies</a></li>
+<li class="chapter" data-level="5.3.4" data-path="sample-selection.html"><a href="sample-selection.html#quality-control"><i class="fa fa-check"></i><b>5.3.4</b> Quality control</a></li>
 <li class="chapter" data-level="5.3.5" data-path="sample-selection.html"><a href="sample-selection.html#tissue-abundance"><i class="fa fa-check"></i><b>5.3.5</b> Tissue abundance</a></li>
 </ul></li>
 </ul></li>
@@ -177,25 +186,231 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="validating-signatures" class="section level1">
 <h1><span class="header-section-number">2</span> Validating Tissue Signatures</h1>
 <p>The authors of <em>BioQC</em> have taken three independent approaches to show that their signatures are valid and biologically meaningful. However, they did not break down the predictive performance (<em>i.e.</em> is the signature able to identify its tissue) of each signature with quantitative performance measures.</p>
-<p>To address this, we independently derived signatures on the GTEx dataset using <em>gini-index</em> and performed both a 10-fold cross validation on the same dataset and a cross-species, cross-platform validation on a different dataset. To this end, we created the python package <a href="https://github.com/grst/pygenesig">pygenesig</a>, a framework to create and validate signatures.</p>
+<p>To address this, we independently derived signatures on the <a href="http://gtexportal.org">GTEx</a> dataset using <em>gini-index</em>. and performed both a 10-fold cross validation on the same dataset and a cross-species, cross-platform validation on a different dataset. To this end, we created the python package <a href="https://github.com/grst/pygenesig">pygenesig</a>, a framework to create and validate signatures.</p>
+<p>In this chapter, we</p>
+<ul>
+<li>perform a 10-fold cross-validation on the GTEx dataset, calculating the sensitivity, specificity and precition for each signature.</li>
+<li>perform a cross-species, cross-platform validation of the signatures generated on the GTEx dataset</li>
+<li>identify a set of tissues, that can be reliably and unabmigously identified with the <em>BioQC</em> method.</li>
+</ul>
 <div id="data" class="section level2">
 <h2><span class="header-section-number">2.1</span> Data</h2>
 <ul>
-<li>GTEx</li>
-<li>GNF Mouse GeneAtlas V3 <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246" class="uri">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246</a>
-<ul>
-<li>platform Affymetrix Mouse Genome 430 2.0 Array (GPL1261)</li>
-</ul></li>
+<li>The <a href="http://gtexportal.org"><strong>Genotype Tissue Expression (GTEx)</strong></a> project is a comprehensive resource of tissue-specific gene expression data. We use this dataset to derive tissue-specific signatures. The data is human only and was generated using Illumina sequencing.</li>
+<li>We use the <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246"><strong>GNF Mouse GeneAtlas V3</strong></a> as a control dataset to demonstrate that the gini-method is robust over multiple platforms and species. This dataset originates from mouse and was generated using the <em>Affymetrix Mouse Genome 430 2.0 Array (GPL1261)</em>.</li>
 </ul>
 </div>
-<div id="validation" class="section level2">
-<h2><span class="header-section-number">2.2</span> Validation</h2>
-<ul>
-<li><a href="https://github.com/grst/pygenesig/blob/master/notebooks/validate_gini.ipynb">GTEx crossvalidation</a></li>
-<li><a href="https://github.com/grst/pygenesig/blob/master/notebooks/validate-mouse.ipynb">GTEx on mouse</a></li>
-</ul>
-<p><em>TODO: include notebooks in this book.</em></p>
+<div id="cross-validation-of-signatures-on-the-gtex-dataset" class="section level2">
+<h2><span class="header-section-number">2.2</span> Cross-Validation of signatures on the GTEx dataset</h2>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> sys
 
+<span class="op">%</span>load_ext autoreload
+<span class="op">%</span>autoreload <span class="dv">1</span>
+<span class="op">%</span>aimport pygenesig.validation
+<span class="op">%</span>aimport pygenesig.gini
+<span class="op">%</span>aimport pygenesig.bioqc
+<span class="op">%</span>aimport pygenesig.tools
+<span class="op">%</span>aimport pygenesig.perfmeasures
+<span class="op">%</span>matplotlib inline
+
+<span class="im">from</span> pygenesig.validation <span class="im">import</span> <span class="op">*</span> 
+<span class="im">from</span> pygenesig.gini <span class="im">import</span> <span class="op">*</span> 
+<span class="im">from</span> pygenesig.bioqc <span class="im">import</span> <span class="op">*</span> 
+<span class="im">from</span> pygenesig.tools <span class="im">import</span> <span class="op">*</span> 
+<span class="im">import</span> pygenesig.perfmeasures <span class="im">as</span> pm
+<span class="im">import</span> numpy <span class="im">as</span> np
+<span class="im">import</span> pandas <span class="im">as</span> pd
+<span class="im">import</span> sklearn.metrics <span class="im">as</span> skm 
+<span class="im">import</span> os.path
+<span class="im">import</span> dask
+<span class="im">from</span> distributed <span class="im">import</span> Client, progress
+<span class="im">import</span> dask.<span class="cf">async</span>
+<span class="im">import</span> dask.diagnostics
+
+<span class="im">import</span> seaborn <span class="im">as</span> sns
+sns.set_style(<span class="st">&quot;ticks&quot;</span>, {<span class="st">&quot;axes.grid&quot;</span> : <span class="va">True</span>})
+<span class="im">from</span> pylab <span class="im">import</span> <span class="op">*</span> </code></pre></div>
+<p>We use <a href="http://dask.readthedocs.io/en/latest/">dask</a> for parallel execution of the cross-validation:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">c <span class="op">=</span> Client(<span class="st">&quot;10.114.185.14:8786&quot;</span>)</code></pre></div>
+<p>We load the preprocessed GTEx dataset. The preprocessing steps are described in <a href="https://github.com/grst/pygenesig/blob/3e290600b804564332b7fdff6cd572d367a04db6/notebooks/prepare_gtex_data.ipynb">this notebook</a>.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">expr_file <span class="op">=</span> <span class="st">&quot;../data/gtex/exprs.npy&quot;</span>
+target_file <span class="op">=</span> <span class="st">&quot;../data/gtex/target.csv&quot;</span>
+splitter <span class="op">=</span> sklearn.model_selection.StratifiedKFold(n_splits<span class="op">=</span><span class="dv">10</span>)
+signature_generator <span class="op">=</span> GiniSignatureGenerator
+signature_tester <span class="op">=</span> BioQCSignatureTester</code></pre></div>
+<p>Use the automated cross-validation procedure from <a href="https://github.com/grst/pygenesig">pygenesig</a>:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">sig_list, res_list <span class="op">=</span> cross_validate_signatures(expr_file, target_file, signature_generator, signature_tester, splitter)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">sig_f, res_f <span class="op">=</span> c.compute([sig_list, res_list], sync<span class="op">=</span><span class="va">False</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">progress([sig_f, res_f])</code></pre></div>
+<p>Obtain the signatures and confusion matrices from the dask workers:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">signatures <span class="op">=</span> sig_f.result()
+cms <span class="op">=</span> res_f.result()</code></pre></div>
+<div id="signature-overlap-between-the-folds" class="section level3">
+<h3><span class="header-section-number">2.2.1</span> Signature overlap between the folds</h3>
+<p>The box-plot shows the overlap of the signatures between the different folds. A high jaccard index indicates stability of the signatures between the folds.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">pairwise_jaccard <span class="op">=</span> pairwise_jaccard_ind(signatures)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))
+data<span class="op">=</span>pd.DataFrame(pairwise_jaccard)
+sns.boxplot(data<span class="op">=</span>data, ax<span class="op">=</span>ax)
+ax.set_title(<span class="st">&quot;Pairwise Jaccard Index&quot;</span>)
+ax.set_xticklabels(data.columns, rotation<span class="op">=</span><span class="dv">90</span>)<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="_notebooks/validate_gini_files/validate_gini_13_0.png" alt="png" />
+<p class="caption">png</p>
+</div>
+</div>
+<div id="confusion-matrix" class="section level3">
+<h3><span class="header-section-number">2.2.2</span> Confusion Matrix</h3>
+<p>The confusion matrix shows which tissues tend to be <em>confused</em> with others. For example, we can see that it is difficult to differntiate between <em>colon</em> and <em>small intestine</em>.</p>
+<p>The confusion matrix below shows the average counts over the 10 folds per tissue. That means the matrix is not corrected for the number of samples per tissue.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">conf_mat_mean <span class="op">=</span> np.mean(np.array(cms), axis<span class="op">=</span><span class="dv">0</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">sig_labels <span class="op">=</span> BioQCSignatureTester.sort_signatures(signatures[<span class="dv">0</span>])</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="dv">9</span>))
+sns.heatmap(conf_mat_mean, ax<span class="op">=</span>ax, xticklabels<span class="op">=</span>sig_labels, yticklabels<span class="op">=</span>sig_labels, annot<span class="op">=</span><span class="va">True</span>,annot_kws<span class="op">=</span>{<span class="st">&quot;size&quot;</span>: <span class="dv">9</span>})<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="_notebooks/validate_gini_files/validate_gini_17_0.png" alt="png" />
+<p class="caption">png</p>
+</div>
+</div>
+<div id="performance-measures-per-tissue" class="section level3">
+<h3><span class="header-section-number">2.2.3</span> Performance Measures per Tissue</h3>
+<p>Below, we show the Sensitiviy, Specificity and Matthews Correlation Coefficient for the different tissues.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">sens <span class="op">=</span> performance_per_tissue(cms, sig_labels, pm.sens)
+spec <span class="op">=</span> performance_per_tissue(cms, sig_labels, pm.spec)
+prec <span class="op">=</span> performance_per_tissue(cms, sig_labels, pm.prec_pos)
+mcc <span class="op">=</span> performance_per_tissue(cms, sig_labels, pm.mcc)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))
+data<span class="op">=</span>pd.DataFrame(sens)
+sns.boxplot(data<span class="op">=</span>data, ax<span class="op">=</span>ax)
+ax.set_title(<span class="st">&quot;Sensitivity&quot;</span>)
+ax.set_xticklabels(data.columns, rotation<span class="op">=</span><span class="dv">90</span>)<span class="op">;</span>
+ax.set_ylim((<span class="dv">0</span>, <span class="fl">1.1</span>))<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="_notebooks/validate_gini_files/validate_gini_20_0.png" alt="png" />
+<p class="caption">png</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))
+data<span class="op">=</span>pd.DataFrame(prec)
+sns.boxplot(data<span class="op">=</span>data, ax<span class="op">=</span>ax)
+ax.set_title(<span class="st">&quot;Precision&quot;</span>)
+ax.set_xticklabels(data.columns, rotation<span class="op">=</span><span class="dv">90</span>)<span class="op">;</span>
+ax.set_ylim((<span class="dv">0</span>, <span class="fl">1.1</span>))<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="_notebooks/validate_gini_files/validate_gini_21_0.png" alt="png" />
+<p class="caption">png</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))
+data<span class="op">=</span>pd.DataFrame(spec)
+sns.boxplot(data<span class="op">=</span>data, ax<span class="op">=</span>ax)
+ax.set_title(<span class="st">&quot;Specificity&quot;</span>)
+ax.set_xticklabels(data.columns, rotation<span class="op">=</span><span class="dv">90</span>)<span class="op">;</span>
+ax.set_ylim((<span class="dv">0</span>, <span class="fl">1.1</span>))<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="_notebooks/validate_gini_files/validate_gini_22_0.png" alt="png" />
+<p class="caption">png</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">10</span>,<span class="dv">5</span>))
+data<span class="op">=</span>pd.DataFrame(mcc)
+sns.boxplot(data<span class="op">=</span>data, ax<span class="op">=</span>ax)
+ax.set_title(<span class="st">&quot;Matthew&#39;s correlation coefficient&quot;</span>)
+ax.set_xticklabels(data.columns, rotation<span class="op">=</span><span class="dv">90</span>)<span class="op">;</span>
+ax.set_ylim((<span class="dv">0</span>, <span class="fl">1.1</span>))<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="_notebooks/validate_gini_files/validate_gini_23_0.png" alt="png" />
+<p class="caption">png</p>
+</div>
+<p><strong>Average Performance:</strong></p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">np.mean(<span class="bu">list</span>(mcc.values()))</code></pre></div>
+<pre><code>0.84104652927756762</code></pre>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"></code></pre></div>
+</div>
+</div>
+<div id="cross-species-cross-platform-validation-on-mouse" class="section level2">
+<h2><span class="header-section-number">2.3</span> Cross-species Cross-platform validation on mouse</h2>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> sys
+sys.path.append(<span class="st">&quot;..&quot;</span>)
+
+<span class="op">%</span>load_ext autoreload
+<span class="op">%</span>autoreload <span class="dv">1</span>
+<span class="op">%</span>aimport pygenesig.validation
+<span class="op">%</span>aimport pygenesig.gini
+<span class="op">%</span>aimport pygenesig.bioqc
+<span class="op">%</span>aimport pygenesig.perfmeasures
+<span class="op">%</span>matplotlib inline
+
+<span class="im">from</span> pygenesig.validation <span class="im">import</span> <span class="op">*</span> 
+<span class="im">from</span> pygenesig.gini <span class="im">import</span> <span class="op">*</span> 
+<span class="im">from</span> pygenesig.bioqc <span class="im">import</span> <span class="op">*</span> 
+<span class="im">import</span> pygenesig.perfmeasures <span class="im">as</span> pm
+<span class="im">import</span> numpy <span class="im">as</span> np
+<span class="im">import</span> pandas <span class="im">as</span> pd
+<span class="im">from</span> IPython.display <span class="im">import</span> display
+
+<span class="im">import</span> seaborn <span class="im">as</span> sns
+<span class="im">from</span> pylab <span class="im">import</span> <span class="op">*</span> </code></pre></div>
+<p>We load the preprocessed GTEx dataset. The preprocessing steps are described in <a href="https://github.com/grst/pygenesig/blob/3e290600b804564332b7fdff6cd572d367a04db6/notebooks/prepare_gtex_data.ipynb">this notebook</a>.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">expr <span class="op">=</span> np.load(<span class="st">&quot;../data/gtex/exprs.npy&quot;</span>)
+target <span class="op">=</span> np.genfromtxt(<span class="st">&quot;../data/gtex/target.csv&quot;</span>, delimiter<span class="op">=</span><span class="st">&quot;,&quot;</span>, dtype<span class="op">=</span><span class="bu">str</span>)
+gene_symbols <span class="op">=</span> pd.read_csv(<span class="st">&quot;../data/gtex/gene_symbols.csv&quot;</span>, delimiter<span class="op">=</span><span class="st">&quot;,&quot;</span>, dtype<span class="op">=</span><span class="bu">str</span>, header<span class="op">=</span><span class="va">None</span>)
+gene_symbols.columns <span class="op">=</span> [<span class="st">&#39;ensemble&#39;</span>, <span class="st">&#39;hgnc&#39;</span>]</code></pre></div>
+<p>We load the GNF mouse dataset:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">human_to_mouse <span class="op">=</span> pd.read_csv(<span class="st">&quot;../data/mouseGNF/map_orthologoues.tsv&quot;</span>, delimiter<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)
+human_to_mouse[<span class="st">&#39;rowname&#39;</span>] <span class="op">=</span> human_to_mouse.index
+mouse_expr <span class="op">=</span> pd.read_csv(<span class="st">&quot;../data/mouseGNF/mouseGNF-signalMatrix.gct&quot;</span>, delimiter<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, skiprows<span class="op">=</span><span class="dv">2</span>)
+mouse_pdata <span class="op">=</span> pd.read_csv(<span class="st">&quot;../data/mouseGNF/mouseGNF-phenoData.txt&quot;</span>, delimiter<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">mouse_target <span class="op">=</span> mouse_pdata.loc[<span class="op">~</span>mouse_pdata[<span class="st">&quot;GEO.source.name&quot;</span>].isnull(), <span class="st">&quot;GEO.source.name&quot;</span>].<span class="bu">apply</span>(
+    <span class="kw">lambda</span> x: <span class="st">&quot;_&quot;</span>.join(x.split(<span class="st">&quot;_&quot;</span>)[:<span class="op">-</span><span class="dv">1</span>]))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">mouse_expr <span class="op">=</span> mouse_expr.iloc[:, <span class="dv">2</span>:]  <span class="co"># remove description and id</span>
+mouse_expr <span class="op">=</span> mouse_expr.values</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">mouse_expr <span class="op">=</span> mouse_expr[:, mouse_target.index] <span class="co"># select samples with tissue annotation. </span>
+mouse_target <span class="op">=</span> np.array(mouse_target)</code></pre></div>
+<div id="translation-of-signatures" class="section level4">
+<h4><span class="header-section-number">2.3.0.1</span> Translation of signatures</h4>
+<p>The signatures consist of the row indices of the expression matrix they were generated on. We therefore need to translate the signatures from the human dataset to the mouse dataset.</p>
+<p>This is done in the following way:</p>
+<ul>
+<li>GTEx indices <span class="math inline">\(\to\)</span> human gene symbols <span class="math inline">\(\to\)</span> mouse orthologous gene symbols <span class="math inline">\(\to\)</span> mouseGNF indices</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">translation_df <span class="op">=</span> pd.merge(gene_symbols, human_to_mouse, how<span class="op">=</span><span class="st">&#39;inner&#39;</span>, left_on<span class="op">=</span><span class="st">&#39;hgnc&#39;</span>, right_on<span class="op">=</span><span class="st">&#39;GeneSymbol&#39;</span>)
+translation_df.set_index(<span class="st">&#39;hgnc&#39;</span>, inplace<span class="op">=</span><span class="va">True</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="kw">def</span> translate_signatures(signatures_origin):
+    st <span class="op">=</span> {}
+    gene_symbol_list <span class="op">=</span> <span class="bu">list</span>(gene_symbols.hgnc)
+    <span class="cf">for</span> tissue, genes <span class="kw">in</span> signatures_origin.items():
+        st[tissue] <span class="op">=</span> []
+        <span class="cf">for</span> g <span class="kw">in</span> genes:
+            gene_symbol <span class="op">=</span> gene_symbol_list[g]
+            <span class="cf">try</span>: 
+                rownames <span class="op">=</span> pd.Series(translation_df.loc[gene_symbol, <span class="st">&quot;rowname&quot;</span>])
+                st[tissue].extend(<span class="bu">list</span>(rownames))
+            <span class="cf">except</span> <span class="pp">KeyError</span>:
+                <span class="cf">pass</span>
+    <span class="cf">return</span> st    </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">have_orthologue <span class="op">=</span> unique(pd.merge(gene_symbols, translation_df, left_on<span class="op">=</span><span class="st">&#39;hgnc&#39;</span>, right_index<span class="op">=</span><span class="va">True</span>).index)</code></pre></div>
+</div>
+<div id="make-signatures" class="section level3">
+<h3><span class="header-section-number">2.3.1</span> Make Signatures</h3>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">sg <span class="op">=</span> GiniSignatureGenerator(expr[:, :], target)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">signatures <span class="op">=</span> sg.mk_signatures(np.array(<span class="bu">list</span>(<span class="bu">range</span>(<span class="bu">len</span>(target)))))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">signatures_mouse <span class="op">=</span> translate_signatures(signatures)</code></pre></div>
+</div>
+<div id="test-signatures" class="section level3">
+<h3><span class="header-section-number">2.3.2</span> Test Signatures</h3>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">st <span class="op">=</span> BioQCSignatureTester(mouse_expr, mouse_target)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">actual, predicted <span class="op">=</span> st.test_signatures(signatures_mouse, np.array(<span class="bu">list</span>(<span class="bu">range</span>(<span class="bu">len</span>(mouse_target)))), return_labels<span class="op">=</span><span class="va">True</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">result <span class="op">=</span> pd.DataFrame({<span class="st">&quot;actual&quot;</span> : actual, <span class="st">&quot;predicted&quot;</span> : predicted})</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">confmat <span class="op">=</span> pd.crosstab(result.actual, result.predicted)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">sig_labels <span class="op">=</span> st.sort_signatures(signatures)</code></pre></div>
+<p>The resulting heatmap demonstrates that the signatures we identified as ‘robust’ in the corss-validation procedure do work across multiple species and multiple experimental platforms:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">fig, ax <span class="op">=</span> subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="dv">15</span>))
+sns.heatmap(confmat.as_matrix(), ax<span class="op">=</span>ax, linewidths<span class="op">=</span>.<span class="dv">5</span>, xticklabels<span class="op">=</span><span class="bu">list</span>(confmat.columns), yticklabels<span class="op">=</span><span class="bu">list</span>(confmat.index))
+ax.set_xticklabels(ax.get_xticklabels(), rotation<span class="op">=</span><span class="dv">90</span>)<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="_notebooks/validate_mouse_files/validate_mouse_23_0.png" alt="png" />
+<p class="caption">png</p>
+</div>
+
+</div>
 </div>
 </div>
             </section>

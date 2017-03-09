@@ -31,6 +31,7 @@ order by origin, destination"
 migration = dbGetQuery(mydb, query)
 set.seed(42)
 col = rand_color(length(unique(migration$ORIGIN)))
+names(col) = unique(migration$ORIGIN)
 chordDiagram(migration, grid.col=col, annotationTrack="grid", preAllocateTracks=1)
 circos.trackPlotRegion(track.index=1, panel.fun = function(x, y) {
   xlim = get.cell.meta.data("xlim")
@@ -49,7 +50,7 @@ select origin
      , destination
      , count(gsm) as \"count\"
 from bioqc_tissue_migration 
-where enrichment_ratio > 4
+where enrichment_ratio > .2
   and rk = 1
   and tissue_set = 'gtex_solid'
 group by origin, destination
@@ -57,6 +58,7 @@ order by origin, destination"
 migration = dbGetQuery(mydb, query)
 set.seed(42)
 col = rand_color(length(unique(migration$ORIGIN)))
+names(col) = unique(migration$ORIGIN)
 chordDiagram(migration, grid.col=col, annotationTrack="grid", preAllocateTracks=1)
 circos.trackPlotRegion(track.index=1, panel.fun = function(x, y) {
   xlim = get.cell.meta.data("xlim")
@@ -78,7 +80,7 @@ Contamination in total:
 byTissue = "
 with contam_stats as (
   select bcs.*
-       , case when enrichment_ratio > 4
+       , case when enrichment_ratio > .2
            then 1
            else null
          end as is_contam 
@@ -131,38 +133,6 @@ year = dbGetQuery(mydb, byYear)
 ggplot(data=year, aes(x=YEAR, y=RATIO)) + stat_summary(fun.y="mean", geom="bar")
 ```
 
-
-By country
-(that's nice figures, but it's not very representative... tissue-bias, statistical significance, ...)
-
-```r
-byCountry = "
-with contam_stats as (
-  select bcs.*
-       , case when enrichment_ratio > 4
-           then 1
-           else null
-         end as is_contam 
-  from bioqc_contam_stats bcs
-)
-select  country
-       , tgroup
-       , count(gsm) as total
-       , count(is_contam) as contamined
-       , count(is_contam)/cast(count(gsm) as float) as ratio
-from contam_stats
-where tissue_set = 'gtex_solid'
-group by country, tgroup
-order by ratio desc
-"
-
-country = dbGetQuery(mydb, byCountry)
-country.2 = country[country$TGROUP == 'liver',]
-#country.2 = ddply(country[country$total > 2000,], ~country,summarise,ratio=mean(ratio))
-
-spdf <- joinCountryData2Map(country.2, joinCode="NAME", nameJoinColumn="COUNTRY")
-mapCountryData(spdf, nameColumnToPlot="RATIO", catMethod="fixedWidth")
-```
 
 By organism
 

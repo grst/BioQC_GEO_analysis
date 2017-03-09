@@ -10,8 +10,8 @@ with tables to store signature scores generated with
 The following figure shows the database scheme used for the study as entity-relationship (ER) diagram: 
 
 <div class="figure" style="text-align: center">
-<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
-<p class="caption">(\#fig:unnamed-chunk-2)Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which are omitted in the visualisation because they are not relevant for this study.</p>
+<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
+<p class="caption">(\#fig:unnamed-chunk-2)Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study.</p>
 </div>
 
 ## Tables explained
@@ -117,28 +117,48 @@ dbSendUpdate(mydb, sql)
 
 We compared the two approaches in [Sample Selection](#sample-selection). 
 
+### Import summary statistics for each study 
+
+To perform a preliminary quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in [test_for_normalization.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R) and the projects [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). We import the results into the database:  
+
+
+```r
+study_stats = data.table(read_tsv(file.path(DATA_DIR, "gse_tissue_annot/study_stats.txt")))
+study_stats = study_stats[,GSE:=sapply(as.character(study_stats[[1]]), geoIdFromPath)]
+study_stats = study_stats[,GPL:=lapply(as.character(study_stats[[1]]), gplFromPath)]
+setcolorder(study_stats, c(8, 9, 1:7))
+study_stats[, 'filename'] = NULL # remove file name
+
+dbSendUpdate(mydb, "truncate table bioqc_tmp_gse_gpl")
+dbAppendDf("BIOQC_TMP_GSE_GPL", study_stats)
+dbSendUpdate(mydb, "update bioqc_gse_gpl a
+              set (study_mean, study_min, study_25, study_median, study_75, study_max) = (select study_mean, study_min, study_25, study_median, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))")
+```
+
 ## Import BioQC data
 We install the BioQC schema using this [SQL script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/bioqc_schema.sql). 
 
 ### Signatures
 
-Import signatures into the database and create a single, consolidated gmt file. Tissue signature relevant for this
-study are `expr.tissuemark.affy.roche.symbols.gmt` and the `gtex` signatures. 
+Import signatures into the database and create a single, consolidated gmt file.
 
 ```r
 # Signatures shipped with BioQC (updated version from 2016-12-08)
 # download.file("http://bioinfo.bas.roche.com:8080/apps/gsea/genesets/exp.tissuemark.bioqc.roche.symbols.gmt",
 #              "data/expr.tissuemark.affy.roche.symbols.gmt")
-gmt2db("data/expr.tissuemark.affy.roche.symbols.gmt")
+gmt2db(file.path(DATA_DIR, "expr.tissuemark.affy.roche.symbols.gmt"))
 
 # control signatures generated from GTEx using *pygenesig*
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.7_3.gmt")
-gmt2db("../gene-set-study/data/gtex/gtex_ngs_0.85_5.gmt")
+gmt2db("../pygenesig/results/gtex_ngs_0.7_3.gmt")
+gmt2db("../pygenesig/results/gtex_ngs_0.85_5.gmt")
+
+# baseline signatures (random/housekeeping)
+gmt2db("../pygenesig/results/baseline_signatures.gmt")
 
 # pathway gene sets not relevant for this study 
-gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
-gmt2db("../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt")
-gmt2db("../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii")
+# gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
+# gmt2db("../BioQC_correlated-pathways/MetaBase.downstream.expression.gmt")
+# gmt2db("../BioQC_correlated-pathways/path.ronet.roche.symbols.gmt.ascii")
 
 # save imported signatures to consolidated gmt file
 db2gmt("results/gmt_all.gmt")
@@ -164,8 +184,8 @@ Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_anal
 
 ```r
 bioqc_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 3)
-gtex_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet=4)
-gtex_solid = read_excel("manual_annotation/tissue_annotation.xlsx", sheet=5)
+gtex_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 4)
+gtex_solid = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 5)
 
 signatureset2db(bioqc_all, "bioqc_all")
 signatureset2db(gtex_solid, "gtex_solid")
@@ -178,29 +198,6 @@ Once we [ran the analysis](#sample-processing), we manually import the list of s
 ```
 bioqc_melt_all.uniq.tsv
 bioqc_success.txt
-```
-
-Additionally, we import the study means for each study on each platform: 
-
-```r
-study_stats = read_lines("/pstore/data/biocomp/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot/study_stats.txt", skip=1)
-study_stats_split = lapply(study_stats, function(x) {
-  return(str_split(x, "\\s+")[[1]][1:7])
-})
-study_stats_df = data.table(do.call(rbind.data.frame, study_stats_split))
-for (i in 2:7) {
-  study_stats_df[[i]] = as.numeric(as.character(study_stats_df[[i]]))
-}
-study_stats_df = study_stats_df[,GSE:=sapply(as.character(study_stats_df[[1]]), geoIdFromPath)]
-study_stats_df = study_stats_df[,GPL:=lapply(as.character(study_stats_df[[1]]), gplFromPath)]
-setcolorder(study_stats_df, c(8, 9, 1:7))
-study_stats_df[[3]] = NULL # remove file name
-colnames(study_stats_df) = as.character(1:ncol(study_stats_df)) # valid colnames for db
-
-dbSendUpdate(mydb, "truncate table bioqc_tmp_gse_gpl")
-dbAppendDf("BIOQC_TMP_GSE_GPL", study_stats_df)
-dbSendUpdate(mydb, "update bioqc_gse_gpl a
-              set (study_min, study_25, study_median, study_mean, study_75, study_max) = (select study_min, study_25, study_median, study_mean, study_75, study_max from bioqc_tmp_gse_gpl b where a.gse = b.gse and (a.gpl = b.gpl or b.gpl is NULL))")
 ```
 
 ## Store results
