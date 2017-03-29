@@ -114,7 +114,7 @@ annotate_gse: results/gse_lists/missing_annotation.txt
 # convert the R expression sets to reuseable flatfiles (.gct, fdata.tsv, pdata.tsv)
 #################################
 results/gse_lists/converted_esets.txt: .FORCE
-	find $(DATA_PATH)/geo_annot_flat | grep -oP "GSE(.*)\.gct" | tr "\.gct" "\.Rdata" | sort -u > $@
+	find $(DATA_PATH)/geo_annot_flat | grep -oP "GSE(.*)\.gct" | sed  "s/_exprs\.gct/\.Rdata/" | sort -u > $@
 
 results/gse_lists/missing_conversion.txt: results/gse_lists/annotated_esets.txt results/gse_lists/converted_esets.txt
 	diff $^ | grep "^<" | grep -oP "GSE(.*)\.Rdata" | awk '{print "$(DATA_PATH)/geo_annot/"$$0}' > $@
