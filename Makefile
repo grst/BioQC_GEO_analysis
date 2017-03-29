@@ -1,8 +1,8 @@
 R=R
 RMD_FILES= $(wildcard *.Rmd) 
 PREVIEW_FILES = $(patsubst %,%.preview,$(RMD_FILES))
-DATA_PATH= /pstore/data/biostats/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
-CHUNKSUB_PATH= /pstore/data/biostats/users/sturmg/BioQC_GEO_analysis/chunksub
+DATA_PATH= /pstore/data/bioinfo/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
+CHUNKSUB_PATH= /pstore/data/bioinfo/users/sturmg/BioQC_GEO_analysis/chunksub
 SHELL= /bin/bash
 CHUNKSUB= /pstore/home/sturmg/.local/bin/chunksub
 CWD= $(shell pwd)
@@ -107,6 +107,21 @@ annotate_gse: results/gse_lists/missing_annotation.txt
 	$(CHUNKSUB) -d $(CWD) -s $(CHUNKSIZE) -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N annotate_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/annotate_eset.R $(DATA_PATH)/geo_annot {}" $< 
 
 
+
+#################################
+# GEO CONVERSION
+# 
+# convert the R expression sets to reuseable flatfiles (.gct, fdata.tsv, pdata.tsv)
+#################################
+results/gse_lists/converted_esets.txt: .FORCE
+	find $(DATA_PATH)/geo_annot_flat | grep -oP "GSE(.*)\.gct" | tr "\.gct" "\.Rdata" | sort -u > $@
+
+results/gse_lists/missing_conversion.txt: results/gse_lists/annotated_esets.txt results/gse_lists/converted_esets.txt
+	diff $^ | grep "^<" | grep -oP "GSE(.*)\.Rdata" | awk '{print "$(DATA_PATH)/geo_annot/"$$0}' > $@
+
+.PHONY: convert_geo
+convert_geo: results/gse_lists/missing_conversion.txt
+	$(CHUNKSUB) -d $(CWD) -s 20 -X y -N convert_geo -j $(CHUNKSUB_PATH) "$(CWD)/scripts/eset_to_gct.R {} $(DATA_PATH)/geo_annot_flat" $<
 
 #################################
 # BioQC
