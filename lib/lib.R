@@ -46,3 +46,15 @@ chooseSignature = function(table.column, sig.list, method=max) {
   return(rownames(sig.vals[sig.vals[,1,drop=F] == max(sig.vals[,1,drop=F]),,drop=F])[1])
 }
 
+#' Add random noise to a matrix
+#' 
+#' @param matrix matrix to which the noise should be added
+#' @param fractionAffected fraction of elements of the matrix that will be noisy
+#' @param stdv stdv of the noise
+#' @param mean mean of the noise
+addNoise = function(matrix, fractionAffected=.1, stdv=2, mean=9) {
+  noise = matrix(rnorm(nrow(matrix)*ncol(matrix), mean=mean, sd=stdv), nrow=nrow(matrix), byrow=FALSE)
+  addNoise = matrix(runif(nrow(matrix)*ncol(matrix)), nrow=nrow(matrix), byrow=FALSE) < fractionAffected
+  matrix = matrix + addNoise*noise
+  return(matrix)
+}

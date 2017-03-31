@@ -71,8 +71,8 @@ gplFromPath = function(path) {
 #' as probeids with gene symbol tend to be higher expressed in general. 
 filter_eset = function(eset) {
   gene_symbols = fData(eset)$BioqcGeneSymbol
-  hgnc_symbols = read_tsv("res/hgnc_symbols.tsv")
-  # remove lines that have no gene set
+  hgnc_symbols = read_tsv("lib/res/hgnc_symbols.tsv", col_types = cols())
+  # remove lines that have no or an invalid gene symbol 
   eset = eset[(!is.na(gene_symbols)) & (gene_symbols != '-') & (gene_symbols %in% hgnc_symbols$hgnc_symbols),]
   eset = eset[keepMaxStatRowInd(exprs(eset), fData(eset)$BioqcGeneSymbol),]
   return(eset)
