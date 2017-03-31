@@ -11,16 +11,20 @@ source("lib/plots.R")
 source("lib/db.R")
 library(data.table)
 library(BioQC)
+library(stringr)
 library(scales)
+library(gtools)
 
 prepend_control = Vectorize(function(str) {
   return(str_c("0", str, sep = "_"))
 })
 
+tissue_set = "bioqc_all"
+
 tissues = dbGetQuery(mydb, "
   select distinct tgroup
   from bioqc_tissue_set 
-  where tissue_set = 'gtex_all'")
+  where tissue_set = ?", tissue_set)
 
 getTissueSamples = function(tissue) {
   # get all samples belonging to one tissue and filter for siginifant 
@@ -35,10 +39,9 @@ getTissueSamples = function(tissue) {
       on brt.gsm = bsst.gsm
       and brt.tissue_set = bsst.tissue_set
     where bsst.tgroup = ?
-    and bsst.tissue_set = 'gtex_all'
-    order by gsm
+    and bsst.tissue_set = ?
   "
-  data = data.table(dbGetQuery(mydb, query, tissue))
+  data = data.table(dbGetQuery(mydb, query, tissue, tissue_set))
   data[,pvalue.log:=absLog10p(as.numeric(PVALUE))]
   data[,GSM:=as.character(GSM)]
   return(data)
@@ -56,11 +59,11 @@ getReferenceSamples = function(tissue) {
   join bioqc_signatures bs
     on bs.id = br.signature
   where bsst.tgroup = ?
-  and bsst.tissue_set = 'gtex_all'
+  and bsst.tissue_set = ?
   and bs.source = 'baseline_signatures.gmt'
-  and bs.name in ('random_10_0', 'random_10_1', 'random_100_0', 'random_100_1', 'awesome_housekeepers', 'enzyme_goslim')
+  and bs.name in ('random_10_0', 'random_100_0', 'random_1000_1', 'awesome_housekeepers', 'enzyme_goslim')
   "
-  data = data.table(dbGetQuery(mydb, query, tissue))
+  data = data.table(dbGetQuery(mydb, query, tissue, tissue_set))
   data[,pvalue.log:=absLog10p(as.numeric(PVALUE))]
   data[,GSM:=as.character(GSM)]
   data[,SIGNATURE:=prepend_control(SIGNATURE)]
@@ -68,11 +71,12 @@ getReferenceSamples = function(tissue) {
 }
 
 for(tissue in tissues$TGROUP) {
+  print(tissue)
   data = getTissueSamples(tissue)
   data = rbind(data, getReferenceSamples(tissue))
+  data = data[mixedorder(GSM)]
   data[,GSM:=factor(GSM, levels=unique(GSM))]
   data[,SIGNATURE:=factor(SIGNATURE, levels=sort(unique(SIGNATURE), decreasing = TRUE))]
-  print(tissue)
   hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
   sampids = levels(data$GSM)
  

@@ -2,12 +2,10 @@
 
 #############
 # USAGE:
-#   run_bioqc.R <outputDir> [<gmtFile>] <chunkFile> 
+#   run_bioqc.R <outputDir> <gmtFile> <chunkFile> [<cutoff=0.1>]
 # where chunkFile is a file containing paths to Rdata objects storing
 # ExpressionSets, one file per line. The ExpressionSet in the Rdata object
 # must be named 'eset_res'. 
-#
-# If gmtFile is omitted, the default BioQC gmt file will be used. 
 #
 # The script runs BioQC on each expression set and stores the raw 
 # p-values as data tables. 
@@ -27,12 +25,11 @@ source("lib/geo_annotation.R")
 args = commandArgs(trailingOnly=TRUE)
 
 chunkFile = args[3]
-if(is.na(chunkFile)) {
-  chunkFile = args[2]
-  gmtFile = system.file("extdata/exp.tissuemark.affy.roche.symbols.gmt", package="BioQC")
-} else {
-  gmtFile = args[2]
-}
+gmtFile = args[2]
+cutoff = args[4] 
+if(is.na(cutoff)) {
+  cutoff = 0.1
+} 
 outDir = args[1]
 outPath = file.path(outDir, "%s_bioqc_res.tab")
 outPathMelt = file.path(outDir, "%s_bioqc_res_melt.tab")
@@ -60,7 +57,7 @@ for (esetFile in esetFiles) {
   tryCatch ({
     res = runFile(esetFile)
     # also save melted and filtered file for db. 
-    res_mel = melt_bioqc(res)
+    res_mel = melt_bioqc(res, cutoff=cutoff)
     outFile = sprintf(outPath, tools::file_path_sans_ext(basename(esetFile)))
     outFileMelt = sprintf(outPathMelt, tools::file_path_sans_ext(basename(esetFile)))
     write.table(res, file=outFile)
