@@ -18,11 +18,13 @@ db_escape = function(text) {
 #' Read a GMT file and write it to the signatures database
 #' 
 #' @param gmt_file path to gmt file
-gmt2db = function(gmt_file) {
-  filename = basename(gmt_file)
+gmt2db = function(gmt_file, source=NULL) {
+  if(is.null(source)) {
+    source = basename(gmt_file)
+  }
   gmt <- readGmt(gmt_file)
   gmt_list = lapply(gmt, function(line) {
-    return(list(id=NA, name=line$name, source=filename, desc=line$desc, genes=paste(line$genes, collapse=',')))
+    return(list(id=NA, name=line$name, source=source, desc=line$desc, genes=paste(line$genes, collapse=',')))
   })
   gmt_table = do.call(rbind.data.frame, gmt_list)
   dbAppendDf("BIOQC_SIGNATURES", gmt_table)

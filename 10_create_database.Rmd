@@ -154,11 +154,10 @@ Import signatures into the database and create a single, consolidated gmt file.
 gmt2db(file.path(DATA_DIR, "expr.tissuemark.affy.roche.symbols.gmt"))
 
 # control signatures generated from GTEx using *pygenesig*
-gmt2db("../pygenesig/results/gtex_ngs_0.7_3.gmt")
-gmt2db("../pygenesig/results/gtex_ngs_0.85_5.gmt")
+gmt2db("../pygenesig-example/results/gtex_v6_gini_0.8_3/signatures.gmt", source='gtex_v6_gini.gmt')
 
 # baseline signatures (random/housekeeping)
-gmt2db("../pygenesig/results/baseline_signatures.gmt")
+gmt2db("../pygenesig-example/results/baseline_signatures.gmt")
 
 # pathway gene sets not relevant for this study 
 # gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
@@ -190,10 +189,12 @@ Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_anal
 bioqc_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 3)
 gtex_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 4)
 gtex_solid = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 5)
+bioqc_solid = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 6)
 
 signatureset2db(bioqc_all, "bioqc_all")
 signatureset2db(gtex_solid, "gtex_solid")
 signatureset2db(gtex_all, "gtex_all")
+signatureset2db(bioqc_solid, "bioqc_solid")
 
 ```
 
