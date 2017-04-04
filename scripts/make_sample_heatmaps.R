@@ -19,7 +19,8 @@ prepend_control = Vectorize(function(str) {
   return(str_c("0", str, sep = "_"))
 })
 
-tissue_set = "bioqc_all"
+tissue_set = "gtex_solid"
+out_dir = 'heatmaps_db_gtex_solid'
 
 tissues = dbGetQuery(mydb, "
   select distinct tgroup
@@ -80,7 +81,7 @@ for(tissue in tissues$TGROUP) {
   hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
   sampids = levels(data$GSM)
  
-  pdf(file=sprintf("results/heatmaps_db/%s.pdf", tissue),
+  pdf(file=sprintf("results/%s/%s.pdf", out_dir, tissue),
       width=min(nrow(data)*.3 + 5, 30),
       height=length(levels(data$SIGNATURE))*.33+2)
   for (i in seq(1, length(sampids), 70)) {

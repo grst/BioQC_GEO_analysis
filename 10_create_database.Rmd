@@ -155,6 +155,8 @@ gmt2db(file.path(DATA_DIR, "expr.tissuemark.affy.roche.symbols.gmt"))
 
 # control signatures generated from GTEx using *pygenesig*
 gmt2db("../pygenesig-example/results/gtex_v6_gini_0.8_3/signatures.gmt", source='gtex_v6_gini.gmt')
+gmt2db("../pygenesig-example/results/gtex_v6_solid_gini_0.8_1/signatures.gmt", source='gtex_v6_gini_solid.gmt')
+
 
 # baseline signatures (random/housekeeping)
 gmt2db("../pygenesig-example/results/baseline_signatures.gmt")
