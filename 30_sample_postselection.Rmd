@@ -157,7 +157,7 @@ sql_from_hk = str_c(sql_from6, "
   join bioqc_res br on br.gsm = bg.gsm
   join bioqc_signatures bs on bs.id = br.signature", sep="\n")
 sql_where_hk = str_c(sql_where6, "
-  and br.signature in (54911, 54933) -- awesome_housekeepers, random_100_0")
+  and br.signature in (55445, 55467) -- awesome_housekeepers, random_100_0")
 res = data.table(dbGetQuery(mydb, str_c(sql_select_hk, sql_from_hk, sql_where_hk, sep="\n")))
 invisible(res[,SCORE:=absLog10p(as.numeric(PVALUE))])
 ggplot(res, aes(x=SCORE)) + geom_density(aes(color=NAME)) + geom_vline(xintercept = 5, color="blue") + theme(legend.position = "top")

@@ -86,7 +86,7 @@ as
   where channel_count = 1
   and organism_ch1 in ('Homo sapiens', 'Mus musculus', 'Rattus norvegicus')
   and ABS(study_75 - study_25) >= .5 -- IQR to ensure sufficient variance. 
-  and signature = 54911 --awesome housekeepers
+  and signature = 55445 --awesome housekeepers
   and pvalue < 1e-5;
   
 create /*+ parallel(16) */ index bss_gsm
