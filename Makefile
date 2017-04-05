@@ -147,7 +147,10 @@ results/gse_lists/missing_bioqc.txt: results/gse_lists/annotated_esets.txt resul
 .PHONY: run_bioqc
 run_bioqc: results/gse_lists/missing_bioqc.txt results/gmt_all.gmt
 	rm -fr $(CHUNKSUB_PATH)/bioqc
-	$(CHUNKSUB) -d $(CWD) -s 10 -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N bioqc -j $(CHUNKSUB_PATH) "$(CWD)/scripts/run_bioqc.R $(DATA_PATH)/bioqc $(word 2,$^) {}" $< 
+	$(CHUNKSUB) -d $(CWD) -s 10 -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N bioqc -j $(CHUNKSUB_PATH) "$(CWD)/scripts/run_bioqc.R $(DATA_PATH)/bioqc $(word 2,$^) {} 2" $< 
+
+.PHONY: bioqc_res
+bioqc_res: $(DATA_PATH)/bioqc_melt_all.uniq.tsv $(DATA_PATH)/bioqc_success.csv
 
 $(DATA_PATH)/bioqc_melt_all.tsv: results/gse_lists/bioqced_esets.txt 
 	awk '{print "$(DATA_PATH)/bioqc/"$$0}' < $< | xargs cat > $@

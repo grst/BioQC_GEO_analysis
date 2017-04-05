@@ -75,6 +75,8 @@ CREATE global temporary TABLE bioqc_tmp_gse_gpl
   study_max float
 ) on commit preserve rows;
 
+create index bioqc_gse_gpl_iqr on bioqc_gse_gpl(abs(study_75 - study_25)); 
+
 create table bioqc_res(gsm varchar2(10) not null 
                         references bioqc_gsm(gsm)
                      , signature number(10) not null

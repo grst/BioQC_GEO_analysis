@@ -1,6 +1,6 @@
 plots/*
 results/*
-data/*
+data
 *.html
 *.CommonMark
 .ipynb_checkpoints

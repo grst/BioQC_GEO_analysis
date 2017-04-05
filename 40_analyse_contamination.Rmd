@@ -51,6 +51,7 @@ GSM1234   543           1e-5      Colon           intestine     gtex_solid
 ### BIOQC_TISSUE_ENRICHMENT
 We now match the found onto the expected tissue groups by joining `BIOQC_SELECTED_SAMPES_TSET` with `BIOQC_RES_TSET` on `GSM` and `TISSUE_SET`. 
 We calculate the *Enrichment Ratio* as $\log_{10}(p_{expected\_sig} / p_{found\_sig})$. 
+This table containes *only* the contamined samples; samples where no 'unexpected' signature is found are excluded.
 
 For the above example tables, we would get: 
 ```

@@ -10,7 +10,7 @@ build immediate
 refresh force
 on demand
 as 
-    select /*+ parallel(16) */   bss.gsm
+    select /*+ parallel(16) */  distinct bss.gsm
                                , bts.tissue
                                , bts.tissue_set
                                , bts.tgroup
@@ -34,8 +34,8 @@ as
       on bs.id = bts2.signature
     left outer join bioqc_res br 
       on br.gsm = bss.gsm 
-      and br.signature = bts2.signature;
---    where bts.tissue_set = 'gtex_solid';  
+      and br.signature = bts2.signature
+    where bts.tissue_set = 'gtex_solid';  
 create /*+ parallel(16) */ index bioqc_sst_gsm
   on bioqc_selected_samples_tset(gsm); 
 create /*+ parallel(16) */ index bioqc_sst_tissue
@@ -74,8 +74,8 @@ as
   join bioqc_signatures bs
     on br.signature = bs.id
   join bioqc_tissue_set bts
-    on bts.signature = br.signature;
---  where bts.tissue_set = 'gtex_solid';
+    on bts.signature = br.signature
+  where bts.tissue_set = 'gtex_solid';
 create /*+ parallel(16) */ index bioqc_rt_gsm
   on bioqc_res_tset(gsm); 
 create /*+ parallel(16) */ index bioqc_rt_found_sig
@@ -114,7 +114,7 @@ as
                                , br.found_sig_pvalue                               
                                , br.found_tgroup
     from bioqc_selected_samples_tset bss
-    left outer join bioqc_res_tset br
+    join bioqc_res_tset br
       on br.gsm = bss.gsm 
       and br.tissue_set = bss.tissue_set
     -- exclude expected signatures from found enriched signatures
@@ -220,19 +220,22 @@ create /*+ parallel(16) */ index bioqc_te2_rk
 create or replace view bioqc_contam_stats
 as
   select /*+ parallel(16) */ distinct bss.gsm
-                , bte.tissue_set
-                , bss.tissue
-                , bte.tgroup
+                , bsst.tissue_set
+                , bsst.tissue
+                , bsst.tgroup
                 , bte.found_sig
                 , bte.found_sig_name
                 , bte.min_enrichment_ratio as enrichment_ratio
                 , bss.organism
                 , bss.year
                 , bss.country
-  from bioqc_selected_samples bss
-  join bioqc_tissue_enrichment2 bte
+  from bioqc_selected_samples_tset bsst
+  join bioqc_selected_samples bss 
+    on bsst.gsm = bss.gsm
+  left outer join bioqc_tissue_enrichment2 bte
     on bte.gsm = bss.gsm
-  where rk = 1;
+    and bte.tissue_set = bsst.tissue_set
+  where rk = 1 or rk is null;
   
 --------------------------------------------------------------------------------
 -- BIOQC_TISSUE_MIGRATION

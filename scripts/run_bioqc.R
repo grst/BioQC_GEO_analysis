@@ -26,7 +26,7 @@ args = commandArgs(trailingOnly=TRUE)
 
 chunkFile = args[3]
 gmtFile = args[2]
-cutoff = args[4] 
+cutoff = as.numeric(args[4])
 if(is.na(cutoff)) {
   cutoff = 0.1
 } 
