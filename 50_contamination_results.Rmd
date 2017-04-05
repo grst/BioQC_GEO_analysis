@@ -1,0 +1,30 @@
+# Tissue Contamination
+
+```{r setup, include=FALSE}
+source("lib/knitr.R")
+library(BioQC)
+library(rworldmap)
+library(data.table)
+source("lib/plots.R")
+source("lib/db.R")
+```
+
+```{r}
+sql = "
+select /*+ parallal(16) */ * 
+from BIOQC_SELECTED_SAMPLES_TSET bsst
+left outer join bioqc_res_tset brt
+on brt.tissue_set = bsst.tissue_set
+and bsst.gsm = brt.gsm 
+where bsst.tissue_set = 'gtex_solid'"
+res = data.table(dbGetQuery(mydb, sql))
+res[,EXP_SIG_SCORE:=absLog10p(as.numeric(EXP_SIG_PVALUE))]
+res[,FOUND_SIG_SCORE:=absLog10p(as.numeric(FOUND_SIG_PVALUE))]
+```
+
+```{r}
+res_liver_blood = res[TGROUP == 'kidney' & FOUND_TGROUP == 'liver'][order(FOUND_SIG_SCORE)]
+res_liver_blood_molten = melt(res_liver_blood[,c('GSM', 'FOUND_SIG_SCORE', 'EXP_SIG_SCORE')])
+gsm = factor(res_liver_blood_molten$GSM, levels=unique(res_liver_blood$GSM))
+ggplot(res_liver_blood_molten, aes(x=gsm, y=value, group=variable)) + geom_line(aes(colour=variable))
+```
