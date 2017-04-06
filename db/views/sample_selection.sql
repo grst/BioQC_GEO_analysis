@@ -55,6 +55,7 @@ refresh force
 on demand
 as 
   select /*+ parallel(16) */ bg.gsm
+                           , bg.gpl
                            , bg.organism_ch1 as organism
                            , bg.tissue_orig
                            , bnt.tissue
@@ -91,11 +92,13 @@ as
   
 create /*+ parallel(16) */ index bss_gsm
   on bioqc_selected_samples(gsm); 
-create /*+ parallel(16) */ index bss_tissue
+create /*+ parallel(16) */ bitmap index bss_tissue
   on bioqc_selected_samples(tissue);
-create /*+ parallel(16) */ index bss_year
+create /*+ parallel(16) */ bitmap index bss_year
   on bioqc_selected_samples(year);
-create /*+ parallel(16) */ index bss_country
+create /*+ parallel(16) */ bitmap index bss_country
   on bioqc_selected_samples(country);
+create /*+ parallel(16) */ bitmap index bss_gpl
+  on bioqc_selected_samples(gpl);
   
   

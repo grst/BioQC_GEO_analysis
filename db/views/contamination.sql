@@ -12,6 +12,7 @@ on demand
 as 
   with bsst_pre as (
     select /*+ parallel(16) */  distinct bss.gsm
+                                 , bss.gpl
                                  , bts.tissue
                                  , bts.tissue_set
                                  , bts.tgroup
@@ -37,9 +38,10 @@ as
         and br.signature = bts2.signature
   --    where bts.tissue_set = 'gtex_all'
   --    and bts.tgroup = 'adipose'    
-      group by bss.gsm, bts.tissue, bts.tissue_set, bts2.signature, bs.name, bts.tgroup, br.pvalue
+      group by bss.gsm, bss.gpl, bts.tissue, bts.tissue_set, bts2.signature, bs.name, bts.tgroup, br.pvalue
   ) 
   select gsm
+       , gpl 
        , tissue
        , tissue_set
        , tgroup
@@ -50,13 +52,11 @@ as
   where rk = 1;
 create /*+ parallel(16) */ index bioqc_sst_gsm
   on bioqc_selected_samples_tset(gsm); 
-create /*+ parallel(16) */ index bioqc_sst_tissue
-  on bioqc_selected_samples_tset(tissue);
-create /*+ parallel(16) */ index bioqc_sst_tgroup
+create /*+ parallel(16) */ bitmap index bioqc_sst_tgroup
   on bioqc_selected_samples_tset(tgroup);
 create /*+ parallel(16) */ index bioqc_sst_signature
   on bioqc_selected_samples_tset(min_exp_sig);
-create /*+ parallel(16) */ index bioqc_sst_tissue_set
+create /*+ parallel(16) */ bitmap index bioqc_sst_tissue_set
   on bioqc_selected_samples_tset(tissue_set);
 
 
@@ -108,14 +108,15 @@ create /*+ parallel(16) */ index bioqc_rt_gsm
   on bioqc_res_tset(gsm); 
 create /*+ parallel(16) */ index bioqc_rt_found_sig
   on bioqc_res_tset(min_found_sig);
-create /*+ parallel(16) */ index bioqc_rt_found_tgroup
+create /*+ parallel(16) */ bitmap index bioqc_rt_found_tgroup
   on bioqc_res_tset(found_tgroup);
-create /*+ parallel(16) */ index bioqc_rt_tissue_set
+create /*+ parallel(16) */ bitmap index bioqc_rt_tissue_set
   on bioqc_res_tset(tissue_set);
   
-create view bioqc_contamination
+create or replace view bioqc_contamination
 as 
   select /*+ parallel(16) */ bsst.gsm
+                           , bsst.gpl 
                            , bsst.tissue_set
                            , bsst.tgroup
                            , bsst.min_exp_sig
@@ -134,5 +135,60 @@ as
     on bsst.gsm = brt.gsm
     and bsst.tissue_set = brt.tissue_set 
   join bioqc_selected_samples bss
-    on bss.gsm = bsst.gsm 
-  where tgroup != found_tgroup;
+    on bss.gsm = bsst.gsm;
+  
+
+drop materialized view contaminated_studies;
+create materialized view contaminated_studies
+parallel 16
+build immediate
+refresh force
+on demand
+as
+  with gse_count as (
+    select gse
+         , count(gsm) as samples_in_study
+    from bioqc_gse_gsm
+    group by gse
+  ),
+  contam_samples as (
+    select /*+ parallel(16) */ * 
+    from bioqc_contamination bc
+    where tissue_set = 'gtex_solid'
+    and min_found_pvalue < 0.0001
+    and tgroup != found_tgroup
+    and not (
+      (tgroup = 'heart' and found_tgroup = 'skeletal muscle') or
+      (tgroup = 'skeletal muscle' and found_tgroup = 'heart'))
+  ),
+  contam_studies as (
+    select bgg.gse
+          , cs.tgroup
+          , cs.found_tgroup
+          , count(cs.gsm) as contaminated_samples
+    from contam_samples cs
+    join bioqc_gse_gsm bgg
+      on bgg.gsm = cs.gsm 
+    group by bgg.gse, cs.tgroup, cs.found_tgroup
+  )
+  select /*+ parallel(16) */ cs.gse
+                           , cs.tgroup as expected_tissue
+                           , cs.found_tgroup as found_tissue
+                           , cs.contaminated_samples
+                           , gc.samples_in_study
+                           , bge.title
+                           , bge.status
+                           , bge.submission_date
+                           , bge.last_update_date
+                           , bge.summary
+                           , bge.pubmed_id
+                           , bge.contributor
+                           , bge.overall_design
+                           , bge.contact
+  from contam_studies cs
+  join gse_count gc
+    on gc.gse = cs.gse
+  join bioqc_gse bge
+    on bge.gse = cs.gse
+  order by cs.tgroup, cs.found_tgroup, cs.contaminated_samples desc;
+
