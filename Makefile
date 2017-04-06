@@ -52,9 +52,12 @@ _notebooks/%.md: notebooks/%.ipynb
 ##############################################
 
 .PHONY: heatmaps
-heatmaps: 
-	rm -rfv results/heatmaps_db/*
-	Rscript scripts/make_sample_heatmaps.R
+heatmaps: heatmaps_gtex_solid
+
+heatmaps_gtex_solid:
+	rm -rfv results/heatmaps_db/gtex_solid
+	mkdir -p results/heatmaps_db/gtex_solid
+	Rscript scripts/make_sample_heatmaps.R gtex_solid
 
 
 #############################################

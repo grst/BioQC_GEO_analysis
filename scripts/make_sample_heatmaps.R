@@ -15,12 +15,13 @@ library(stringr)
 library(scales)
 library(gtools)
 
+args = commandArgs(trailingOnly=TRUE)
+tissue_set = args[1]
+out_dir = sprintf('results/heatmaps_db/%s', tissue_set)
+
 prepend_control = Vectorize(function(str) {
   return(str_c("0", str, sep = "_"))
 })
-
-tissue_set = "gtex_solid"
-out_dir = 'heatmaps_db_gtex_solid'
 
 tissues = dbGetQuery(mydb, "
   select distinct tgroup
@@ -31,16 +32,13 @@ getTissueSamples = function(tissue) {
   # get all samples belonging to one tissue and filter for siginifant 
   # signatures in one sql query! 
   query = "
-  select /*+ parallel(16) */ bsst.gsm
-         , bsst.tgroup
-         , found_sig_name as SIGNATURE
-         , found_sig_pvalue as PVALUE
-    from bioqc_selected_samples_tset bsst
-    join bioqc_res_tset brt 
-      on brt.gsm = bsst.gsm
-      and brt.tissue_set = bsst.tissue_set
-    where bsst.tgroup = ?
-    and bsst.tissue_set = ?
+  select /*+ parallel(16) */ gsm
+         , tgroup
+         , min_found_sig_name as SIGNATURE
+         , min_found_pvalue as PVALUE
+    from bioqc_contamination bc
+    where tgroup = ?
+    and tissue_set = ?
   "
   data = data.table(dbGetQuery(mydb, query, tissue, tissue_set))
   data[,pvalue.log:=absLog10p(as.numeric(PVALUE))]
@@ -81,7 +79,7 @@ for(tissue in tissues$TGROUP) {
   hm.palette <- colorRampPalette(rev(brewer.pal(11, 'Spectral')), space='Lab')  
   sampids = levels(data$GSM)
  
-  pdf(file=sprintf("results/%s/%s.pdf", out_dir, tissue),
+  pdf(file=sprintf("%s/%s.pdf", out_dir, tissue),
       width=min(nrow(data)*.3 + 5, 30),
       height=length(levels(data$SIGNATURE))*.33+2)
   for (i in seq(1, length(sampids), 70)) {
