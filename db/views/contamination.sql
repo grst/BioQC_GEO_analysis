@@ -38,7 +38,7 @@ as
         and br.signature = bts2.signature
   --    where bts.tissue_set = 'gtex_all'
   --    and bts.tgroup = 'adipose'    
-      group by bss.gsm, bss.gpl, bts.tissue, bts.tissue_set, bts2.signature, bs.name, bts.tgroup, br.pvalue
+      group by bss.gsm, bss.gpl, bts.tissue, bts.tissue_set, bts.tgroup, bts2.signature, bs.name, br.pvalue
   ) 
   select gsm
        , gpl 
@@ -137,6 +137,21 @@ as
   join bioqc_selected_samples bss
     on bss.gsm = bsst.gsm;
   
+
+create or replace view bioqc_baseline
+as
+select tissue_set
+     , gpl
+     , tgroup
+     , found_tgroup
+     , count(gsm) cnt
+     , median(min_found_pvalue) median
+     , stddev(min_found_pvalue) stddev
+     , avg(min_found_pvalue) avg
+from BIOQC_CONTAMINATION
+group by tissue_set, gpl, tgroup, found_tgroup
+having count(gsm) >= 100;
+
 
 drop materialized view contaminated_studies;
 create materialized view contaminated_studies

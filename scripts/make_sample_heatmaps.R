@@ -17,6 +17,8 @@ library(gtools)
 
 args = commandArgs(trailingOnly=TRUE)
 tissue_set = args[1]
+cutoff = as.numeric(args[2]) # not implemented! 
+
 out_dir = sprintf('results/heatmaps_db/%s', tissue_set)
 
 prepend_control = Vectorize(function(str) {
