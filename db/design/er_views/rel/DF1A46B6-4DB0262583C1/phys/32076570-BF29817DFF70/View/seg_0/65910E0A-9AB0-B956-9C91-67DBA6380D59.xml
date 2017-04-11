@@ -1,7 +1,0 @@
-<?xml version = '1.0' encoding = 'UTF-8'?>
-<TableViewProxyOraclev10g class="oracle.dbtools.crest.model.design.storage.oracle.v10g.TableViewProxyOraclev10g" name="BIOQC_CONTAMINED_SAMPLES" directorySegmentName="seg_0" id="65910E0A-9AB0-B956-9C91-67DBA6380D59">
-<createdBy>sturmg</createdBy>
-<createdTime>2016-12-15 08:33:24 UTC</createdTime>
-<ownerDesignName>er_views</ownerDesignName>
-<schemaObject>467C9D78-14EE-283D-5271-3C94AD8626A0</schemaObject>
-</TableViewProxyOraclev10g>
