@@ -17,9 +17,9 @@ In this chapter, we
     
 ## Cross-Validation of signatures on the GTEx dataset 
 
-```{r child="_notebooks/validate_gini.md"}
-```
+#```{r child="_notebooks/validate_gini.md"}
+#```
 
 ## Cross-species Cross-platform validation on mouse
-```{r child="_notebooks/validate_mouse.md"}
-```
+#```{r child="_notebooks/validate_mouse.md"}
+#```

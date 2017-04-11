@@ -26,12 +26,11 @@ A sample is *usable* for this study, if
 We consider two approaches for annotating gene symbols: 
 
 * Using the Bioconductor [AnnotationDbi](https://bioconductor.org/packages/release/bioc/html/AnnotationDbi.html) package. The GEOmetadb provides a mapping of the GPL identifier to these packages. 
-* Using the `annotGPL=TRUE` option of [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html)'s `getGEO`. This requires an annotation file being available for the respective platform. We retrieved a list of the available annoataion files in an earlier step. 
+* Using the `annotGPL=TRUE` option of [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html)'s `getGEO`. This requires an annotation file being available for the respective platform. We retrieved a list of the available annotation files [in an earlier step](#load-annotation-information). 
 
 We compare the two methods with respect to the amount of usable samples that we can get. 
 
-First we need to run the sql-script [annotation_stats](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/views/annotation_stats.sql) which will create views summarizing the amount of usable samples. 
-From these views, we can calculate a Venn diagram: 
+We create the 'annotation statistics' using an  [sql script](https://github.com/grst/BioQC_GEO_analysis/blob/master/db/views/annotation_stats.sql) and calculate these Venn diagrams: 
 
  
 ```{r sample_filtering, echo=FALSE, fig.height=3, fig.width=8, cache=TRUE}

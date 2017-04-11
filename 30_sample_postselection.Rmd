@@ -20,7 +20,7 @@ The following processes are ressource intensive, therefore we execute them on a 
 1. We download the studies with [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) and store them as R [ExpressionSet](https://bioconductor.org/packages/devel/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) using the R script [geo_to_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/geo_to_eset.R). For some series, the download is not successful. 
 2. We annotated human orthologous genes for all studies using [ribiosAnnotation](https://github.com/Accio/ribios) in [annotate_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/annotate_eset.R). This is necessary as the tissue signatures are built on a human dataset. The annotation failes for species which are not in the *ribios* database. 
 3. We run *BioQC* on these studies use [run_bioqc.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/run_bioqc.R). 
-4. Finally, we prefilter BioQC's results for having a p-value < 0.05 and [import them into the database](#import-bioqc-results). 
+4. Finally, [import the BioQC results into the database](#import-bioqc-results). 
 
 
 ## Sample Post-selection
@@ -28,7 +28,7 @@ The following processes are ressource intensive, therefore we execute them on a 
 The failures during download and annotation reduce the number of samples available to our study.
 
 <!-- since there are muliple gpl and gsm in a gse, there might've been some gsm 
-inserted, that don't have a tissue annotated, albeit the gse was selected. -->
+inserted, that don't have a tissue annotated, although the gse was selected. -->
 
 ```{r after_failures, cache=TRUE}
 
@@ -157,7 +157,7 @@ sql_from_hk = str_c(sql_from6, "
   join bioqc_res br on br.gsm = bg.gsm
   join bioqc_signatures bs on bs.id = br.signature", sep="\n")
 sql_where_hk = str_c(sql_where6, "
-  and br.signature in (55445, 55467) -- awesome_housekeepers, random_100_0")
+  and br.signature in (56184, 56206) -- awesome_housekeepers, random_100_0")
 res = data.table(dbGetQuery(mydb, str_c(sql_select_hk, sql_from_hk, sql_where_hk, sep="\n")))
 invisible(res[,SCORE:=absLog10p(as.numeric(PVALUE))])
 ggplot(res, aes(x=SCORE)) + geom_density(aes(color=NAME)) + geom_vline(xintercept = 5, color="blue") + theme(legend.position = "top")
@@ -169,7 +169,7 @@ sql_select7 = sql_select6
 sql_from7 = str_c(sql_from6, "
   join bioqc_res br on br.gsm = bg.gsm", sep="\n")
 sql_where7 = str_c(sql_where6, "
-  and signature = 54911
+  and signature = 56184
   and pvalue < 1e-5", sep="\n")
 
 res = dbGetQuery(mydb, str_c(sql_select7, sql_from7, sql_where7, sep="\n"))
