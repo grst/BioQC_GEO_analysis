@@ -47,6 +47,11 @@
 
 
 
+<script src="libs/htmlwidgets-0.8/htmlwidgets.js"></script>
+<script src="libs/datatables-binding-0.2/datatables.js"></script>
+<link href="libs/dt-core-1.10.12/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.12/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.12/js/jquery.dataTables.min.js"></script>
 
 
 <style type="text/css">
@@ -104,15 +109,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li class="chapter" data-level="2" data-path="validating-signatures.html"><a href="validating-signatures.html"><i class="fa fa-check"></i><b>2</b> Validating Tissue Signatures</a><ul>
 <li class="chapter" data-level="2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#data"><i class="fa fa-check"></i><b>2.1</b> Data</a></li>
-<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a><ul>
-<li class="chapter" data-level="2.2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#signature-overlap-between-the-folds"><i class="fa fa-check"></i><b>2.2.1</b> Signature overlap between the folds</a></li>
-<li class="chapter" data-level="2.2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#confusion-matrix"><i class="fa fa-check"></i><b>2.2.2</b> Confusion Matrix</a></li>
-<li class="chapter" data-level="2.2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#performance-measures-per-tissue"><i class="fa fa-check"></i><b>2.2.3</b> Performance Measures per Tissue</a></li>
-</ul></li>
-<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-species-cross-platform-validation-on-mouse"><i class="fa fa-check"></i><b>2.3</b> Cross-species Cross-platform validation on mouse</a><ul>
-<li class="chapter" data-level="2.3.1" data-path="validating-signatures.html"><a href="validating-signatures.html#make-signatures"><i class="fa fa-check"></i><b>2.3.1</b> Make Signatures</a></li>
-<li class="chapter" data-level="2.3.2" data-path="validating-signatures.html"><a href="validating-signatures.html#test-signatures"><i class="fa fa-check"></i><b>2.3.2</b> Test Signatures</a></li>
-</ul></li>
+<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a></li>
+<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#solid-signatures"><i class="fa fa-check"></i><b>2.3</b> ‘solid’ signatures</a></li>
+<li class="chapter" data-level="2.4" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-platform-cross-species-validation"><i class="fa fa-check"></i><b>2.4</b> Cross-Platform Cross-Species validation</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="curating-data.html"><a href="curating-data.html"><i class="fa fa-check"></i><b>3</b> Curating Data</a><ul>
 <li class="chapter" data-level="3.1" data-path="curating-data.html"><a href="curating-data.html#selecting-samples-by-metadata"><i class="fa fa-check"></i><b>3.1</b> Selecting Samples by Metadata</a></li>
@@ -157,14 +156,17 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="6.2" data-path="contamination-analysis.html"><a href="contamination-analysis.html#processing-steps-explained"><i class="fa fa-check"></i><b>6.2</b> Processing Steps explained</a><ul>
 <li class="chapter" data-level="6.2.1" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_selected_samples_tset"><i class="fa fa-check"></i><b>6.2.1</b> BIOQC_SELECTED_SAMPLES_TSET</a></li>
 <li class="chapter" data-level="6.2.2" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_res_tset"><i class="fa fa-check"></i><b>6.2.2</b> BIOQC_RES_TSET</a></li>
-<li class="chapter" data-level="6.2.3" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_enrichment"><i class="fa fa-check"></i><b>6.2.3</b> BIOQC_TISSUE_ENRICHMENT</a></li>
-<li class="chapter" data-level="6.2.4" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_enrichment2"><i class="fa fa-check"></i><b>6.2.4</b> BIOQC_TISSUE_ENRICHMENT2</a></li>
-<li class="chapter" data-level="6.2.5" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_contam_stats"><i class="fa fa-check"></i><b>6.2.5</b> BIOQC_CONTAM_STATS</a></li>
-<li class="chapter" data-level="6.2.6" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_migration"><i class="fa fa-check"></i><b>6.2.6</b> BIOQC_TISSUE_MIGRATION</a></li>
+<li class="chapter" data-level="6.2.3" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_contamination"><i class="fa fa-check"></i><b>6.2.3</b> BIOQC_CONTAMINATION</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="tissue-migration.html"><a href="tissue-migration.html"><i class="fa fa-check"></i><b>7</b> Tissue Migration</a><ul>
-<li class="chapter" data-level="7.0.1" data-path="tissue-migration.html"><a href="tissue-migration.html#same-with-gtex_solid-signatures"><i class="fa fa-check"></i><b>7.0.1</b> same with ‘gtex_solid’ signatures</a></li>
+<li class="chapter" data-level="7" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>7</b> Results</a><ul>
+<li class="chapter" data-level="7.1" data-path="results.html"><a href="results.html#detection-of-tissues"><i class="fa fa-check"></i><b>7.1</b> Detection of tissues</a></li>
+<li class="chapter" data-level="7.2" data-path="results.html"><a href="results.html#detection-of-outliers"><i class="fa fa-check"></i><b>7.2</b> Detection of outliers</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="results.html"><a href="results.html#sample-against-sample-method"><i class="fa fa-check"></i><b>7.2.1</b> Sample-against-sample method</a></li>
+<li class="chapter" data-level="7.2.2" data-path="results.html"><a href="results.html#within-sample-method"><i class="fa fa-check"></i><b>7.2.2</b> Within-Sample Method</a></li>
+<li class="chapter" data-level="7.2.3" data-path="results.html"><a href="results.html#using-the-bioqc_solid-signature-set"><i class="fa fa-check"></i><b>7.2.3</b> Using the bioqc_solid signature set</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="results.html"><a href="results.html#signature-free-method"><i class="fa fa-check"></i><b>7.3</b> signature-free method?</a></li>
 </ul></li>
 </ul>
 
@@ -199,7 +201,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p><a href="https://accio.gitub.io/BioQC">BioQC</a> implements a computationally efficient Wilcoxon-Mann-Whitney (WMW) test which is applied to gene expression data on a sample-by-sample basis. Using BioQC, we can efficiently test for the enrichment of certain gene sets, or in this case <em>tissue signatures</em>. These tissue signatures are lists of genes, which are predominantly expressed in a certain tissue. If a signature yields a small p-value in the WMW-test we can therefore conclude that the respective tissue is present in the sample.</p>
 <p>The authors of BioQC provide a list of more than 150 such signatures for a variety of tissues and cell types. For this study, we independently created and validated tissue signatures based on the <a href="http://gtexportal.org">GTEx</a> dataset using <a href="https://grst.github.io/pygenesig">pygenesig</a> as described in <a href="validating-signatures.html#validating-signatures">Validating Signatures</a>.</p>
 <p>We downloaded gene expression data from GEO using <a href="https://bioconductor.org/packages/release/bioc/html/GEOquery.html">GEOquery</a> and obtained the associated metadata from <a href="https://www.bioconductor.org/packages/release/bioc/html/GEOmetadb.html">GEOmetadb</a>. Using the metadata, we selected samples as described in <a href="sample-selection.html#sample-selection">sample selection</a>. On all all these samples, we applied BioQC to obtain a p-value for each tissue signature and stored them alongside with the metadata in a database system (DBS). The process of setting up the database is described in <a href="setup-database.html#setup-database">Database Design</a>.</p>
-<p>Finally, we identified contamined samples from the signature scores. If a signature scores high, which is not associated with the annotated tissue, we assume the sample being heterogenous. In section <a href="tissue-migration.html#tissue-migration">Tissue Migration</a>, we describe how we identify contamined samples and discuss common pattern of tissue heterogenity.</p>
+<p>Finally, we identified contamined samples from the signature scores. If a signature scores high, which is not associated with the annotated tissue, we assume the sample being heterogenous. In section <a href="#tissue-migration">Tissue Migration</a>, we describe how we identify contamined samples and discuss common pattern of tissue heterogenity.</p>
 
 </div>
 </div>

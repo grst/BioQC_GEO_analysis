@@ -7,7 +7,7 @@ The following processes are ressource intensive, therefore we execute them on a 
 1. We download the studies with [GEOquery](https://bioconductor.org/packages/release/bioc/html/GEOquery.html) and store them as R [ExpressionSet](https://bioconductor.org/packages/devel/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) using the R script [geo_to_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/geo_to_eset.R). For some series, the download is not successful. 
 2. We annotated human orthologous genes for all studies using [ribiosAnnotation](https://github.com/Accio/ribios) in [annotate_eset.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/annotate_eset.R). This is necessary as the tissue signatures are built on a human dataset. The annotation failes for species which are not in the *ribios* database. 
 3. We run *BioQC* on these studies use [run_bioqc.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/run_bioqc.R). 
-4. Finally, we prefilter BioQC's results for having a p-value < 0.05 and [import them into the database](#import-bioqc-results). 
+4. Finally, [import the BioQC results into the database](#import-bioqc-results). 
 
 
 ## Sample Post-selection
@@ -15,7 +15,7 @@ The following processes are ressource intensive, therefore we execute them on a 
 The failures during download and annotation reduce the number of samples available to our study.
 
 <!-- since there are muliple gpl and gsm in a gse, there might've been some gsm 
-inserted, that don't have a tissue annotated, albeit the gse was selected. -->
+inserted, that don't have a tissue annotated, although the gse was selected. -->
 
 
 ```r
@@ -71,7 +71,7 @@ kable(res)
 
     GSM    GSE
 -------  -----
- 135670   3770
+ 136230   3800
 
 ### Select organisms
 We were interested in the organism distribution.
@@ -90,8 +90,8 @@ kable(res)
 
    GSM    GSE  ORGANISM_CH1                             
 ------  -----  -----------------------------------------
- 65769   1201  Homo sapiens                             
- 38096   2267  Mus musculus                             
+ 66316   1228  Homo sapiens                             
+ 38109   2270  Mus musculus                             
  29909    278  Rattus norvegicus                        
   1082     24  Macaca mulatta                           
    259      7  Macaca fascicularis                      
@@ -127,7 +127,7 @@ kable(res)
 
     GSM    GSE
 -------  -----
- 133774   3727
+ 134334   3757
 
 ### Quality control
 
@@ -179,7 +179,7 @@ kable(res)
 
    GSM    GSE
 ------  -----
- 95591   3103
+ 96074   3129
 
 Now, we have a look at the p-value distribution of the signature we called `awesome_housekeepers` containing ubiquitous genes. The gene expression of these genes can be assumed to be more or less constant over all tissue types, therefore this signature should score high in every sample. 
 
@@ -198,13 +198,13 @@ sql_from_hk = str_c(sql_from6, "
   join bioqc_res br on br.gsm = bg.gsm
   join bioqc_signatures bs on bs.id = br.signature", sep="\n")
 sql_where_hk = str_c(sql_where6, "
-  and br.signature in (54911, 54933) -- awesome_housekeepers, random_100_0")
+  and br.signature in (56184, 56206) -- awesome_housekeepers, random_100_0")
 res = data.table(dbGetQuery(mydb, str_c(sql_select_hk, sql_from_hk, sql_where_hk, sep="\n")))
 invisible(res[,SCORE:=absLog10p(as.numeric(PVALUE))])
 ggplot(res, aes(x=SCORE)) + geom_density(aes(color=NAME)) + geom_vline(xintercept = 5, color="blue") + theme(legend.position = "top")
 ```
 
-<img src="30_sample_postselection_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display:block; margin: auto" style="display: block; margin: auto;" />
+<img src="30_sample_postselection_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display:block; margin: auto" style="display: block; margin: auto;" />
 
 We exclude all samples for which `awesome_housekeepers` scores with < 5, i.e. pvalue >= 1e-5. 
 
@@ -213,7 +213,7 @@ sql_select7 = sql_select6
 sql_from7 = str_c(sql_from6, "
   join bioqc_res br on br.gsm = bg.gsm", sep="\n")
 sql_where7 = str_c(sql_where6, "
-  and signature = 54911
+  and signature = 56184
   and pvalue < 1e-5", sep="\n")
 
 res = dbGetQuery(mydb, str_c(sql_select7, sql_from7, sql_where7, sep="\n"))
@@ -224,7 +224,7 @@ kable(res)
 
    GSM    GSE
 ------  -----
- 81426   2902
+ 81845   2926
 
 
 This is the 'background' of samples on which we test for tissue contamination. 
@@ -246,51 +246,54 @@ kable(resTissue)
 
 
 
-TISSUE               SAMPLES
-------------------  --------
-blood                  18064
-liver                  12925
-lung                    7586
-bone marrow             3911
-kidney                  3540
-breast tumor            3465
-brain                   3452
-heart                   2402
-spleen                  2302
-adipose                 2214
-skin                    1927
-skeletal muscle         1830
-hippocampus             1573
-colon                   1463
-lymph node              1120
-cerebellum              1094
-hepatocyte              1094
-tumor                   1036
-breast                   795
-frontal cortex           729
-placenta                 678
-pbmc                     665
-white blood cells        664
-testis                   627
-retina                   596
-pancreas                 586
-thymus                   551
-pancreatic islets        488
-ovary                    455
-mammary gland            395
-jejunum                  380
-prostate                 330
-hypothalamus             271
-cortex                   256
-prefrontal cortex        249
-uterus                   232
-embryo                   217
-stomach                  127
-bladder                  123
-cervix                    95
-ventral midbrain          74
-eye                       69
-salivary gland            48
-neuroblastoma             45
-adrenal gland             39
-monocyte                   6
+TISSUE                 SAMPLES
+--------------------  --------
+blood                    18064
+liver                    12925
+lung                      7586
+bone marrow               3911
+kidney                    3540
+breast tumor              3465
+brain                     3452
+heart                     2402
+spleen                    2302
+adipose                   2214
+skin                      1927
+skeletal muscle           1830
+hippocampus               1573
+colon                     1463
+lymph node                1120
+hepatocyte                1094
+cerebellum                1094
+tumor                     1036
+breast                     795
+frontal cortex             729
+placenta                   678
+pbmc                       665
+white blood cells          664
+testis                     627
+retina                     596
+pancreas                   586
+thymus                     551
+pancreatic islets          488
+ovary                      455
+mammary gland              395
+jejunum                    380
+prostate                   330
+hypothalamus               271
+cortex                     256
+prefrontal cortex          249
+synovial tissue            234
+uterus                     232
+embryo                     217
+monocyte                   162
+stomach                    127
+bladder                    123
+cervix                      95
+ventral midbrain            74
+eye                         69
+salivary gland              48
+neuroblastoma               45
+adrenal gland               39
+fibroblast                  21
+synovial fibroblast          8

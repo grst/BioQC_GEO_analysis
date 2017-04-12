@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="sample-selection.html">
-<link rel="next" href="tissue-migration.html">
+<link rel="next" href="results.html">
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -47,6 +47,11 @@
 
 
 
+<script src="libs/htmlwidgets-0.8/htmlwidgets.js"></script>
+<script src="libs/datatables-binding-0.2/datatables.js"></script>
+<link href="libs/dt-core-1.10.12/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.12/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.12/js/jquery.dataTables.min.js"></script>
 
 
 <style type="text/css">
@@ -104,15 +109,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li class="chapter" data-level="2" data-path="validating-signatures.html"><a href="validating-signatures.html"><i class="fa fa-check"></i><b>2</b> Validating Tissue Signatures</a><ul>
 <li class="chapter" data-level="2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#data"><i class="fa fa-check"></i><b>2.1</b> Data</a></li>
-<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a><ul>
-<li class="chapter" data-level="2.2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#signature-overlap-between-the-folds"><i class="fa fa-check"></i><b>2.2.1</b> Signature overlap between the folds</a></li>
-<li class="chapter" data-level="2.2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#confusion-matrix"><i class="fa fa-check"></i><b>2.2.2</b> Confusion Matrix</a></li>
-<li class="chapter" data-level="2.2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#performance-measures-per-tissue"><i class="fa fa-check"></i><b>2.2.3</b> Performance Measures per Tissue</a></li>
-</ul></li>
-<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-species-cross-platform-validation-on-mouse"><i class="fa fa-check"></i><b>2.3</b> Cross-species Cross-platform validation on mouse</a><ul>
-<li class="chapter" data-level="2.3.1" data-path="validating-signatures.html"><a href="validating-signatures.html#make-signatures"><i class="fa fa-check"></i><b>2.3.1</b> Make Signatures</a></li>
-<li class="chapter" data-level="2.3.2" data-path="validating-signatures.html"><a href="validating-signatures.html#test-signatures"><i class="fa fa-check"></i><b>2.3.2</b> Test Signatures</a></li>
-</ul></li>
+<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a></li>
+<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#solid-signatures"><i class="fa fa-check"></i><b>2.3</b> ‘solid’ signatures</a></li>
+<li class="chapter" data-level="2.4" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-platform-cross-species-validation"><i class="fa fa-check"></i><b>2.4</b> Cross-Platform Cross-Species validation</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="curating-data.html"><a href="curating-data.html"><i class="fa fa-check"></i><b>3</b> Curating Data</a><ul>
 <li class="chapter" data-level="3.1" data-path="curating-data.html"><a href="curating-data.html#selecting-samples-by-metadata"><i class="fa fa-check"></i><b>3.1</b> Selecting Samples by Metadata</a></li>
@@ -157,14 +156,17 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="6.2" data-path="contamination-analysis.html"><a href="contamination-analysis.html#processing-steps-explained"><i class="fa fa-check"></i><b>6.2</b> Processing Steps explained</a><ul>
 <li class="chapter" data-level="6.2.1" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_selected_samples_tset"><i class="fa fa-check"></i><b>6.2.1</b> BIOQC_SELECTED_SAMPLES_TSET</a></li>
 <li class="chapter" data-level="6.2.2" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_res_tset"><i class="fa fa-check"></i><b>6.2.2</b> BIOQC_RES_TSET</a></li>
-<li class="chapter" data-level="6.2.3" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_enrichment"><i class="fa fa-check"></i><b>6.2.3</b> BIOQC_TISSUE_ENRICHMENT</a></li>
-<li class="chapter" data-level="6.2.4" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_enrichment2"><i class="fa fa-check"></i><b>6.2.4</b> BIOQC_TISSUE_ENRICHMENT2</a></li>
-<li class="chapter" data-level="6.2.5" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_contam_stats"><i class="fa fa-check"></i><b>6.2.5</b> BIOQC_CONTAM_STATS</a></li>
-<li class="chapter" data-level="6.2.6" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_migration"><i class="fa fa-check"></i><b>6.2.6</b> BIOQC_TISSUE_MIGRATION</a></li>
+<li class="chapter" data-level="6.2.3" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_contamination"><i class="fa fa-check"></i><b>6.2.3</b> BIOQC_CONTAMINATION</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="tissue-migration.html"><a href="tissue-migration.html"><i class="fa fa-check"></i><b>7</b> Tissue Migration</a><ul>
-<li class="chapter" data-level="7.0.1" data-path="tissue-migration.html"><a href="tissue-migration.html#same-with-gtex_solid-signatures"><i class="fa fa-check"></i><b>7.0.1</b> same with ‘gtex_solid’ signatures</a></li>
+<li class="chapter" data-level="7" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>7</b> Results</a><ul>
+<li class="chapter" data-level="7.1" data-path="results.html"><a href="results.html#detection-of-tissues"><i class="fa fa-check"></i><b>7.1</b> Detection of tissues</a></li>
+<li class="chapter" data-level="7.2" data-path="results.html"><a href="results.html#detection-of-outliers"><i class="fa fa-check"></i><b>7.2</b> Detection of outliers</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="results.html"><a href="results.html#sample-against-sample-method"><i class="fa fa-check"></i><b>7.2.1</b> Sample-against-sample method</a></li>
+<li class="chapter" data-level="7.2.2" data-path="results.html"><a href="results.html#within-sample-method"><i class="fa fa-check"></i><b>7.2.2</b> Within-Sample Method</a></li>
+<li class="chapter" data-level="7.2.3" data-path="results.html"><a href="results.html#using-the-bioqc_solid-signature-set"><i class="fa fa-check"></i><b>7.2.3</b> Using the bioqc_solid signature set</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="results.html"><a href="results.html#signature-free-method"><i class="fa fa-check"></i><b>7.3</b> signature-free method?</a></li>
 </ul></li>
 </ul>
 
@@ -199,65 +201,36 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2><span class="header-section-number">6.2</span> Processing Steps explained</h2>
 <div id="bioqc_selected_samples_tset" class="section level3">
 <h3><span class="header-section-number">6.2.1</span> BIOQC_SELECTED_SAMPLES_TSET</h3>
-<p>We join <code>BIOQC_SELECTED_SAMPLES</code> on <code>BIOQC_TISSUE_SET</code> to attach the tissue group and the respective signatures to each sample.</p>
-<p>Example: The table rows for the colon sample <code>GSM1234</code> could look like:</p>
-<pre><code>GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME 
-GSM1234   colon     gtex_all    colon     543             Colon
-GSM1234   colon     gtex_solid  intestine 543             Colon
-GSM1234   colon     gtex_solid  intestine 544             Jejunum</code></pre>
+<p>We join <code>BIOQC_SELECTED_SAMPLES</code> on <code>BIOQC_TISSUE_SET</code> and <code>BIOQC_RES</code> to attach the <em>expected tissue group</em> to each sample and find the highest scoring signature within each tissue group.</p>
+<p>Example: A sample (<code>GSM1234</code>) is annotated as ‘colon tissue’. ‘colon’ is part of the <em>tissue group</em> ‘intestine’. We search for the highest scoring signature within ‘intestine’ and keep it.</p>
+<p>The following results for <code>GSM1234</code></p>
+<pre><code>GSM       TISSUE    TISSUE_SET   EXPECTED_SIGNATURE  PVALUE
+GSM1234   colon     intestine    Colon               1e-10
+GSM1234   colon     intestine    Jejunum             1e-5</code></pre>
+<p>would be aggretated into:</p>
+<pre><code>GSM       TISSUE    TGROUP       MIN_EXP_SIG    MIN_EXP_SIG_PVALUE
+GSM1234   colon     intestine    Colon          1e-5</code></pre>
 </div>
 <div id="bioqc_res_tset" class="section level3">
 <h3><span class="header-section-number">6.2.2</span> BIOQC_RES_TSET</h3>
 <p>We join the BioQC results (pvalue for each signature and sample) from <code>BIOQC_RES</code> with <code>BIOQC_TISSUE_SET</code> to map the signatures back to their tissue group.</p>
-<p>Example: For a result</p>
+<p>Example: The following results for <code>GSM1234</code></p>
 <pre><code>GSM       SIGNATURE     PVALUE
-GSM1234   544           1e-10
-GSM1234   543           1e-5</code></pre>
-<p>the table rows could look like</p>
-<pre><code>GSM       FOUND_SIG     PVALUE    FOUND_SIG_NAME  FOUND_TGROUP  TISSUE_SET
-GSM1234   544           1e-10     Jejunum         jejunum       gtex_all
-GSM1234   544           1e-10     Jejunum         intestine     gtex_solid
-GSM1234   543           1e-5      Colon           colon         gtex_all
-GSM1234   543           1e-5      Colon           intestine     gtex_solid</code></pre>
+GSM1234   Colon         1e-10
+GSM1234   Intestine     1e-5
+GSM1234   Liver         1e-5</code></pre>
+<p>would be aggretated into:</p>
+<pre><code>GSM       MIN_FOUND_SIG     MIN_FOUND_PVALUE    FOUND_TGROUP  
+GSM1234   Colon             1e-10               intestine
+GSM1234   Liver             1e-5                liver</code></pre>
 </div>
-<div id="bioqc_tissue_enrichment" class="section level3">
-<h3><span class="header-section-number">6.2.3</span> BIOQC_TISSUE_ENRICHMENT</h3>
-<p>We now match the found onto the expected tissue groups by joining <code>BIOQC_SELECTED_SAMPES_TSET</code> with <code>BIOQC_RES_TSET</code> on <code>GSM</code> and <code>TISSUE_SET</code>. We calculate the <em>Enrichment Ratio</em> as <span class="math inline">\(\log_{10}(p_{expected\_sig} / p_{found\_sig})\)</span>.</p>
-<p>For the above example tables, we would get:</p>
-<pre><code>GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO
-GSM1234   colon     gtex_all    colon     543             Colon               543        Colon           0.0
-GSM1234   colon     gtex_all    colon     543             Colon               544        Jejunum         5.0
-...</code></pre>
-<p>We filter out rows where the found signature is in the list of <em>expected sigantures</em> for the respective tissue group:</p>
-<pre><code>GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO
-GSM1234   colon     gtex_all    colon     543             Colon               544        Jejunum         5.0
-...</code></pre>
-</div>
-<div id="bioqc_tissue_enrichment2" class="section level3">
-<h3><span class="header-section-number">6.2.4</span> BIOQC_TISSUE_ENRICHMENT2</h3>
-<p>combine expected signature by taking the minimal enrichment ratio for each expected signature.</p>
-<p>Example:</p>
-<pre><code>GSM    TISSUE    TGROUP    EXPECTED  FOUND         ENRICHMENT_RATIO
-GSM888 jejunum   intestine colon     liver_fetal   12
-GSM888 jejunum   intestine colon     liver         8
-GSM888 jejunum   intestine jejunum   liver_fetal   5
-GSM888 jejunum   intestine jejunum   liver         4</code></pre>
-<p>will be combined into</p>
-<pre><code>GSM              TGROUP    EXPECTED  FOUND         ENRICHMENT_RATIO  RANK
-GSM888           intestine           liver_fetal   5                 1
-GSM888           intestine           liver         4                 1</code></pre>
-<p>if multiple infiltrating tissues are found, a rank is calculated.</p>
-</div>
-<div id="bioqc_contam_stats" class="section level3">
-<h3><span class="header-section-number">6.2.5</span> BIOQC_CONTAM_STATS</h3>
-<p>Add year, country and organism to each sample from <code>BIOQC_TISSUE_ENRICHMENT2</code>.</p>
-</div>
-<div id="bioqc_tissue_migration" class="section level3">
-<h3><span class="header-section-number">6.2.6</span> BIOQC_TISSUE_MIGRATION</h3>
-<p>Add <em>origin</em> and <em>destination</em> tissue groups for each sample by mapping the found signatures back to tissue groups.</p>
-<p>Example:</p>
-<pre><code>GSM       TISSUE_SET  ORIGIN  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO   DESTINATION
-GSM1234   gtex_all    colon   544        Jejunum         5                  jejunum</code></pre>
+<div id="bioqc_contamination" class="section level3">
+<h3><span class="header-section-number">6.2.3</span> BIOQC_CONTAMINATION</h3>
+<p>We now join the two above tables, <code>BIOQC_RES_TSET</code> and <code>BIOQC_SELECTED_SAMPLES_TSET</code>, in order to set the ‘expected’ and ‘found’ tissue groups into relation. The resulting table can be filtered by a score cutoff in order to only retrieve the siginificant entries.</p>
+<p>Example: The join of the above examples would look like</p>
+<pre><code>GSM       TISSUE    TGROUP      MIN_EXP_SIG   MIN_EXP_PVALUE  FOUND_TGROUP  MIN_FOUND_SIG   MIN_FOUND_PVALUE
+GSM1234   colon     intestine   Colon         1e-10           intestine     Colon           1e-10
+GSM1234   colon     intestine   Colon         1e-10           liver         Liver           1e-5</code></pre>
 
 </div>
 </div>
@@ -268,7 +241,7 @@ GSM1234   gtex_all    colon   544        Jejunum         5                  jeju
         </div>
       </div>
 <a href="sample-selection.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="tissue-migration.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="results.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>

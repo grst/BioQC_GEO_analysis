@@ -16,371 +16,52 @@ In this chapter, we
  * We use the [**GNF Mouse GeneAtlas V3**](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246) as a control dataset to demonstrate that the gini-method is robust over multiple platforms and species. This dataset originates from mouse and was generated using the *Affymetrix Mouse Genome 430 2.0 Array (GPL1261)*.
     
 ## Cross-Validation of signatures on the GTEx dataset 
+We use [pygenesig-pipline](https://github.com/grst/pygenesig-pipeline) to create and validate signatures on the GTEx v6 dataset. The data preparation steps are performed using these [jupyter notebooks](https://github.com/grst/pygenesig-example/tree/d88e4a81a45e192527a84a4445094604deba580b/notebooks/prepare_data). The output of *pygenesig-pipeline* can be viewed [here](https://github.com/grst/BioQC_GEO_analysis/blob/aa0fcd86bbdfbd49c9a4a10ce0be1c22895cc957/notebooks/gtex_v6_gini.ipynb). Below, we summarize the prodecues described in these documents. 
 
+We obtained the gene expression data and sample annotation from the [GTEx portal](http://gtexportal.org). We collapsed gene expression data by HGNC symbol aggregating by the sum. 
 
+We performed a 10-fold cross-validation as follows: 
+We split samples in 10 [stratified folds](http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedKFold.html), i.e. samples from all tissues are equally distributed across all folds. We use 9 folds to generate signatures using the [gini method](https://grst.github.io/pygenesig/apidoc.html#module-pygenesig.gini) as described by the BioQC authors. These signatures were applied to the remaining fold using BioQC. We iterated over the folds such that each fold has been used for training and testing. 
 
+The following heatmap shows the average BioQC score over all folds for each signature and each tissue. BioQC scores are clipped at 30. 
 
-```python
-import sys
+![gtex xval scores](signature_validation/gtex_v6_xval_scores.png)
 
-%load_ext autoreload
-%autoreload 1
-%aimport pygenesig.validation
-%aimport pygenesig.gini
-%aimport pygenesig.bioqc
-%aimport pygenesig.tools
-%aimport pygenesig.perfmeasures
-%matplotlib inline
+As identifying contaminated/mislabled samples can be boiled down to a classification exercise, we are interested in the predictive performance of each signature. The following heatmap shows the confusion matrix of using the signatures for classification. A sample is considered as classified as a tissue, if the corresponding signature scores highest among all other signatures. 
 
-from pygenesig.validation import * 
-from pygenesig.gini import * 
-from pygenesig.bioqc import * 
-from pygenesig.tools import * 
-import pygenesig.perfmeasures as pm
-import numpy as np
-import pandas as pd
-import sklearn.metrics as skm 
-import os.path
-import dask
-from distributed import Client, progress
-import dask.async
-import dask.diagnostics
+![gtex xval classification](signature_validation/gtex_v6_xval_classification.png)
 
-import seaborn as sns
-sns.set_style("ticks", {"axes.grid" : True})
-from pylab import * 
-```
+## 'solid' signatures
+From the above matrices we learn that, while the vast majority of signatures yield a high score in the corresponding tissue, an unambigous classification of tissues is only viable for a subset of tissues. 
+For instance, the different brain regions are hard to distinguish and so are physiologically close tissues (e.g. large and small intestine). 
 
-We use [dask](http://dask.readthedocs.io/en/latest/) for parallel execution of the cross-validation:
+Here, we reduce the dataset to a subset of tissues, which can be unambigously distinguished using the BioQC method (i.e. Precision = Recall = 1.0). 
 
+We [manually map](https://github.com/grst/pygenesig-example/blob/d88e4a81a45e192527a84a4445094604deba580b/manual_annotation/gtex_solid.csv) 
+the tissues from GTEx to a reduced subset of tissue names. The data [is prepared](https://github.com/grst/pygenesig-example/blob/d88e4a81a45e192527a84a4445094604deba580b/notebooks/gtex_solid.ipynb)
+to be ran using *pygenesig-pipeline*. The results are available in [this jupyter notebook](https://github.com/grst/BioQC_GEO_analysis/blob/b11987da13ba9b98eba34206f92942be8de6427e/signature_validation/gtex_v6_gini_solid.ipynb)
+and summarized below. 
 
-```python
-c = Client("10.114.185.14:8786")
-```
+Again, the following heatmap shows the confusion matrix. 
+![gtex solid xval classification](signature_validation/gtex_v6_solid_xval_classification.png)
 
-We load the preprocessed GTEx dataset. The preprocessing steps are described in [this notebook](https://github.com/grst/pygenesig/blob/3e290600b804564332b7fdff6cd572d367a04db6/notebooks/prepare_gtex_data.ipynb). 
+All tissues have been correctly identified at Precision = Recall = 1.0. 
 
 
-```python
-expr_file = "../data/gtex/exprs.npy"
-target_file = "../data/gtex/target.csv"
-splitter = sklearn.model_selection.StratifiedKFold(n_splits=10)
-signature_generator = GiniSignatureGenerator
-signature_tester = BioQCSignatureTester
-```
+## Cross-Platform Cross-Species validation
+Arguably, in the above experiment, we could have build signatures based on human-specific genes, genes that can only be detected by a certain experimental platform or even experiment-specific batch effects instead of univerally translatable marker genes. 
 
-Use the automated cross-validation procedure from [pygenesig](https://github.com/grst/pygenesig):
+To asses the translatability of the signatures, we tested the signatures generated above (Human, Illumina sequencing) on the mouseGNF tissue expression atlas (Mouse, Affymetrix microarray). Te procedure is described in [this notebook](https://github.com/grst/pygenesig-example/blob/80bfe2a388a5230b004c288cb2ea220f0394855d/notebooks/gtex_solid_vs_mouse_gnf.ipynb).
 
+The following figure shows the score matrix of GTEx signatures against mouseGNF samples:
 
-```python
-sig_list, res_list = cross_validate_signatures(expr_file, target_file, signature_generator, signature_tester, splitter)
-```
+![gtex mouse](signature_validation/gtex_v6_solid_vs_mouse_gnf.png)
 
+The signatures Brain, Heart, Kidney, Liver, Skeletal Muscle, Pancreas, Skin and Testis identify the respective tissue despite the species and platform differences at a high (>5) BioQC score. 
 
-```python
-sig_f, res_f = c.compute([sig_list, res_list], sync=False)
-```
+As expected Heart and Skeletal muscle also identify each other, however Heart scores still higher on Heart samples and Skeletal muscle scores higher on skeletal muscles samples, therefore we retain both signatures. 
 
+Surprisingly, Adrenal Gland, Ovary and Uterus are not able to identify the respective samples, despite having a high score in the cross-validation. We therefore exclude these signatures from the 'gtex solid' signature set. 
 
-```python
-progress([sig_f, res_f])
-```
-
-Obtain the signatures and confusion matrices from the dask workers: 
-
-
-```python
-signatures = sig_f.result()
-cms = res_f.result()
-```
-
-### Signature overlap between the folds
-The box-plot shows the overlap of the signatures between the different folds. A high jaccard index indicates stability of the signatures between the folds. 
-
-
-```python
-pairwise_jaccard = pairwise_jaccard_ind(signatures)
-```
-
-
-```python
-fig, ax = subplots(figsize=(10,5))
-data=pd.DataFrame(pairwise_jaccard)
-sns.boxplot(data=data, ax=ax)
-ax.set_title("Pairwise Jaccard Index")
-ax.set_xticklabels(data.columns, rotation=90);
-```
-
-
-![png](_notebooks/validate_gini_files/validate_gini_13_0.png)
-
-
-### Confusion Matrix
-The confusion matrix shows which tissues tend to be *confused* with others. For example, we can see that it is difficult to differntiate between *colon* and *small intestine*. 
-
-The confusion matrix below shows the average counts over the 10 folds per tissue. That means the matrix is not corrected for the number of samples per tissue. 
-
-
-```python
-conf_mat_mean = np.mean(np.array(cms), axis=0)
-```
-
-
-```python
-sig_labels = BioQCSignatureTester.sort_signatures(signatures[0])
-```
-
-
-```python
-fig, ax = subplots(figsize=(9, 9))
-sns.heatmap(conf_mat_mean, ax=ax, xticklabels=sig_labels, yticklabels=sig_labels, annot=True,annot_kws={"size": 9});
-```
-
-
-![png](_notebooks/validate_gini_files/validate_gini_17_0.png)
-
-
-### Performance Measures per Tissue
-Below, we show the Sensitiviy, Specificity and Matthews Correlation Coefficient for the different tissues. 
-
-
-```python
-sens = performance_per_tissue(cms, sig_labels, pm.sens)
-spec = performance_per_tissue(cms, sig_labels, pm.spec)
-prec = performance_per_tissue(cms, sig_labels, pm.prec_pos)
-mcc = performance_per_tissue(cms, sig_labels, pm.mcc)
-```
-
-
-```python
-fig, ax = subplots(figsize=(10,5))
-data=pd.DataFrame(sens)
-sns.boxplot(data=data, ax=ax)
-ax.set_title("Sensitivity")
-ax.set_xticklabels(data.columns, rotation=90);
-ax.set_ylim((0, 1.1));
-```
-
-
-![png](_notebooks/validate_gini_files/validate_gini_20_0.png)
-
-
-
-```python
-fig, ax = subplots(figsize=(10,5))
-data=pd.DataFrame(prec)
-sns.boxplot(data=data, ax=ax)
-ax.set_title("Precision")
-ax.set_xticklabels(data.columns, rotation=90);
-ax.set_ylim((0, 1.1));
-```
-
-
-![png](_notebooks/validate_gini_files/validate_gini_21_0.png)
-
-
-
-```python
-fig, ax = subplots(figsize=(10,5))
-data=pd.DataFrame(spec)
-sns.boxplot(data=data, ax=ax)
-ax.set_title("Specificity")
-ax.set_xticklabels(data.columns, rotation=90);
-ax.set_ylim((0, 1.1));
-```
-
-
-![png](_notebooks/validate_gini_files/validate_gini_22_0.png)
-
-
-
-```python
-fig, ax = subplots(figsize=(10,5))
-data=pd.DataFrame(mcc)
-sns.boxplot(data=data, ax=ax)
-ax.set_title("Matthew's correlation coefficient")
-ax.set_xticklabels(data.columns, rotation=90);
-ax.set_ylim((0, 1.1));
-```
-
-
-![png](_notebooks/validate_gini_files/validate_gini_23_0.png)
-
-
-**Average Performance:**
-
-
-```python
-np.mean(list(mcc.values()))
-```
-
-
-
-
-    0.84104652927756762
-
-
-
-
-```python
-
-```
-
-## Cross-species Cross-platform validation on mouse
-
-
-
-```python
-import sys
-sys.path.append("..")
-
-%load_ext autoreload
-%autoreload 1
-%aimport pygenesig.validation
-%aimport pygenesig.gini
-%aimport pygenesig.bioqc
-%aimport pygenesig.perfmeasures
-%matplotlib inline
-
-from pygenesig.validation import * 
-from pygenesig.gini import * 
-from pygenesig.bioqc import * 
-import pygenesig.perfmeasures as pm
-import numpy as np
-import pandas as pd
-from IPython.display import display
-
-import seaborn as sns
-from pylab import * 
-```
-
-We load the preprocessed GTEx dataset. The preprocessing steps are described in [this notebook](https://github.com/grst/pygenesig/blob/3e290600b804564332b7fdff6cd572d367a04db6/notebooks/prepare_gtex_data.ipynb). 
-
-
-```python
-expr = np.load("../data/gtex/exprs.npy")
-target = np.genfromtxt("../data/gtex/target.csv", delimiter=",", dtype=str)
-gene_symbols = pd.read_csv("../data/gtex/gene_symbols.csv", delimiter=",", dtype=str, header=None)
-gene_symbols.columns = ['ensemble', 'hgnc']
-```
-
-We load the GNF mouse dataset:
-
-
-```python
-human_to_mouse = pd.read_csv("../data/mouseGNF/map_orthologoues.tsv", delimiter="\t")
-human_to_mouse['rowname'] = human_to_mouse.index
-mouse_expr = pd.read_csv("../data/mouseGNF/mouseGNF-signalMatrix.gct", delimiter="\t", skiprows=2)
-mouse_pdata = pd.read_csv("../data/mouseGNF/mouseGNF-phenoData.txt", delimiter="\t")
-```
-
-
-```python
-mouse_target = mouse_pdata.loc[~mouse_pdata["GEO.source.name"].isnull(), "GEO.source.name"].apply(
-    lambda x: "_".join(x.split("_")[:-1]))
-```
-
-
-```python
-mouse_expr = mouse_expr.iloc[:, 2:]  # remove description and id
-mouse_expr = mouse_expr.values
-```
-
-
-```python
-mouse_expr = mouse_expr[:, mouse_target.index] # select samples with tissue annotation. 
-mouse_target = np.array(mouse_target)
-```
-
-#### Translation of signatures
-The signatures consist of the row indices of the expression matrix they were generated on. 
-We therefore need to translate the signatures from the human dataset to the mouse dataset. 
-
-This is done in the following way: 
-
-* GTEx indices $\to$ human gene symbols $\to$ mouse orthologous gene symbols $\to$ mouseGNF indices
-
-
-```python
-translation_df = pd.merge(gene_symbols, human_to_mouse, how='inner', left_on='hgnc', right_on='GeneSymbol')
-translation_df.set_index('hgnc', inplace=True)
-```
-
-
-```python
-def translate_signatures(signatures_origin):
-    st = {}
-    gene_symbol_list = list(gene_symbols.hgnc)
-    for tissue, genes in signatures_origin.items():
-        st[tissue] = []
-        for g in genes:
-            gene_symbol = gene_symbol_list[g]
-            try: 
-                rownames = pd.Series(translation_df.loc[gene_symbol, "rowname"])
-                st[tissue].extend(list(rownames))
-            except KeyError:
-                pass
-    return st    
-```
-
-
-```python
-have_orthologue = unique(pd.merge(gene_symbols, translation_df, left_on='hgnc', right_index=True).index)
-```
-
-### Make Signatures
-
-
-```python
-sg = GiniSignatureGenerator(expr[:, :], target)
-```
-
-
-```python
-signatures = sg.mk_signatures(np.array(list(range(len(target)))))
-```
-
-
-```python
-signatures_mouse = translate_signatures(signatures)
-```
-
-### Test Signatures
-
-
-```python
-st = BioQCSignatureTester(mouse_expr, mouse_target)
-```
-
-
-```python
-actual, predicted = st.test_signatures(signatures_mouse, np.array(list(range(len(mouse_target)))), return_labels=True)
-```
-
-
-```python
-result = pd.DataFrame({"actual" : actual, "predicted" : predicted})
-```
-
-
-```python
-confmat = pd.crosstab(result.actual, result.predicted)
-```
-
-
-```python
-sig_labels = st.sort_signatures(signatures)
-```
-
-The resulting heatmap demonstrates that the signatures we identified as 'robust' in the corss-validation procedure do work across multiple species and multiple experimental platforms: 
-
-
-```python
-fig, ax = subplots(figsize=(7, 15))
-sns.heatmap(confmat.as_matrix(), ax=ax, linewidths=.5, xticklabels=list(confmat.columns), yticklabels=list(confmat.index))
-ax.set_xticklabels(ax.get_xticklabels(), rotation=90);
-```
-
-
-![png](_notebooks/validate_mouse_files/validate_mouse_23_0.png)
+Unfortunately, Blood was not profiled in the mouseGNF dataset. We keep the signature nonetheless as it does not trigger any false positives. 
 

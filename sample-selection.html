@@ -47,6 +47,11 @@
 
 
 
+<script src="libs/htmlwidgets-0.8/htmlwidgets.js"></script>
+<script src="libs/datatables-binding-0.2/datatables.js"></script>
+<link href="libs/dt-core-1.10.12/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.12/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.12/js/jquery.dataTables.min.js"></script>
 
 
 <style type="text/css">
@@ -104,15 +109,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 <li class="chapter" data-level="2" data-path="validating-signatures.html"><a href="validating-signatures.html"><i class="fa fa-check"></i><b>2</b> Validating Tissue Signatures</a><ul>
 <li class="chapter" data-level="2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#data"><i class="fa fa-check"></i><b>2.1</b> Data</a></li>
-<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a><ul>
-<li class="chapter" data-level="2.2.1" data-path="validating-signatures.html"><a href="validating-signatures.html#signature-overlap-between-the-folds"><i class="fa fa-check"></i><b>2.2.1</b> Signature overlap between the folds</a></li>
-<li class="chapter" data-level="2.2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#confusion-matrix"><i class="fa fa-check"></i><b>2.2.2</b> Confusion Matrix</a></li>
-<li class="chapter" data-level="2.2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#performance-measures-per-tissue"><i class="fa fa-check"></i><b>2.2.3</b> Performance Measures per Tissue</a></li>
-</ul></li>
-<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-species-cross-platform-validation-on-mouse"><i class="fa fa-check"></i><b>2.3</b> Cross-species Cross-platform validation on mouse</a><ul>
-<li class="chapter" data-level="2.3.1" data-path="validating-signatures.html"><a href="validating-signatures.html#make-signatures"><i class="fa fa-check"></i><b>2.3.1</b> Make Signatures</a></li>
-<li class="chapter" data-level="2.3.2" data-path="validating-signatures.html"><a href="validating-signatures.html#test-signatures"><i class="fa fa-check"></i><b>2.3.2</b> Test Signatures</a></li>
-</ul></li>
+<li class="chapter" data-level="2.2" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-validation-of-signatures-on-the-gtex-dataset"><i class="fa fa-check"></i><b>2.2</b> Cross-Validation of signatures on the GTEx dataset</a></li>
+<li class="chapter" data-level="2.3" data-path="validating-signatures.html"><a href="validating-signatures.html#solid-signatures"><i class="fa fa-check"></i><b>2.3</b> ‘solid’ signatures</a></li>
+<li class="chapter" data-level="2.4" data-path="validating-signatures.html"><a href="validating-signatures.html#cross-platform-cross-species-validation"><i class="fa fa-check"></i><b>2.4</b> Cross-Platform Cross-Species validation</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="curating-data.html"><a href="curating-data.html"><i class="fa fa-check"></i><b>3</b> Curating Data</a><ul>
 <li class="chapter" data-level="3.1" data-path="curating-data.html"><a href="curating-data.html#selecting-samples-by-metadata"><i class="fa fa-check"></i><b>3.1</b> Selecting Samples by Metadata</a></li>
@@ -157,14 +156,17 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="6.2" data-path="contamination-analysis.html"><a href="contamination-analysis.html#processing-steps-explained"><i class="fa fa-check"></i><b>6.2</b> Processing Steps explained</a><ul>
 <li class="chapter" data-level="6.2.1" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_selected_samples_tset"><i class="fa fa-check"></i><b>6.2.1</b> BIOQC_SELECTED_SAMPLES_TSET</a></li>
 <li class="chapter" data-level="6.2.2" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_res_tset"><i class="fa fa-check"></i><b>6.2.2</b> BIOQC_RES_TSET</a></li>
-<li class="chapter" data-level="6.2.3" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_enrichment"><i class="fa fa-check"></i><b>6.2.3</b> BIOQC_TISSUE_ENRICHMENT</a></li>
-<li class="chapter" data-level="6.2.4" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_enrichment2"><i class="fa fa-check"></i><b>6.2.4</b> BIOQC_TISSUE_ENRICHMENT2</a></li>
-<li class="chapter" data-level="6.2.5" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_contam_stats"><i class="fa fa-check"></i><b>6.2.5</b> BIOQC_CONTAM_STATS</a></li>
-<li class="chapter" data-level="6.2.6" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_tissue_migration"><i class="fa fa-check"></i><b>6.2.6</b> BIOQC_TISSUE_MIGRATION</a></li>
+<li class="chapter" data-level="6.2.3" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_contamination"><i class="fa fa-check"></i><b>6.2.3</b> BIOQC_CONTAMINATION</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="tissue-migration.html"><a href="tissue-migration.html"><i class="fa fa-check"></i><b>7</b> Tissue Migration</a><ul>
-<li class="chapter" data-level="7.0.1" data-path="tissue-migration.html"><a href="tissue-migration.html#same-with-gtex_solid-signatures"><i class="fa fa-check"></i><b>7.0.1</b> same with ‘gtex_solid’ signatures</a></li>
+<li class="chapter" data-level="7" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>7</b> Results</a><ul>
+<li class="chapter" data-level="7.1" data-path="results.html"><a href="results.html#detection-of-tissues"><i class="fa fa-check"></i><b>7.1</b> Detection of tissues</a></li>
+<li class="chapter" data-level="7.2" data-path="results.html"><a href="results.html#detection-of-outliers"><i class="fa fa-check"></i><b>7.2</b> Detection of outliers</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="results.html"><a href="results.html#sample-against-sample-method"><i class="fa fa-check"></i><b>7.2.1</b> Sample-against-sample method</a></li>
+<li class="chapter" data-level="7.2.2" data-path="results.html"><a href="results.html#within-sample-method"><i class="fa fa-check"></i><b>7.2.2</b> Within-Sample Method</a></li>
+<li class="chapter" data-level="7.2.3" data-path="results.html"><a href="results.html#using-the-bioqc_solid-signature-set"><i class="fa fa-check"></i><b>7.2.3</b> Using the bioqc_solid signature set</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="results.html"><a href="results.html#signature-free-method"><i class="fa fa-check"></i><b>7.3</b> signature-free method?</a></li>
 </ul></li>
 </ul>
 
@@ -198,10 +200,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>We consider two approaches for annotating gene symbols:</p>
 <ul>
 <li>Using the Bioconductor <a href="https://bioconductor.org/packages/release/bioc/html/AnnotationDbi.html">AnnotationDbi</a> package. The GEOmetadb provides a mapping of the GPL identifier to these packages.</li>
-<li>Using the <code>annotGPL=TRUE</code> option of <a href="https://bioconductor.org/packages/release/bioc/html/GEOquery.html">GEOquery</a>’s <code>getGEO</code>. This requires an annotation file being available for the respective platform. We retrieved a list of the available annoataion files in an earlier step.</li>
+<li>Using the <code>annotGPL=TRUE</code> option of <a href="https://bioconductor.org/packages/release/bioc/html/GEOquery.html">GEOquery</a>’s <code>getGEO</code>. This requires an annotation file being available for the respective platform. We retrieved a list of the available annotation files <a href="setup-database.html#load-annotation-information">in an earlier step</a>.</li>
 </ul>
 <p>We compare the two methods with respect to the amount of usable samples that we can get.</p>
-<p>First we need to run the sql-script <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/views/annotation_stats.sql">annotation_stats</a> which will create views summarizing the amount of usable samples. From these views, we can calculate a Venn diagram:</p>
+<p>We create the ‘annotation statistics’ using an <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/db/views/annotation_stats.sql">sql script</a> and calculate these Venn diagrams:</p>
 <p><img src="20_sample_preselection_files/figure-html/sample_filtering-1.png" width="768" style="display:block; margin: auto" style="display: block; margin: auto;" /></p>
 <p>The <code>getGEO</code> method appears to be the more powerful method. Ideal would be a combination of the two, however, for the sake of simplicity, we stick to <code>getGEO</code>, loosing 499 studies (35602 samples).</p>
 <p>This leaves us with the following filtering result:</p>
@@ -260,14 +262,14 @@ gse =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, sqlGse)
 <li>We download the studies with <a href="https://bioconductor.org/packages/release/bioc/html/GEOquery.html">GEOquery</a> and store them as R <a href="https://bioconductor.org/packages/devel/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf">ExpressionSet</a> using the R script <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/geo_to_eset.R">geo_to_eset.R</a>. For some series, the download is not successful.</li>
 <li>We annotated human orthologous genes for all studies using <a href="https://github.com/Accio/ribios">ribiosAnnotation</a> in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/annotate_eset.R">annotate_eset.R</a>. This is necessary as the tissue signatures are built on a human dataset. The annotation failes for species which are not in the <em>ribios</em> database.</li>
 <li>We run <em>BioQC</em> on these studies use <a href="https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/run_bioqc.R">run_bioqc.R</a>.</li>
-<li>Finally, we prefilter BioQC’s results for having a p-value &lt; 0.05 and <a href="setup-database.html#import-bioqc-results">import them into the database</a>.</li>
+<li>Finally, <a href="setup-database.html#import-bioqc-results">import the BioQC results into the database</a>.</li>
 </ol>
 </div>
 <div id="sample-post-selection" class="section level2">
 <h2><span class="header-section-number">5.3</span> Sample Post-selection</h2>
 <p>The failures during download and annotation reduce the number of samples available to our study.</p>
 <!-- since there are muliple gpl and gsm in a gse, there might've been some gsm 
-inserted, that don't have a tissue annotated, albeit the gse was selected. -->
+inserted, that don't have a tissue annotated, although the gse was selected. -->
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sql_select =<span class="st"> &quot;</span>
 <span class="st">select /*+ USE_HASH(bs, bgg) parallel(16) */ count(distinct bg.gsm) as GSM</span>
 <span class="st">                                           , count(distinct bgg.gse) as GSE&quot;</span>
@@ -337,8 +339,8 @@ res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span cla
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">135670</td>
-<td align="right">3770</td>
+<td align="right">136230</td>
+<td align="right">3800</td>
 </tr>
 </tbody>
 </table>
@@ -363,13 +365,13 @@ res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span cla
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">65769</td>
-<td align="right">1201</td>
+<td align="right">66316</td>
+<td align="right">1228</td>
 <td align="left">Homo sapiens</td>
 </tr>
 <tr class="even">
-<td align="right">38096</td>
-<td align="right">2267</td>
+<td align="right">38109</td>
+<td align="right">2270</td>
 <td align="left">Mus musculus</td>
 </tr>
 <tr class="odd">
@@ -485,8 +487,8 @@ res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span cla
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">133774</td>
-<td align="right">3727</td>
+<td align="right">134334</td>
+<td align="right">3757</td>
 </tr>
 </tbody>
 </table>
@@ -533,8 +535,8 @@ res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span cla
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">95591</td>
-<td align="right">3103</td>
+<td align="right">96074</td>
+<td align="right">3129</td>
 </tr>
 </tbody>
 </table>
@@ -550,17 +552,17 @@ sql_from_hk =<span class="st"> </span><span class="kw">str_c</span>(sql_from6, <
 <span class="st">  join bioqc_res br on br.gsm = bg.gsm</span>
 <span class="st">  join bioqc_signatures bs on bs.id = br.signature&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
 sql_where_hk =<span class="st"> </span><span class="kw">str_c</span>(sql_where6, <span class="st">&quot;</span>
-<span class="st">  and br.signature in (54911, 54933) -- awesome_housekeepers, random_100_0&quot;</span>)
+<span class="st">  and br.signature in (56184, 56206) -- awesome_housekeepers, random_100_0&quot;</span>)
 res =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">dbGetQuery</span>(mydb, <span class="kw">str_c</span>(sql_select_hk, sql_from_hk, sql_where_hk, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)))
 <span class="kw">invisible</span>(res[,SCORE<span class="op">:</span><span class="er">=</span><span class="kw">absLog10p</span>(<span class="kw">as.numeric</span>(PVALUE))])
 <span class="kw">ggplot</span>(res, <span class="kw">aes</span>(<span class="dt">x=</span>SCORE)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">color=</span>NAME)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">5</span>, <span class="dt">color=</span><span class="st">&quot;blue&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>)</code></pre></div>
-<p><img src="30_sample_postselection_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display:block; margin: auto" style="display: block; margin: auto;" /></p>
+<p><img src="30_sample_postselection_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display:block; margin: auto" style="display: block; margin: auto;" /></p>
 <p>We exclude all samples for which <code>awesome_housekeepers</code> scores with &lt; 5, i.e. pvalue &gt;= 1e-5.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sql_select7 =<span class="st"> </span>sql_select6
 sql_from7 =<span class="st"> </span><span class="kw">str_c</span>(sql_from6, <span class="st">&quot;</span>
 <span class="st">  join bioqc_res br on br.gsm = bg.gsm&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
 sql_where7 =<span class="st"> </span><span class="kw">str_c</span>(sql_where6, <span class="st">&quot;</span>
-<span class="st">  and signature = 54911</span>
+<span class="st">  and signature = 56184</span>
 <span class="st">  and pvalue &lt; 1e-5&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
 
 res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span class="kw">str_c</span>(sql_select7, sql_from7, sql_where7, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>))
@@ -574,8 +576,8 @@ res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span cla
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">81426</td>
-<td align="right">2902</td>
+<td align="right">81845</td>
+<td align="right">2926</td>
 </tr>
 </tbody>
 </table>
@@ -659,11 +661,11 @@ resTissue =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, sql
 <td align="right">1120</td>
 </tr>
 <tr class="even">
-<td align="left">cerebellum</td>
+<td align="left">hepatocyte</td>
 <td align="right">1094</td>
 </tr>
 <tr class="odd">
-<td align="left">hepatocyte</td>
+<td align="left">cerebellum</td>
 <td align="right">1094</td>
 </tr>
 <tr class="even">
@@ -739,12 +741,20 @@ resTissue =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, sql
 <td align="right">249</td>
 </tr>
 <tr class="even">
+<td align="left">synovial tissue</td>
+<td align="right">234</td>
+</tr>
+<tr class="odd">
 <td align="left">uterus</td>
 <td align="right">232</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">embryo</td>
 <td align="right">217</td>
+</tr>
+<tr class="odd">
+<td align="left">monocyte</td>
+<td align="right">162</td>
 </tr>
 <tr class="even">
 <td align="left">stomach</td>
@@ -779,8 +789,12 @@ resTissue =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, sql
 <td align="right">39</td>
 </tr>
 <tr class="even">
-<td align="left">monocyte</td>
-<td align="right">6</td>
+<td align="left">fibroblast</td>
+<td align="right">21</td>
+</tr>
+<tr class="odd">
+<td align="left">synovial fibroblast</td>
+<td align="right">8</td>
 </tr>
 </tbody>
 </table>

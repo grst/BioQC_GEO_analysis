@@ -10,21 +10,22 @@ with tables to store signature scores generated with
 The following figure shows the database scheme used for the study as entity-relationship (ER) diagram: 
 
 <div class="figure" style="text-align: center">
-<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
-<p class="caption">(\#fig:unnamed-chunk-2)Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study.</p>
+<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported and adapted from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
+<p class="caption">(\#fig:unnamed-chunk-2)Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported and adapted from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study.</p>
 </div>
 
 ## Tables explained
 
 ### GEOmetadb
 * **BIOQC_GSM**: *from GEOmetadb*, meta information for all *Samples* in GEO
-* **BIOQC_GPL**: *from GEOmetadb*, list of all platforms (*e.g.* different types of microarrays) referenced in GEO. 
+* **BIOQC_GPL**: *from GEOmetadb*, list of all *Platforms* (*e.g.* different types of microarrays) referenced in GEO. 
 * **BIOQC_GSE**: *from GEOmetadb*, list of *Series* (collections of samples) in GEO. 
+* **BIOQC_GSE_GPL**: *from GEOmetadb*, relation of *Series* and *Platforms*. Columns containing Series/Platform-specific gene expression statistics have been added which are used for a simple quality control. 
 
 ### BioQC
-* **BIOQC_TISSUES**: List of all tissues manually annotated in [Normalize Tissues](#normalize-tissues)
+* **BIOQC_TISSUES**: List of all tissues manually annotated in [Normalize Tissues](#normalize-tissues). 
 * **BIOQC_NORMALIZE_TISSUES**: Stores the [manually curated](#normalize-tissues) mapping of the original tissue name to a normalized tissue name.
-* **BIOQC_SIGNATURES**: Stores gene signatures imported from a  [GMT file](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29)
+* **BIOQC_SIGNATURES**: Stores gene signatures imported from a  [GMT file](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29).
 * **BIOQC_TISSUE_SET**: Stores the [manually curated](#tissue-signatures) mapping of tissues to 'expected signatures'. 
 * **BIOQC_RES**: Stores the p-value generated with *BioQC* for each signature in **BIOQC_SIGNATURES** and each samples in **BIOQC_GSM**. 
 * **BIOQC_BIOQC_SUCCESS**: List of all studies on which we successfully ran *BioQC*. This serves as 'background' for our analysis. 
@@ -119,7 +120,7 @@ We compared the two approaches in [Sample Selection](#sample-selection).
 
 ### Import summary statistics for each study 
 
-To perform a preliminary quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in [test_for_normalization.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R) and the projects [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). We import the results into the database:  
+To perform a preliminary quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in [test_for_normalization.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R) and the project's [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). We import the results into the database:  
 
 
 ```r
@@ -149,11 +150,12 @@ Import signatures into the database and create a single, consolidated gmt file.
 gmt2db(file.path(DATA_DIR, "expr.tissuemark.affy.roche.symbols.gmt"))
 
 # control signatures generated from GTEx using *pygenesig*
-gmt2db("../pygenesig/results/gtex_ngs_0.7_3.gmt")
-gmt2db("../pygenesig/results/gtex_ngs_0.85_5.gmt")
+gmt2db("../pygenesig-example/results/gtex_v6_gini_0.8_3/signatures.gmt", source='gtex_v6_gini.gmt')
+gmt2db("../pygenesig-example/results/gtex_v6_solid_gini_0.8_1/signatures.gmt", source='gtex_v6_gini_solid.gmt')
+
 
 # baseline signatures (random/housekeeping)
-gmt2db("../pygenesig/results/baseline_signatures.gmt")
+gmt2db("../pygenesig-example/results/baseline_signatures.gmt")
 
 # pathway gene sets not relevant for this study 
 # gmt2db("../BioQC_correlated-pathways/go.bp.roche.symbols.gmt.uniq")
@@ -186,10 +188,12 @@ Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_anal
 bioqc_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 3)
 gtex_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 4)
 gtex_solid = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 5)
+bioqc_solid = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 6)
 
 signatureset2db(bioqc_all, "bioqc_all")
 signatureset2db(gtex_solid, "gtex_solid")
 signatureset2db(gtex_all, "gtex_all")
+signatureset2db(bioqc_solid, "bioqc_solid")
 ```
 
 ### BioQC results {#import-bioqc-results}

@@ -13,15 +13,21 @@ The heartpiece of the study is [this sql script](https://github.com/grst/BioQC_G
 
 ## Processing Steps explained
 ### BIOQC_SELECTED_SAMPLES_TSET
-We join `BIOQC_SELECTED_SAMPLES` on `BIOQC_TISSUE_SET` to attach the tissue group and the respective signatures
-to each sample.
+We join `BIOQC_SELECTED_SAMPLES` on `BIOQC_TISSUE_SET` and `BIOQC_RES` to attach the *expected tissue group* to each sample and find the highest scoring signature within each tissue group. 
 
-Example: The table rows for the colon sample `GSM1234` could look like: 
+Example: A sample (`GSM1234`) is annotated as 'colon tissue'. 'colon' is part of the *tissue group* 'intestine'. We search for the highest scoring signature within 'intestine' and keep it. 
+
+The following results for `GSM1234`
 ```
-GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME 
-GSM1234   colon     gtex_all    colon     543             Colon
-GSM1234   colon     gtex_solid  intestine 543             Colon
-GSM1234   colon     gtex_solid  intestine 544             Jejunum
+GSM       TISSUE    TISSUE_SET   EXPECTED_SIGNATURE  PVALUE
+GSM1234   colon     intestine    Colon               1e-10
+GSM1234   colon     intestine    Jejunum             1e-5
+```
+
+would be aggretated into: 
+```
+GSM       TISSUE    TGROUP       MIN_EXP_SIG    MIN_EXP_SIG_PVALUE
+GSM1234   colon     intestine    Colon          1e-5
 ```
 
 
@@ -29,74 +35,29 @@ GSM1234   colon     gtex_solid  intestine 544             Jejunum
 ### BIOQC_RES_TSET
 We join the BioQC results (pvalue for each signature and sample) from `BIOQC_RES` with `BIOQC_TISSUE_SET` to map the signatures back to their tissue group. 
 
-Example: For a result
+Example: The following results for `GSM1234`
 ```
 GSM       SIGNATURE     PVALUE
-GSM1234   544           1e-10
-GSM1234   543           1e-5
-```
-the table rows could look like
-```
-GSM       FOUND_SIG     PVALUE    FOUND_SIG_NAME  FOUND_TGROUP  TISSUE_SET
-GSM1234   544           1e-10     Jejunum         jejunum       gtex_all
-GSM1234   544           1e-10     Jejunum         intestine     gtex_solid
-GSM1234   543           1e-5      Colon           colon         gtex_all
-GSM1234   543           1e-5      Colon           intestine     gtex_solid
+GSM1234   Colon         1e-10
+GSM1234   Intestine     1e-5
+GSM1234   Liver         1e-5
 ```
 
-### BIOQC_TISSUE_ENRICHMENT
-We now match the found onto the expected tissue groups by joining `BIOQC_SELECTED_SAMPES_TSET` with `BIOQC_RES_TSET` on `GSM` and `TISSUE_SET`. 
-We calculate the *Enrichment Ratio* as $\log_{10}(p_{expected\_sig} / p_{found\_sig})$. 
-
-For the above example tables, we would get: 
+would be aggretated into: 
 ```
-GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO
-GSM1234   colon     gtex_all    colon     543             Colon               543        Colon           0.0
-GSM1234   colon     gtex_all    colon     543             Colon               544        Jejunum         5.0
-...
+GSM       MIN_FOUND_SIG     MIN_FOUND_PVALUE    FOUND_TGROUP  
+GSM1234   Colon             1e-10               intestine
+GSM1234   Liver             1e-5                liver
 ```
 
-We filter out rows where the found signature is in the list of *expected sigantures* for the respective tissue group:
+### BIOQC_CONTAMINATION
+We now join the two above tables, `BIOQC_RES_TSET` and `BIOQC_SELECTED_SAMPLES_TSET`, in order to set the 'expected' and 'found' tissue groups into relation. The resulting table can be filtered by a score cutoff in order to only retrieve the siginificant entries. 
+
+Example: The join of the above examples would look like
 ```
-GSM       TISSUE    TISSUE_SET  TGROUP    EXP_SIGNATURE   EXP_SIGNATURE_NAME  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO
-GSM1234   colon     gtex_all    colon     543             Colon               544        Jejunum         5.0
-...
-```
-
-### BIOQC_TISSUE_ENRICHMENT2
-combine expected signature by taking the minimal enrichment ratio
-for each expected signature. 
-
-Example:
-```
-GSM    TISSUE    TGROUP    EXPECTED  FOUND         ENRICHMENT_RATIO
-GSM888 jejunum   intestine colon     liver_fetal   12
-GSM888 jejunum   intestine colon     liver         8
-GSM888 jejunum   intestine jejunum   liver_fetal   5
-GSM888 jejunum   intestine jejunum   liver         4
-```
-
-will be combined into
-```
-GSM              TGROUP    EXPECTED  FOUND         ENRICHMENT_RATIO  RANK
-GSM888           intestine           liver_fetal   5                 1
-GSM888           intestine           liver         4                 1
-```
-
-if multiple infiltrating tissues are found, a rank is calculated.
-
-
-### BIOQC_CONTAM_STATS
-Add year, country and organism to each sample from `BIOQC_TISSUE_ENRICHMENT2`. 
-
-
-### BIOQC_TISSUE_MIGRATION
-Add *origin* and *destination* tissue groups for each sample by mapping the found signatures back to tissue groups. 
-
-Example:
-```
-GSM       TISSUE_SET  ORIGIN  FOUND_SIG  FOUND_SIG_NAME  ENRICHMENT_RATIO   DESTINATION
-GSM1234   gtex_all    colon   544        Jejunum         5                  jejunum
+GSM       TISSUE    TGROUP      MIN_EXP_SIG   MIN_EXP_PVALUE  FOUND_TGROUP  MIN_FOUND_SIG   MIN_FOUND_PVALUE
+GSM1234   colon     intestine   Colon         1e-10           intestine     Colon           1e-10
+GSM1234   colon     intestine   Colon         1e-10           liver         Liver           1e-5
 ```
 
 

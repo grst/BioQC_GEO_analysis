@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   
   
-<link rel="prev" href="index.html">
-<link rel="next" href="curating-data.html">
+<link rel="prev" href="tissue-contamination.html">
+
 
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -47,11 +47,6 @@
 
 
 
-<script src="libs/htmlwidgets-0.8/htmlwidgets.js"></script>
-<script src="libs/datatables-binding-0.2/datatables.js"></script>
-<link href="libs/dt-core-1.10.12/css/jquery.dataTables.min.css" rel="stylesheet" />
-<link href="libs/dt-core-1.10.12/css/jquery.dataTables.extra.css" rel="stylesheet" />
-<script src="libs/dt-core-1.10.12/js/jquery.dataTables.min.js"></script>
 
 
 <style type="text/css">
@@ -160,14 +155,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>7</b> Results</a><ul>
-<li class="chapter" data-level="7.1" data-path="results.html"><a href="results.html#detection-of-tissues"><i class="fa fa-check"></i><b>7.1</b> Detection of tissues</a></li>
-<li class="chapter" data-level="7.2" data-path="results.html"><a href="results.html#detection-of-outliers"><i class="fa fa-check"></i><b>7.2</b> Detection of outliers</a><ul>
-<li class="chapter" data-level="7.2.1" data-path="results.html"><a href="results.html#sample-against-sample-method"><i class="fa fa-check"></i><b>7.2.1</b> Sample-against-sample method</a></li>
-<li class="chapter" data-level="7.2.2" data-path="results.html"><a href="results.html#within-sample-method"><i class="fa fa-check"></i><b>7.2.2</b> Within-Sample Method</a></li>
-<li class="chapter" data-level="7.2.3" data-path="results.html"><a href="results.html#using-the-bioqc_solid-signature-set"><i class="fa fa-check"></i><b>7.2.3</b> Using the bioqc_solid signature set</a></li>
+<li class="chapter" data-level="7.1" data-path="results.html"><a href="results.html#how-to-detect-these-outliers"><i class="fa fa-check"></i><b>7.1</b> How to detect these outliers?</a></li>
 </ul></li>
-<li class="chapter" data-level="7.3" data-path="results.html"><a href="results.html#signature-free-method"><i class="fa fa-check"></i><b>7.3</b> signature-free method?</a></li>
-</ul></li>
+<li class="chapter" data-level="8" data-path="tissue-contamination.html"><a href="tissue-contamination.html"><i class="fa fa-check"></i><b>8</b> Tissue Contamination</a></li>
+<li class="chapter" data-level="9" data-path="tissue-contamination-1.html"><a href="tissue-contamination-1.html"><i class="fa fa-check"></i><b>9</b> Tissue Contamination</a></li>
 </ul>
 
       </nav>
@@ -185,70 +176,89 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="validating-signatures" class="section level1">
-<h1><span class="header-section-number">2</span> Validating Tissue Signatures</h1>
-<p>The authors of <em>BioQC</em> have taken three independent approaches to show that their signatures are valid and biologically meaningful. However, they did not break down the predictive performance (<em>i.e.</em> is the signature able to identify its tissue) of each signature with quantitative performance measures.</p>
-<p>To address this, we independently derived signatures on the <a href="http://gtexportal.org">GTEx</a> dataset using <em>gini-index</em>. and performed both a 10-fold cross validation on the same dataset and a cross-species, cross-platform validation on a different dataset. To this end, we created the python package <a href="https://github.com/grst/pygenesig">pygenesig</a>, a framework to create and validate signatures.</p>
-<p>In this chapter, we</p>
-<ul>
-<li>perform a 10-fold cross-validation on the GTEx dataset, calculating the sensitivity, specificity and precition for each signature.</li>
-<li>perform a cross-species, cross-platform validation of the signatures generated on the GTEx dataset</li>
-<li>identify a set of tissues, that can be reliably and unabmigously identified with the <em>BioQC</em> method.</li>
-</ul>
-<div id="data" class="section level2">
-<h2><span class="header-section-number">2.1</span> Data</h2>
-<ul>
-<li>The <a href="http://gtexportal.org"><strong>Genotype Tissue Expression (GTEx)</strong></a> project is a comprehensive resource of tissue-specific gene expression data. We use this dataset to derive tissue-specific signatures. The data is human only and was generated using Illumina sequencing.</li>
-<li>We use the <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE10246"><strong>GNF Mouse GeneAtlas V3</strong></a> as a control dataset to demonstrate that the gini-method is robust over multiple platforms and species. This dataset originates from mouse and was generated using the <em>Affymetrix Mouse Genome 430 2.0 Array (GPL1261)</em>.</li>
-</ul>
-</div>
-<div id="cross-validation-of-signatures-on-the-gtex-dataset" class="section level2">
-<h2><span class="header-section-number">2.2</span> Cross-Validation of signatures on the GTEx dataset</h2>
-<p>We use <a href="https://github.com/grst/pygenesig-pipeline">pygenesig-pipline</a> to create and validate signatures on the GTEx v6 dataset. The data preparation steps are performed using these <a href="https://github.com/grst/pygenesig-example/tree/d88e4a81a45e192527a84a4445094604deba580b/notebooks/prepare_data">jupyter notebooks</a>. The output of <em>pygenesig-pipeline</em> can be viewed <a href="https://github.com/grst/BioQC_GEO_analysis/blob/aa0fcd86bbdfbd49c9a4a10ce0be1c22895cc957/notebooks/gtex_v6_gini.ipynb">here</a>. Below, we summarize the prodecues described in these documents.</p>
-<p>We obtained the gene expression data and sample annotation from the <a href="http://gtexportal.org">GTEx portal</a>. We collapsed gene expression data by HGNC symbol aggregating by the sum.</p>
-<p>We performed a 10-fold cross-validation as follows: We split samples in 10 <a href="http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedKFold.html">stratified folds</a>, i.e. samples from all tissues are equally distributed across all folds. We use 9 folds to generate signatures using the <a href="https://grst.github.io/pygenesig/apidoc.html#module-pygenesig.gini">gini method</a> as described by the BioQC authors. These signatures were applied to the remaining fold using BioQC. We iterated over the folds such that each fold has been used for training and testing.</p>
-<p>The following heatmap shows the average BioQC score over all folds for each signature and each tissue. BioQC scores are clipped at 30.</p>
-<div class="figure">
-<img src="signature_validation/gtex_v6_xval_scores.png" alt="gtex xval scores" />
-<p class="caption">gtex xval scores</p>
-</div>
-<p>As identifying contaminated/mislabled samples can be boiled down to a classification exercise, we are interested in the predictive performance of each signature. The following heatmap shows the confusion matrix of using the signatures for classification. A sample is considered as classified as a tissue, if the corresponding signature scores highest among all other signatures.</p>
-<div class="figure">
-<img src="signature_validation/gtex_v6_xval_classification.png" alt="gtex xval classification" />
-<p class="caption">gtex xval classification</p>
-</div>
-</div>
-<div id="solid-signatures" class="section level2">
-<h2><span class="header-section-number">2.3</span> ‘solid’ signatures</h2>
-<p>From the above matrices we learn that, while the vast majority of signatures yield a high score in the corresponding tissue, an unambigous classification of tissues is only viable for a subset of tissues. For instance, the different brain regions are hard to distinguish and so are physiologically close tissues (e.g. large and small intestine).</p>
-<p>Here, we reduce the dataset to a subset of tissues, which can be unambigously distinguished using the BioQC method (i.e. Precision = Recall = 1.0).</p>
-<p>We <a href="https://github.com/grst/pygenesig-example/blob/d88e4a81a45e192527a84a4445094604deba580b/manual_annotation/gtex_solid.csv">manually map</a> the tissues from GTEx to a reduced subset of tissue names. The data <a href="https://github.com/grst/pygenesig-example/blob/d88e4a81a45e192527a84a4445094604deba580b/notebooks/gtex_solid.ipynb">is prepared</a> to be ran using <em>pygenesig-pipeline</em>. The results are available in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/b11987da13ba9b98eba34206f92942be8de6427e/signature_validation/gtex_v6_gini_solid.ipynb">this jupyter notebook</a> and summarized below.</p>
-<p>Again, the following heatmap shows the confusion matrix. <img src="signature_validation/gtex_v6_solid_xval_classification.png" alt="gtex solid xval classification" /></p>
-<p>All tissues have been correctly identified at Precision = Recall = 1.0.</p>
-</div>
-<div id="cross-platform-cross-species-validation" class="section level2">
-<h2><span class="header-section-number">2.4</span> Cross-Platform Cross-Species validation</h2>
-<p>Arguably, in the above experiment, we could have build signatures based on human-specific genes, genes that can only be detected by a certain experimental platform or even experiment-specific batch effects instead of univerally translatable marker genes.</p>
-<p>To asses the translatability of the signatures, we tested the signatures generated above (Human, Illumina sequencing) on the mouseGNF tissue expression atlas (Mouse, Affymetrix microarray). Te procedure is described in <a href="https://github.com/grst/pygenesig-example/blob/80bfe2a388a5230b004c288cb2ea220f0394855d/notebooks/gtex_solid_vs_mouse_gnf.ipynb">this notebook</a>.</p>
-<p>The following figure shows the score matrix of GTEx signatures against mouseGNF samples:</p>
-<div class="figure">
-<img src="signature_validation/gtex_v6_solid_vs_mouse_gnf.png" alt="gtex mouse" />
-<p class="caption">gtex mouse</p>
-</div>
-<p>The signatures Brain, Heart, Kidney, Liver, Skeletal Muscle, Pancreas, Skin and Testis identify the respective tissue despite the species and platform differences at a high (&gt;5) BioQC score.</p>
-<p>As expected Heart and Skeletal muscle also identify each other, however Heart scores still higher on Heart samples and Skeletal muscle scores higher on skeletal muscles samples, therefore we retain both signatures.</p>
-<p>Surprisingly, Adrenal Gland, Ovary and Uterus are not able to identify the respective samples, despite having a high score in the cross-validation. We therefore exclude these signatures from the ‘gtex solid’ signature set.</p>
-<p>Unfortunately, Blood was not profiled in the mouseGNF dataset. We keep the signature nonetheless as it does not trigger any false positives.</p>
+<div id="tissue-contamination-1" class="section level1">
+<h1><span class="header-section-number">9</span> Tissue Contamination</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sql =<span class="st"> &quot;</span>
+<span class="st">select /*+ parallel(16) */ * </span>
+<span class="st">from bioqc_contamination</span>
+<span class="st">where tissue_set = &#39;bioqc_solid&#39;</span>
+<span class="st">&quot;</span>
+res_bioqc =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw">dbGetQuery</span>(mydb, sql))
+res_bioqc[,MIN_FOUND_PVALUE<span class="op">:</span><span class="er">=</span><span class="kw">as.numeric</span>(MIN_FOUND_PVALUE)]
+res_bioqc[,MIN_EXP_PVALUE<span class="op">:</span><span class="er">=</span><span class="kw">as.numeric</span>(MIN_EXP_PVALUE)]
+res_bioqc[,EXP_SCORE<span class="op">:</span><span class="er">=</span><span class="kw">absLog10p</span>(MIN_EXP_PVALUE)]
+res_bioqc[,FOUND_SCORE<span class="op">:</span><span class="er">=</span><span class="kw">absLog10p</span>(MIN_FOUND_PVALUE)]
+<span class="co"># pbonf = 0.05 / nrow(res_bioqc)</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">qqarb =<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">f=</span>qlnorm) {
+  <span class="kw">qqplot</span>(x, <span class="kw">f</span>(<span class="kw">ppoints</span>(x)))
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">platform_effect =<span class="st"> </span>res[GPL <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;GPL570&#39;</span>, <span class="st">&#39;GPL1261&#39;</span>, <span class="st">&#39;GPL1355&#39;</span>) <span class="op">&amp;</span><span class="st"> </span>TGROUP <span class="op">==</span><span class="st"> &#39;liver&#39;</span> <span class="op">&amp;</span><span class="st"> </span>FOUND_TGROUP <span class="op">==</span><span class="st"> &#39;liver&#39;</span>]
+<span class="kw">ggplot</span>(platform_effect, <span class="kw">aes</span>(<span class="dt">x=</span>FOUND_SCORE)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">colour=</span>GPL))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">robust_stats =<span class="st"> </span><span class="cf">function</span>(x) {
+  qts =<span class="st"> </span><span class="kw">quantile</span>(x, <span class="kw">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>))
+  xq =<span class="st"> </span>x[x <span class="op">&gt;=</span><span class="st"> </span>qts[<span class="dv">1</span>] <span class="op">&amp;</span><span class="st"> </span>x <span class="op">&lt;=</span><span class="st"> </span>qts[<span class="dv">2</span>]]
+  <span class="kw">return</span>(<span class="kw">list</span>(<span class="kw">mean</span>(xq), <span class="kw">sd</span>(xq)))
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">example =<span class="st"> </span>res_bioqc[GPL <span class="op">==</span><span class="st"> &#39;GPL1261&#39;</span> <span class="op">&amp;</span><span class="st"> </span>TGROUP <span class="op">==</span><span class="st"> &#39;liver&#39;</span> <span class="op">&amp;</span><span class="st"> </span>FOUND_TGROUP <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;kidney&#39;</span>, <span class="st">&#39;liver&#39;</span>)]
+<span class="kw">ggplot</span>(example, <span class="kw">aes</span>(<span class="dt">x=</span>FOUND_SCORE)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">colour=</span>FOUND_TGROUP)) <span class="op">+</span><span class="st"> </span><span class="kw">coord_cartesian</span>(<span class="dt">ylim=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">2</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">baseline =<span class="st"> </span>res_bioqc[, <span class="kw">c</span>(<span class="st">&quot;rmean&quot;</span>, <span class="st">&quot;rsd&quot;</span>) <span class="op">:</span><span class="er">=</span><span class="st"> </span><span class="kw">robust_stats</span>(FOUND_SCORE), by=<span class="kw">c</span>(<span class="st">&quot;GPL&quot;</span>, <span class="st">&quot;TGROUP&quot;</span>, <span class="st">&quot;FOUND_TGROUP&quot;</span>)]
+baseline[, total_tissue<span class="op">:</span><span class="er">=</span><span class="kw">length</span>(GSM), by=<span class="kw">c</span>(<span class="st">&quot;TGROUP&quot;</span>, <span class="st">&quot;FOUND_TGROUP&quot;</span>)]
+fil =<span class="st"> </span>baseline[TGROUP <span class="op">!=</span><span class="st"> </span>FOUND_TGROUP <span class="op">&amp;</span><span class="st"> </span>
+<span class="st">                 </span>FOUND_SCORE <span class="op">&gt;</span><span class="st"> </span>rmean <span class="op">+</span><span class="st"> </span><span class="dv">3</span> <span class="op">*</span><span class="st"> </span>rsd <span class="op">&amp;</span>
+<span class="st">                 </span>FOUND_SCORE <span class="op">&gt;</span><span class="st"> </span><span class="dv">2</span> <span class="co">#-log10(pbonf)</span>
+               ]
+
+<span class="co"># fil = baseline[TGROUP != FOUND_TGROUP &amp; MIN_FOUND_PVALUE / MIN_EXP_PVALUE &lt; 1e-3]</span>
+
+
+
+#### exclude &#39;double contaminations&#39;
+fil[, rk<span class="op">:</span><span class="er">=</span><span class="kw">frankv</span>(FOUND_SCORE, <span class="dt">order=</span><span class="op">-</span><span class="dv">1</span>), by=<span class="kw">c</span>(<span class="st">&quot;GSM&quot;</span>, <span class="st">&quot;GPL&quot;</span>, <span class="st">&quot;TGROUP&quot;</span>)]
+fil =<span class="st"> </span>fil[rk<span class="op">==</span><span class="dv">1</span>]
+
+<span class="co"># fil = baseline[TGROUP != FOUND_TGROUP &amp; MIN_FOUND_PVALUE / MIN_EXP_PVALUE &lt; 1e-3]</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">aggr =<span class="st"> </span><span class="kw">sqldf</span>(<span class="st">&#39;select TGROUP, FOUND_TGROUP, count(GSM) as cnt from fil group by TGROUP, FOUND_TGROUP&#39;</span>)
+<span class="kw">ggplot</span>(aggr, <span class="kw">aes</span>(<span class="dt">y=</span>TGROUP, <span class="dt">x=</span>FOUND_TGROUP)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_tile</span>(<span class="kw">aes</span>(<span class="dt">fill=</span>cnt)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label=</span>cnt))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">42</span>)
+migration =<span class="st"> </span><span class="kw">sqldf</span>(<span class="st">&#39;select TGROUP as ORIGIN, FOUND_TGROUP as destination, count(GSM) as count from fil group by TGROUP, FOUND_TGROUP&#39;</span>)
+col =<span class="st"> </span><span class="kw">rand_color</span>(<span class="kw">length</span>(<span class="kw">unique</span>(migration<span class="op">$</span>ORIGIN)))
+<span class="kw">names</span>(col) =<span class="st"> </span><span class="kw">unique</span>(migration<span class="op">$</span>ORIGIN)
+<span class="kw">chordDiagram</span>(migration, <span class="dt">grid.col=</span>col, <span class="dt">annotationTrack=</span><span class="st">&quot;grid&quot;</span>, <span class="dt">preAllocateTracks=</span><span class="dv">1</span>)
+<span class="kw">circos.trackPlotRegion</span>(<span class="dt">track.index=</span><span class="dv">1</span>, <span class="dt">panel.fun =</span> <span class="cf">function</span>(x, y) {
+  xlim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;xlim&quot;</span>)
+  ylim =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;ylim&quot;</span>)
+  sector.name =<span class="st"> </span><span class="kw">get.cell.meta.data</span>(<span class="st">&quot;sector.index&quot;</span>)
+  <span class="kw">circos.text</span>(<span class="kw">mean</span>(xlim), ylim[<span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>.<span class="dv">1</span>, sector.name, <span class="dt">facing =</span> <span class="st">&quot;clockwise&quot;</span>, <span class="dt">niceFacing =</span> <span class="ot">TRUE</span>, <span class="dt">adj =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>), <span class="dt">cex=</span><span class="dv">2</span>)
+  <span class="kw">circos.axis</span>(<span class="dt">h =</span> <span class="st">&quot;top&quot;</span>, <span class="dt">labels.cex =</span> <span class="fl">0.5</span>, <span class="dt">major.tick.percentage =</span> <span class="fl">0.2</span>, <span class="dt">sector.index =</span> sector.name, <span class="dt">track.index =</span> <span class="dv">2</span>)
+}, <span class="dt">bg.border =</span> <span class="ot">NA</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">per_tissue =<span class="st"> </span><span class="kw">sqldf</span>(<span class="st">&quot;select tgroup</span>
+<span class="st">                  , total_tissue as TOTAL</span>
+<span class="st">                   , count(gsm) as CONTAMINATED</span>
+<span class="st">                   , count(gsm)/cast(total_tissue as float) as RATIO</span>
+<span class="st">                   from fil group by tgroup&quot;</span>)
+<span class="co"># png(filename = &quot;contamination.png&quot;, width = 1200, height=600)</span>
+<span class="kw">ggplot</span>(<span class="dt">data=</span>per_tissue, <span class="kw">aes</span>(<span class="dt">x=</span>TGROUP, <span class="dt">y=</span>RATIO)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&quot;identity&quot;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">24</span>), 
+        <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">1</span>),
+        <span class="dt">axis.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">24</span>)) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">xlab</span>(<span class="st">&quot;tissue&quot;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">ylab</span>(<span class="st">&quot;fraction contaminated&quot;</span>)</code></pre></div>
 
 </div>
-</div>
+
+
+
+
+
+
             </section>
 
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="curating-data.html" class="navigation navigation-next " aria-label="Next page""><i class="fa fa-angle-right"></i></a>
+<a href="tissue-contamination.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
 
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
