@@ -37,9 +37,7 @@ wipe: clean
 	rm -rfv _bookdown_files
 
 
-# convert jupyter notebooks to markdown 
-05_signature_creation.Rmd: _notebooks/validate_gini.md _notebooks/validate_mouse.md
-
+# rule to convert jupyter notebooks to markdown.  
 _notebooks/%.md: notebooks/%.ipynb
 	jupyter nbconvert --to markdown --output-dir _notebooks $< 
 	# adjust realtive paths for images. 
