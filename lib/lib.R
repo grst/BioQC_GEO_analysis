@@ -13,6 +13,16 @@ norm01 = function(x){
   (x-min(x))/(max(x)-min(x))
 }
 
+
+#' Median and standard deviation of all values 
+#' within the 90% interval. 
+robust_stats = function(x) {
+  qts = quantile(x, c(.05, .95))
+  xq = x[x >= qts[1] & x <= qts[2]]
+  return(list(mean(xq), sd(xq)))
+}
+
+
 #' Trim leading and trailing whitespace
 trim = function (x) gsub("^\\s+|\\s+$", "", x)
 

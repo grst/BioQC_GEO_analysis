@@ -128,7 +128,7 @@ minor.tick(nx=5)
 
 We exclude all studies having a very low variance between genes (IQR < 0.5). Remaining samples:
 
-```{r}
+```{r exclude_iqr, cache=TRUE}
 sql_select6 = sql_select3
 sql_from6 = str_c(sql_from5, "
   join bioqc_gse_gpl bgl on bgg.gse = bgl.gse", sep="\n")

@@ -63,6 +63,5 @@ As expected Heart and Skeletal muscle also identify each other, however Heart sc
 
 Surprisingly, Adrenal Gland, Ovary and Uterus are not able to identify the respective samples, despite having a high score in the cross-validation. We therefore exclude these signatures from the 'gtex solid' signature set. 
 
-
 Unfortunately, Blood was not profiled in the mouseGNF dataset. We keep the signature nonetheless as it does not trigger any false positives. 
 
