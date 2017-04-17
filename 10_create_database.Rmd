@@ -36,7 +36,7 @@ knitr::include_graphics("db/design/er_diagram.png")
 ### BioQC
 * **BIOQC_TISSUES**: List of all tissues manually annotated in [Normalize Tissues](#normalize-tissues). 
 * **BIOQC_NORMALIZE_TISSUES**: Stores the [manually curated](#normalize-tissues) mapping of the original tissue name to a normalized tissue name.
-* **BIOQC_SIGNATURES**: Stores gene signatures imported from a  [GMT file](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29).
+* **BIOQC_SIGNATURES**: Stores gene signatures imported from a [GMT file](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29).
 * **BIOQC_TISSUE_SET**: Stores the [manually curated](#tissue-signatures) mapping of tissues to 'expected signatures'. 
 * **BIOQC_RES**: Stores the p-value generated with *BioQC* for each signature in **BIOQC_SIGNATURES** and each samples in **BIOQC_GSM**. 
 * **BIOQC_BIOQC_SUCCESS**: List of all studies on which we successfully ran *BioQC*. This serves as 'background' for our analysis. 
