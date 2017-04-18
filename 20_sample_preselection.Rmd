@@ -1,4 +1,4 @@
-# Sample Selection and processing {#sample-selection}
+# Sample Selection and Processing {#sample-selection}
 
 ```{r setup, include=FALSE}
 source("lib/knitr.R")
@@ -134,7 +134,7 @@ gse.file = "results/gse_lists/gse_tissue_annotation.txt"
 ```
 
 ### Export list of samples {#sample-list}
-We store the respective gse identifiers in ``r gse.file``: 
+We store the respective GSE identifiers in ``r gse.file``: 
 ```{r sample_filtering_out}
 sqlGse = "
 select distinct gse

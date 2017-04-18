@@ -86,7 +86,7 @@ essential for our study, we parsed it into a separate column using a regular exp
 ### Load annotation information
 
 To run [BioQC](https://accio.github.io/BioQC), gene symbols need to be annotated in the gene expression matrix.
-To retrieve gene symbols, we are aware of two feasible possibilities: 
+To retrieve gene symbols, we are aware of two feasible approaches: 
 
 * the Bioconductor annotation packages (listed in GEOmetadb `gpl.bioc_package`)
 * use the GEO `annot_gpl` files ("in general available for all GSE that are referenced by a GDS"[^1]) 
@@ -127,7 +127,7 @@ We compared the two approaches in [Sample Selection](#sample-selection).
 
 ### Import summary statistics for each study 
 
-To perform a preliminary quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in [test_for_normalization.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R) and the project's [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). We import the results into the database:  
+To perform a simple quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in [test_for_normalization.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R) and the project's [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). We import the results into the database:  
 
 ```{r, eval=FALSE}
 study_stats = data.table(read_tsv(file.path(DATA_DIR, "gse_tissue_annot/study_stats.txt")))
@@ -174,7 +174,7 @@ db2gmt("results/gmt_all.gmt")
 
 ### Tissue Annotation
 
-Import the [manually curated tissues](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx) from Excel into the database. 
+Import the [manually curated tissues](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_annotation.xlsx) from Excel into the database. 
 ```{r, eval=FALSE, include=TRUE}
 normalized_tissues = data.table(read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 1))
 tissues = unique(normalized_tissues[!is.na(TISSUE_NORMALIZED),"TISSUE_NORMALIZED", with=FALSE])
@@ -187,7 +187,7 @@ dbAppendDf("BIOQC_NORMALIZE_TISSUES", tab_normalized)
 
 ### Tissue Sets
 
-Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx) from Excel into the database. 
+Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_annotation.xlsx) from Excel into the database. 
 ```{r, eval=FALSE, include=TRUE}
 bioqc_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 3)
 gtex_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 4)
@@ -209,5 +209,5 @@ bioqc_melt_all.uniq.tsv
 bioqc_success.txt
 ```
 
-## Store results
+## DBS as analysis engine and result storage
 We do not only use the database as pure data storage, but also as data analysis engine, harvesting the power of SQL. (See sections [sample selection](#sample-selection) and [contamination analysis](#contamination-analysis)). We save intermediate results of time-consuming queries in so-called [*materialized views*](https://docs.oracle.com/cd/B10501_01/server.920/a96567/repmview.htm), which are pysical snapshots of a query's result. 

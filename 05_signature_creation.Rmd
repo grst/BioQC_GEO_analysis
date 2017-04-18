@@ -32,7 +32,7 @@ knitr::include_graphics("signature_validation/gtex_v6_xval_scores.png")
 As identifying contaminated/mislabled samples can be boiled down to a classification exercise, we are interested in the predictive performance of each signature. The following heatmap shows the confusion matrix of using the signatures for classification. A sample is considered as classified as a tissue, if the corresponding signature scores highest among all other signatures. 
 
 ```{r, echo=FALSE, fig.cap="Confusion matrix of the cross-validation"}
-knitr::include_graphics("ssignature_validation/gtex_v6_xval_classification.png")
+knitr::include_graphics("signature_validation/gtex_v6_xval_classification.png")
 ```
 
 ## 'solid' signatures
@@ -49,7 +49,7 @@ and summarized below.
 Again, the following heatmap shows the confusion matrix. 
 
 ```{r, echo=FALSE}
-knitr::include_graphics("ssignature_validation/gtex_v6_solid_xval_classification.png")
+knitr::include_graphics("signature_validation/gtex_v6_solid_xval_classification.png")
 ```
 
 All tissues have been correctly identified at Precision = Recall = 1.0. 

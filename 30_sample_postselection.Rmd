@@ -98,7 +98,7 @@ kable(res)
 
 ### Quality control
 
-In this step we seek to identify studies on which BioQC cannot work due to poor data quality or data processing steps that remove the relative expression of a gene within a sample, e.g. per-gene normalization. 
+In this step we seek to identify studies on which BioQC cannot work due to poor data quality or data processing steps that remove the relative expression of a gene within a sample, *e.g.* per-gene normalization. 
 We will first filter samples by applying a cutoff-value to statistics on the gene expression data. Second, we will use an ubiquitous signature containing housekeeping genes as an indicator if BioQC returns a sensible result on the given sample. 
 
 On each study, we have calculated the mean of each gene over all samples. Of this series of means, we calculate the IQR. If a per-gene normalization has been applied, this value should be close to zero. This histogram shows a distribution of all IQRs over all remaining studies: 
@@ -138,7 +138,7 @@ res = dbGetQuery(mydb, str_c(sql_select6, sql_from6, sql_where6, sep="\n"))
 kable(res)
 ```
 
-Now, we have a look at the p-value distribution of the signature we called `awesome_housekeepers` containing ubiquitous genes. The gene expression of these genes can be assumed to be more or less constant over all tissue types, therefore this signature should score high in every sample. 
+Now, we have a look at the p-value distribution of the signature termed `awesome_housekeepers` containing ubiquitous genes. The gene expression of these genes can be assumed to be more or less constant over all tissue types, therefore this signature should score high in every sample. 
 
 **Awesome Housekeepers**
 ```{r hk_gene_list, cache=TRUE, echo=TRUE, include=FALSE}
@@ -163,7 +163,7 @@ invisible(res[,SCORE:=absLog10p(as.numeric(PVALUE))])
 ggplot(res, aes(x=SCORE)) + geom_density(aes(color=NAME)) + geom_vline(xintercept = 5, color="blue") + theme(legend.position = "top")
 ```
 
-We exclude all samples for which `awesome_housekeepers` scores with < 5, i.e. pvalue >= 1e-5. 
+We exclude all samples for which `awesome_housekeepers` scores with <= 5, i.e. pvalue >= 1e-5. 
 ```{r filter_housekeeping, cache=TRUE}
 sql_select7 = sql_select6
 sql_from7 = str_c(sql_from6, "
