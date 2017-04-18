@@ -25,7 +25,7 @@ The following figure shows the database scheme used for the study as entity-rela
 ### BioQC
 * **BIOQC_TISSUES**: List of all tissues manually annotated in [Normalize Tissues](#normalize-tissues). 
 * **BIOQC_NORMALIZE_TISSUES**: Stores the [manually curated](#normalize-tissues) mapping of the original tissue name to a normalized tissue name.
-* **BIOQC_SIGNATURES**: Stores gene signatures imported from a  [GMT file](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29).
+* **BIOQC_SIGNATURES**: Stores gene signatures imported from a [GMT file](http://software.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29).
 * **BIOQC_TISSUE_SET**: Stores the [manually curated](#tissue-signatures) mapping of tissues to 'expected signatures'. 
 * **BIOQC_RES**: Stores the p-value generated with *BioQC* for each signature in **BIOQC_SIGNATURES** and each samples in **BIOQC_GSM**. 
 * **BIOQC_BIOQC_SUCCESS**: List of all studies on which we successfully ran *BioQC*. This serves as 'background' for our analysis. 
@@ -77,7 +77,7 @@ essential for our study, we parsed it into a separate column using a regular exp
 ### Load annotation information
 
 To run [BioQC](https://accio.github.io/BioQC), gene symbols need to be annotated in the gene expression matrix.
-To retrieve gene symbols, we are aware of two feasible possibilities: 
+To retrieve gene symbols, we are aware of two feasible approaches: 
 
 * the Bioconductor annotation packages (listed in GEOmetadb `gpl.bioc_package`)
 * use the GEO `annot_gpl` files ("in general available for all GSE that are referenced by a GDS"[^1]) 
@@ -120,7 +120,7 @@ We compared the two approaches in [Sample Selection](#sample-selection).
 
 ### Import summary statistics for each study 
 
-To perform a preliminary quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in [test_for_normalization.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R) and the project's [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). We import the results into the database:  
+To perform a simple quality control on each study we calculated the min, max, median, mean and quartiles of the expression values of each study in GEO. This process is documented in [test_for_normalization.R](https://github.com/grst/BioQC_GEO_analysis/blob/master/scripts/test_for_normalization.R) and the project's [Makefile](https://github.com/grst/BioQC_GEO_analysis/blob/master/Makefile). We import the results into the database:  
 
 
 ```r
@@ -169,7 +169,7 @@ db2gmt("results/gmt_all.gmt")
 
 ### Tissue Annotation
 
-Import the [manually curated tissues](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/normalize_tissues.xlsx) from Excel into the database. 
+Import the [manually curated tissues](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_annotation.xlsx) from Excel into the database. 
 
 ```r
 normalized_tissues = data.table(read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 1))
@@ -182,7 +182,7 @@ dbAppendDf("BIOQC_NORMALIZE_TISSUES", tab_normalized)
 
 ### Tissue Sets
 
-Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_sets.xlsx) from Excel into the database. 
+Import the [manually curated tissue sets](https://github.com/grst/BioQC_GEO_analysis/blob/master/manual_annotation/tissue_annotation.xlsx) from Excel into the database. 
 
 ```r
 bioqc_all = read_excel("manual_annotation/tissue_annotation.xlsx", sheet = 3)
@@ -204,5 +204,5 @@ bioqc_melt_all.uniq.tsv
 bioqc_success.txt
 ```
 
-## Store results
+## DBS as analysis engine and result storage
 We do not only use the database as pure data storage, but also as data analysis engine, harvesting the power of SQL. (See sections [sample selection](#sample-selection) and [contamination analysis](#contamination-analysis)). We save intermediate results of time-consuming queries in so-called [*materialized views*](https://docs.oracle.com/cd/B10501_01/server.920/a96567/repmview.htm), which are pysical snapshots of a query's result. 

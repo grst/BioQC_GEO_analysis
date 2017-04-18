@@ -1,4 +1,4 @@
-# Sample Selection and processing {#sample-selection}
+# Sample Selection and Processing {#sample-selection}
 
 
 
@@ -37,7 +37,7 @@ tissue and annotation file     275206    9632
 
 
 ### Export list of samples {#sample-list}
-We store the respective gse identifiers in `results/gse_lists/gse_tissue_annotation.txt`: 
+We store the respective GSE identifiers in `results/gse_lists/gse_tissue_annotation.txt`: 
 
 ```r
 sqlGse = "

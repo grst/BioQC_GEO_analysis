@@ -9,7 +9,7 @@ The heartpiece of the study is [this sql script](https://github.com/grst/BioQC_G
 ## Input Tables
 * `BIOQC_SELECTED_SAMPLES`: the samples resulting from the [selection process](#selecting samples) including metadata
 * `BIOQC_TISSUE_SET`: the [manual mapping](#tissues-signatures) of tissues to signatures ("expected signatures")
-* `BIOQC_RES`: the p-values for each sample and signature (pre-filtered for having a p-value < 0.05)
+* `BIOQC_RES`: the p-values for each sample and signature. 
 
 ## Processing Steps explained
 ### BIOQC_SELECTED_SAMPLES_TSET
@@ -27,19 +27,19 @@ GSM1234   colon     intestine    Jejunum             1e-5
 would be aggretated into: 
 ```
 GSM       TISSUE    TGROUP       MIN_EXP_SIG    MIN_EXP_SIG_PVALUE
-GSM1234   colon     intestine    Colon          1e-5
+GSM1234   colon     intestine    Colon          1e-10
 ```
 
 
 
 ### BIOQC_RES_TSET
-We join the BioQC results (pvalue for each signature and sample) from `BIOQC_RES` with `BIOQC_TISSUE_SET` to map the signatures back to their tissue group. 
+We join the BioQC results (p-value for each signature and sample) from `BIOQC_RES` with `BIOQC_TISSUE_SET` to map the signatures back to their tissue group. 
 
 Example: The following results for `GSM1234`
 ```
 GSM       SIGNATURE     PVALUE
 GSM1234   Colon         1e-10
-GSM1234   Intestine     1e-5
+GSM1234   Jejunum       1e-5
 GSM1234   Liver         1e-5
 ```
 

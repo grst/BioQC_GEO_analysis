@@ -135,9 +135,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4.3.3" data-path="setup-database.html"><a href="setup-database.html#tissue-sets"><i class="fa fa-check"></i><b>4.3.3</b> Tissue Sets</a></li>
 <li class="chapter" data-level="4.3.4" data-path="setup-database.html"><a href="setup-database.html#import-bioqc-results"><i class="fa fa-check"></i><b>4.3.4</b> BioQC results</a></li>
 </ul></li>
-<li class="chapter" data-level="4.4" data-path="setup-database.html"><a href="setup-database.html#store-results"><i class="fa fa-check"></i><b>4.4</b> Store results</a></li>
+<li class="chapter" data-level="4.4" data-path="setup-database.html"><a href="setup-database.html#dbs-as-analysis-engine-and-result-storage"><i class="fa fa-check"></i><b>4.4</b> DBS as analysis engine and result storage</a></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="sample-selection.html"><a href="sample-selection.html"><i class="fa fa-check"></i><b>5</b> Sample Selection and processing</a><ul>
+<li class="chapter" data-level="5" data-path="sample-selection.html"><a href="sample-selection.html"><i class="fa fa-check"></i><b>5</b> Sample Selection and Processing</a><ul>
 <li class="chapter" data-level="5.1" data-path="sample-selection.html"><a href="sample-selection.html#sample-preselection"><i class="fa fa-check"></i><b>5.1</b> Sample Preselection</a><ul>
 <li class="chapter" data-level="5.1.1" data-path="sample-selection.html"><a href="sample-selection.html#required-annotation"><i class="fa fa-check"></i><b>5.1.1</b> Required annotation</a></li>
 <li class="chapter" data-level="5.1.2" data-path="sample-selection.html"><a href="sample-selection.html#sample-list"><i class="fa fa-check"></i><b>5.1.2</b> Export list of samples</a></li>
@@ -159,14 +159,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="6.2.3" data-path="contamination-analysis.html"><a href="contamination-analysis.html#bioqc_contamination"><i class="fa fa-check"></i><b>6.2.3</b> BIOQC_CONTAMINATION</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="7" data-path="results.html"><a href="results.html"><i class="fa fa-check"></i><b>7</b> Results</a><ul>
-<li class="chapter" data-level="7.1" data-path="results.html"><a href="results.html#detection-of-tissues"><i class="fa fa-check"></i><b>7.1</b> Detection of tissues</a></li>
-<li class="chapter" data-level="7.2" data-path="results.html"><a href="results.html#detection-of-outliers"><i class="fa fa-check"></i><b>7.2</b> Detection of outliers</a><ul>
-<li class="chapter" data-level="7.2.1" data-path="results.html"><a href="results.html#sample-against-sample-method"><i class="fa fa-check"></i><b>7.2.1</b> Sample-against-sample method</a></li>
-<li class="chapter" data-level="7.2.2" data-path="results.html"><a href="results.html#within-sample-method"><i class="fa fa-check"></i><b>7.2.2</b> Within-Sample Method</a></li>
-<li class="chapter" data-level="7.2.3" data-path="results.html"><a href="results.html#using-the-bioqc_solid-signature-set"><i class="fa fa-check"></i><b>7.2.3</b> Using the bioqc_solid signature set</a></li>
+<li class="chapter" data-level="7" data-path="results-preliminary.html"><a href="results-preliminary.html"><i class="fa fa-check"></i><b>7</b> Results [PRELIMINARY]</a><ul>
+<li class="chapter" data-level="7.1" data-path="results-preliminary.html"><a href="results-preliminary.html#detection-of-tissues"><i class="fa fa-check"></i><b>7.1</b> Detection of tissues</a></li>
+<li class="chapter" data-level="7.2" data-path="results-preliminary.html"><a href="results-preliminary.html#detection-of-outliers"><i class="fa fa-check"></i><b>7.2</b> Detection of outliers</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="results-preliminary.html"><a href="results-preliminary.html#sample-against-sample-method"><i class="fa fa-check"></i><b>7.2.1</b> Sample-against-sample method</a></li>
+<li class="chapter" data-level="7.2.2" data-path="results-preliminary.html"><a href="results-preliminary.html#within-sample-method"><i class="fa fa-check"></i><b>7.2.2</b> Within-Sample Method</a></li>
+<li class="chapter" data-level="7.2.3" data-path="results-preliminary.html"><a href="results-preliminary.html#using-the-bioqc_solid-signature-set"><i class="fa fa-check"></i><b>7.2.3</b> Using the bioqc_solid signature set</a></li>
 </ul></li>
-<li class="chapter" data-level="7.3" data-path="results.html"><a href="results.html#signature-free-method"><i class="fa fa-check"></i><b>7.3</b> signature-free method?</a></li>
+<li class="chapter" data-level="7.3" data-path="results-preliminary.html"><a href="results-preliminary.html#signature-free-method"><i class="fa fa-check"></i><b>7.3</b> signature-free method?</a></li>
 </ul></li>
 </ul>
 
@@ -186,7 +186,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
             <section class="normal" id="section-">
 <div id="sample-selection" class="section level1">
-<h1><span class="header-section-number">5</span> Sample Selection and processing</h1>
+<h1><span class="header-section-number">5</span> Sample Selection and Processing</h1>
 <div id="sample-preselection" class="section level2">
 <h2><span class="header-section-number">5.1</span> Sample Preselection</h2>
 <p>Here, we document the sample selection process before running <em>BioQC</em>.</p>
@@ -241,7 +241,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="sample-list" class="section level3">
 <h3><span class="header-section-number">5.1.2</span> Export list of samples</h3>
-<p>We store the respective gse identifiers in <code>results/gse_lists/gse_tissue_annotation.txt</code>:</p>
+<p>We store the respective GSE identifiers in <code>results/gse_lists/gse_tissue_annotation.txt</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sqlGse =<span class="st"> &quot;</span>
 <span class="st">select distinct gse</span>
 <span class="st">from (</span>
@@ -495,7 +495,7 @@ res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span cla
 </div>
 <div id="quality-control" class="section level3">
 <h3><span class="header-section-number">5.3.4</span> Quality control</h3>
-<p>In this step we seek to identify studies on which BioQC cannot work due to poor data quality or data processing steps that remove the relative expression of a gene within a sample, e.g. per-gene normalization. We will first filter samples by applying a cutoff-value to statistics on the gene expression data. Second, we will use an ubiquitous signature containing housekeeping genes as an indicator if BioQC returns a sensible result on the given sample.</p>
+<p>In this step we seek to identify studies on which BioQC cannot work due to poor data quality or data processing steps that remove the relative expression of a gene within a sample, <em>e.g.</em> per-gene normalization. We will first filter samples by applying a cutoff-value to statistics on the gene expression data. Second, we will use an ubiquitous signature containing housekeeping genes as an indicator if BioQC returns a sensible result on the given sample.</p>
 <p>On each study, we have calculated the mean of each gene over all samples. Of this series of means, we calculate the IQR. If a per-gene normalization has been applied, this value should be close to zero. This histogram shows a distribution of all IQRs over all remaining studies:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sql_select_hist =<span class="st"> &quot;</span>
 <span class="st">select /*+ USE_HASH(bs, bgg) parallel(16) */ distinct bgg.gse</span>
@@ -540,7 +540,7 @@ res =<span class="st"> </span><span class="kw">dbGetQuery</span>(mydb, <span cla
 </tr>
 </tbody>
 </table>
-<p>Now, we have a look at the p-value distribution of the signature we called <code>awesome_housekeepers</code> containing ubiquitous genes. The gene expression of these genes can be assumed to be more or less constant over all tissue types, therefore this signature should score high in every sample.</p>
+<p>Now, we have a look at the p-value distribution of the signature termed <code>awesome_housekeepers</code> containing ubiquitous genes. The gene expression of these genes can be assumed to be more or less constant over all tissue types, therefore this signature should score high in every sample.</p>
 <p><strong>Awesome Housekeepers</strong></p>
 <p>The orange curve is the pvalue distribution of the housekeeping signature. The blue curve shows the distribution of a random control signature containing 100 randomly chosen genes.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sql_select_hk =<span class="st"> &quot;</span>
@@ -557,7 +557,7 @@ res =<span class="st"> </span><span class="kw">data.table</span>(<span class="kw
 <span class="kw">invisible</span>(res[,SCORE<span class="op">:</span><span class="er">=</span><span class="kw">absLog10p</span>(<span class="kw">as.numeric</span>(PVALUE))])
 <span class="kw">ggplot</span>(res, <span class="kw">aes</span>(<span class="dt">x=</span>SCORE)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">color=</span>NAME)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">5</span>, <span class="dt">color=</span><span class="st">&quot;blue&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;top&quot;</span>)</code></pre></div>
 <p><img src="30_sample_postselection_files/figure-html/unnamed-chunk-1-1.png" width="672" style="display:block; margin: auto" style="display: block; margin: auto;" /></p>
-<p>We exclude all samples for which <code>awesome_housekeepers</code> scores with &lt; 5, i.e. pvalue &gt;= 1e-5.</p>
+<p>We exclude all samples for which <code>awesome_housekeepers</code> scores with &lt;= 5, i.e. pvalue &gt;= 1e-5.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sql_select7 =<span class="st"> </span>sql_select6
 sql_from7 =<span class="st"> </span><span class="kw">str_c</span>(sql_from6, <span class="st">&quot;</span>
 <span class="st">  join bioqc_res br on br.gsm = bg.gsm&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
