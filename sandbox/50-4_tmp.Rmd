@@ -1,0 +1,44 @@
+# Tissue Contamination
+
+```{r setup, include=FALSE}
+source("lib/knitr.R")
+library(BioQC)
+library(rworldmap)
+library(data.table)
+library(sqldf)
+source("lib/plots.R")
+source("lib/db.R")
+```
+
+```{r, eval=FALSE}
+sql = "
+select  bsst.GSM
+      , bsst.tgroup
+      , br.pvalue
+      , br.signature
+      , bs.name as sig_name
+from bioqc_selected_samples_tset bsst
+join bioqc_res br 
+  on br.gsm = bsst.gsm 
+join bioqc_signatures bs
+  on br.signature = bs.id
+where tissue_set = 'bioqc_solid'
+and tgroup = 'liver'
+and bs.source = 'expr.tissuemark.affy.roche.symbols.gmt'
+"
+res = data.table(dbGetQuery(mydb, sql))
+res[,SCORE:=absLog10p(as.numeric(PVALUE))]
+```
+
+
+```{r, eval=FALSE, fig.width=16, fig.height=100, }
+tgroup = 'liver'
+sig = 'Liver_NR_0.7_3'
+# sigs = c('Liver_NR_0.7_3', 'Monocyte_Linsley_0.7_3', 'Monocyte_Roche_0.7_3', 'Macrophage_PB_NR_0.7_3', 'Blood_NR_0.7_3')
+sigs = unique(res$SIG_NAME)
+res_scatter = dcast(res[TGROUP == tgroup & SIG_NAME %in% sigs], GSM ~ SIG_NAME, value.var='SCORE')
+res_scatter = melt(res_scatter, id.vars=c("GSM", sig), variable.name = 'SIG_NAME')
+ggplot(res_scatter, aes_string(x=sig, y="value")) + geom_jitter() + facet_wrap(~SIG_NAME, scales = 'free') + geom_hline(aes(yintercept=6, colour='red'))
+
+```
+

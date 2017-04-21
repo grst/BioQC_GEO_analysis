@@ -84,6 +84,7 @@ CREATE TABLE bioqc_gse_gsm
 	gsm varchar2(15),
   primary key(gse, gsm)
 ) tablespace srslight_d;
+create index bioqc_gse_gsm_gsm on bioqc_gse_gsm(gsm); 
 
 CREATE TABLE bioqc_gse_gpl 
 ( gse varchar2(15),
