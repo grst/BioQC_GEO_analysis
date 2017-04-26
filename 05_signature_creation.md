@@ -26,14 +26,14 @@ We split samples in 10 [stratified folds](http://scikit-learn.org/stable/modules
 The following heatmap shows the average BioQC score over all folds for each signature and each tissue.
 
 <div class="figure">
-<img src="signature_validation/gtex_v6_xval_scores.png" alt="cross-validation of GTEx tissue signatures. Signatures are shown on the y-axis, the corresponding groups of samples on the x-axis. The tile shading indicates the average BioQC score of a signature on a group of samples. For better visibility of low scores, the colors are saturated at 30."  />
+<img src="signature_validation/gtex_v6_xval_scores.png" alt="cross-validation of GTEx tissue signatures. Signatures are shown on the y-axis, the corresponding groups of samples on the x-axis. The tile shading indicates the average BioQC score of a signature on a group of samples. For better visibility of low scores, the colors are saturated at 30." width="582" />
 <p class="caption">(\#fig:unnamed-chunk-1)cross-validation of GTEx tissue signatures. Signatures are shown on the y-axis, the corresponding groups of samples on the x-axis. The tile shading indicates the average BioQC score of a signature on a group of samples. For better visibility of low scores, the colors are saturated at 30.</p>
 </div>
 
 As identifying contaminated/mislabled samples can be boiled down to a classification exercise, we are interested in the predictive performance of each signature. The following heatmap shows the confusion matrix of using the signatures for classification. A sample is considered as classified as a tissue, if the corresponding signature scores highest among all other signatures. 
 
 <div class="figure">
-<img src="signature_validation/gtex_v6_xval_classification.png" alt="Confusion matrix of the cross-validation"  />
+<img src="signature_validation/gtex_v6_xval_classification.png" alt="Confusion matrix of the cross-validation" width="586" />
 <p class="caption">(\#fig:unnamed-chunk-2)Confusion matrix of the cross-validation</p>
 </div>
 
@@ -50,7 +50,7 @@ and summarized below.
 
 Again, the following heatmap shows the confusion matrix. 
 
-![](signature_validation/gtex_v6_solid_xval_classification.png)<!-- -->
+<img src="signature_validation/gtex_v6_solid_xval_classification.png" width="242" />
 
 All tissues have been correctly identified at Precision = Recall = 1.0. 
 
@@ -62,7 +62,7 @@ To asses the translatability of the signatures, we tested the signatures generat
 
 The following figure shows the score matrix of GTEx signatures against mouseGNF samples:
 
-![](signature_validation/gtex_v6_solid_vs_mouse_gnf.png)<!-- -->
+<img src="signature_validation/gtex_v6_solid_vs_mouse_gnf.png" width="361" />
 
 The signatures *Brain, Heart, Kidney, Liver, Skeletal Muscle, Pancreas, Skin* and *Testis* identify the respective tissue despite the species and platform differences at a high (>5) BioQC score. 
 

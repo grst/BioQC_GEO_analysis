@@ -108,8 +108,8 @@ kable(res)
     12      1  Mus musculus musculus x M. m. castaneus  
     12      1  Papio hamadryas                          
      8      1  Macaca nemestrina                        
-     6      1  Mus musculus castaneus                   
      6      1  Mus musculus musculus                    
+     6      1  Mus musculus castaneus                   
      3      1  Mus sp.                                  
 
 Results suggest that it makes sense to limit the analysis to the three main organisms: *H. sapiens*, *M. musculus*, *R. norvegicus*. This makes also sense as these species are closesly related and therefore the signatures are more likely to translate within these species. 
@@ -263,8 +263,8 @@ skeletal muscle           1830
 hippocampus               1573
 colon                     1463
 lymph node                1120
-hepatocyte                1094
 cerebellum                1094
+hepatocyte                1094
 tumor                     1036
 breast                     795
 frontal cortex             729

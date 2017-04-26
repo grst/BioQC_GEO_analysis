@@ -10,7 +10,7 @@ with tables to store signature scores generated with
 The following figure shows the database scheme used for the study as entity-relationship (ER) diagram: 
 
 <div class="figure" style="text-align: center">
-<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported and adapted from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study." style="display:block; margin: auto" />
+<img src="db/design/er_diagram.png" alt="Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported and adapted from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study." width="482" style="display:block; margin: auto" />
 <p class="caption">(\#fig:unnamed-chunk-2)Entitiy relationship diagram of the *BioQC* database scheme. Click the [here](https://github.com/grst/BioQC_GEO_analysis/raw/master/db/design/er_diagram.pdf) for an enlarged version. Greenish tables are imported and adapted from GEOmetadb. Yellowish tables are additional tables designed for this study. Three dots (...) indicate columns from GEOmetadb which have been omitted in the visualisation because they are not relevant for this study.</p>
 </div>
 

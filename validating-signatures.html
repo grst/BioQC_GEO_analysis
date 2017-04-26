@@ -209,14 +209,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>We performed a 10-fold cross-validation as follows: We split samples in 10 <a href="http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedKFold.html">stratified folds</a>, <em>i.e.</em> samples from all tissues are equally distributed across all folds. We use 9 folds to generate signatures using the <a href="https://grst.github.io/pygenesig/apidoc.html#module-pygenesig.gini">gini method</a> as described by the BioQC authors. These signatures were applied to the remaining fold using BioQC. We iterated over the folds such that each fold has been used for training and testing.</p>
 <p>The following heatmap shows the average BioQC score over all folds for each signature and each tissue.</p>
 <div class="figure"><span id="fig:unnamed-chunk-1"></span>
-<img src="signature_validation/gtex_v6_xval_scores.png" alt="cross-validation of GTEx tissue signatures. Signatures are shown on the y-axis, the corresponding groups of samples on the x-axis. The tile shading indicates the average BioQC score of a signature on a group of samples. For better visibility of low scores, the colors are saturated at 30."  />
+<img src="signature_validation/gtex_v6_xval_scores.png" alt="cross-validation of GTEx tissue signatures. Signatures are shown on the y-axis, the corresponding groups of samples on the x-axis. The tile shading indicates the average BioQC score of a signature on a group of samples. For better visibility of low scores, the colors are saturated at 30." width="582" />
 <p class="caption">
 Figure 2.1: cross-validation of GTEx tissue signatures. Signatures are shown on the y-axis, the corresponding groups of samples on the x-axis. The tile shading indicates the average BioQC score of a signature on a group of samples. For better visibility of low scores, the colors are saturated at 30.
 </p>
 </div>
 <p>As identifying contaminated/mislabled samples can be boiled down to a classification exercise, we are interested in the predictive performance of each signature. The following heatmap shows the confusion matrix of using the signatures for classification. A sample is considered as classified as a tissue, if the corresponding signature scores highest among all other signatures.</p>
 <div class="figure"><span id="fig:unnamed-chunk-2"></span>
-<img src="signature_validation/gtex_v6_xval_classification.png" alt="Confusion matrix of the cross-validation"  />
+<img src="signature_validation/gtex_v6_xval_classification.png" alt="Confusion matrix of the cross-validation" width="586" />
 <p class="caption">
 Figure 2.2: Confusion matrix of the cross-validation
 </p>
@@ -228,7 +228,7 @@ Figure 2.2: Confusion matrix of the cross-validation
 <p>Here, we reduce the dataset to a subset of tissues, which can be unambigously distinguished using the BioQC method (<em>i.e.</em> precision = recall = 1.0).</p>
 <p>We <a href="https://github.com/grst/pygenesig-example/blob/d88e4a81a45e192527a84a4445094604deba580b/manual_annotation/gtex_solid.csv">manually map</a> the tissues from GTEx to a reduced subset of tissue names. The data <a href="https://github.com/grst/pygenesig-example/blob/d88e4a81a45e192527a84a4445094604deba580b/notebooks/gtex_solid.ipynb">is prepared</a> to be ran using <em>pygenesig-pipeline</em>. The results are available in <a href="https://github.com/grst/BioQC_GEO_analysis/blob/b11987da13ba9b98eba34206f92942be8de6427e/signature_validation/gtex_v6_gini_solid.ipynb">this jupyter notebook</a> and summarized below.</p>
 <p>Again, the following heatmap shows the confusion matrix.</p>
-<p><img src="signature_validation/gtex_v6_solid_xval_classification.png" /><!-- --></p>
+<p><img src="signature_validation/gtex_v6_solid_xval_classification.png" width="242" /></p>
 <p>All tissues have been correctly identified at Precision = Recall = 1.0.</p>
 </div>
 <div id="cross-platform-cross-species-validation" class="section level2">
@@ -236,7 +236,7 @@ Figure 2.2: Confusion matrix of the cross-validation
 <p>Arguably, in the above experiment, we could have built signatures based on human-specific genes, genes that can only be detected by a certain experimental platform or even experiment-specific batch effects instead of univerally translatable marker genes.</p>
 <p>To asses the translatability of the signatures, we tested the signatures generated above (human, Illumina sequencing) on the <em>mouseGNF tissue expression atlas</em> (mouse, Affymetrix microarray). Te procedure is described in <a href="https://github.com/grst/pygenesig-example/blob/80bfe2a388a5230b004c288cb2ea220f0394855d/notebooks/gtex_solid_vs_mouse_gnf.ipynb">this notebook</a>.</p>
 <p>The following figure shows the score matrix of GTEx signatures against mouseGNF samples:</p>
-<p><img src="signature_validation/gtex_v6_solid_vs_mouse_gnf.png" /><!-- --></p>
+<p><img src="signature_validation/gtex_v6_solid_vs_mouse_gnf.png" width="361" /></p>
 <p>The signatures <em>Brain, Heart, Kidney, Liver, Skeletal Muscle, Pancreas, Skin</em> and <em>Testis</em> identify the respective tissue despite the species and platform differences at a high (&gt;5) BioQC score.</p>
 <p>As expected <em>Heart</em> and <em>Skeletal muscle</em> also identify each other, however <em>Heart</em> scores still higher on heart samples and <em>Skeletal muscle</em> scores higher on skeletal muscles samples, therefore we retain both signatures.</p>
 <p>Surprisingly, <em>Adrenal Gland</em>, <em>Ovary</em> and <em>Uterus</em> are not able to identify the respective samples, despite having a high score in the cross-validation. We therefore exclude these signatures from the ‘gtex solid’ signature set.</p>
