@@ -1,10 +1,12 @@
 R=R
 RMD_FILES= $(wildcard *.Rmd) 
 PREVIEW_FILES = $(patsubst %,%.preview,$(RMD_FILES))
-DATA_PATH= /pstore/data/bioinfo/users/sturmg/BioQC_GEO_analysis/gse_tissue_annot
-CHUNKSUB_PATH= /pstore/data/bioinfo/users/sturmg/BioQC_GEO_analysis/chunksub
+DATA_PATH= $(shell pwd)/data/gse_tissue_annot
+CHUNKSUB_PATH= $(shell pwd)/data/chunksub
 SHELL= /bin/bash
-CHUNKSUB= /pstore/home/sturmg/.local/bin/chunksub
+CHUNKSUB= /pstore/apps/bioinfo/python/3.5/bin/chunksub
+CHUNKSUB_CONFIG= $(shell pwd)/data/chunksub_conf/config.yml
+BASH_WRAPPER= $(shell pwd)/data/chunksub_conf/bash_wrapper.sh
 CWD= $(shell pwd)
 
 
@@ -37,11 +39,11 @@ wipe: clean
 	rm -rfv _bookdown_files
 
 
-# rule to convert jupyter notebooks to markdown.  
-_notebooks/%.md: notebooks/%.ipynb
-	jupyter nbconvert --to markdown --output-dir _notebooks $< 
-	# adjust realtive paths for images. 
-	sed -i -r "s#!\[(.*)\]\((.*)\)#!\[\1\]\(_notebooks/\2\)#g" $@
+## rule to convert jupyter notebooks to markdown.  
+# _notebooks/%.md: notebooks/%.ipynb
+# 	jupyter nbconvert --to markdown --output-dir _notebooks $< 
+# 	# adjust realtive paths for images. 
+# 	sed -i -r "s#!\[(.*)\]\((.*)\)#!\[\1\]\(_notebooks/\2\)#g" $@
 
 
 
@@ -82,7 +84,7 @@ download_gse: results/gse_lists/missing_download.txt
 	# limit the number of concurrent jobs to 60
 	$(eval CHUNKSIZE := $(shell wc -l results/gse_lists/missing_download.txt | awk '{print int($$1/60+1)}')) 
 	rm -fr $(CHUNKSUB_PATH)/download_gse
-	$(CHUNKSUB) -d $(CWD) -s $(CHUNKSIZE) -X y -N download_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/geo_to_eset.R {} $(DATA_PATH)/geo" $< 
+	$(CHUNKSUB) -c $(CHUNKSUB_CONFIG) -d $(CWD) -s $(CHUNKSIZE) -X y -N download_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/geo_to_eset.R {} $(DATA_PATH)/geo" $< 
 
 
 
@@ -105,7 +107,7 @@ results/gse_lists/missing_annotation.txt: results/gse_lists/downloaded_esets.txt
 annotate_gse: results/gse_lists/missing_annotation.txt
 	$(eval CHUNKSIZE := $(shell wc -l $< | awk '{print int($$1/120+1)}'))
 	rm -fr $(CHUNKSUB_PATH)/annotate_gse
-	$(CHUNKSUB) -d $(CWD) -s $(CHUNKSIZE) -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N annotate_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/annotate_eset.R $(DATA_PATH)/geo_annot {}" $< 
+	$(CHUNKSUB) -c $(CHUNKSUB_CONFIG) -d $(CWD) -s $(CHUNKSIZE) -t /pstore/data/bioinfo/users/zhangj83/sturmg_data_migration_201704/BioQC_GEO_analysis/data/chunksub_conf/roche_chunk.template -X y -N annotate_gse -j $(CHUNKSUB_PATH) "$(CWD)/scripts/annotate_eset.R $(DATA_PATH)/geo_annot {}" $< 
 
 
 
@@ -122,7 +124,7 @@ results/gse_lists/missing_conversion.txt: results/gse_lists/annotated_esets.txt 
 
 .PHONY: convert_geo
 convert_geo: results/gse_lists/missing_conversion.txt
-	$(CHUNKSUB) -d $(CWD) -s 20 -X y -N convert_geo -j $(CHUNKSUB_PATH) "$(CWD)/scripts/eset_to_gct.R {} $(DATA_PATH)/geo_annot_flat" $<
+	$(CHUNKSUB) -c $(CHUNKSUB_CONFIG) -d $(CWD) -s 20 -X y -N convert_geo -j $(CHUNKSUB_PATH) "$(CWD)/scripts/eset_to_gct.R {} $(DATA_PATH)/geo_annot_flat" $<
 
 #################################
 # BioQC
@@ -148,7 +150,7 @@ results/gse_lists/missing_bioqc.txt: results/gse_lists/annotated_esets.txt resul
 .PHONY: run_bioqc
 run_bioqc: results/gse_lists/missing_bioqc.txt results/gmt_all.gmt
 	rm -fr $(CHUNKSUB_PATH)/bioqc
-	$(CHUNKSUB) -d $(CWD) -s 10 -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N bioqc -j $(CHUNKSUB_PATH) "$(CWD)/scripts/run_bioqc.R $(DATA_PATH)/bioqc $(word 2,$^) {} 2" $< 
+	$(CHUNKSUB) -c $(CHUNKSUB_CONFIG) -d $(CWD) -s 10 -t /pstore/data/bioinfo/users/zhangj83/sturmg_data_migration_201704/BioQC_GEO_analysis/data/chunksub_conf/roche_chunk.template -X y -N bioqc -j $(CHUNKSUB_PATH) "$(CWD)/scripts/run_bioqc.R $(DATA_PATH)/bioqc $(word 2,$^) {} 2" $< 
 
 .PHONY: bioqc_res
 bioqc_res: $(DATA_PATH)/bioqc_melt_all.uniq.tsv $(DATA_PATH)/bioqc_success.csv
@@ -159,7 +161,7 @@ $(DATA_PATH)/bioqc_melt_all.tsv: results/gse_lists/bioqced_esets.txt
 $(DATA_PATH)/bioqc_melt_all.uniq.tsv:  $(DATA_PATH)/bioqc_melt_all.tsv
 	# unique on first two columns. For one study the results exactely identical
 	# due to floating point inprecision, but identical up to 5 decimal digits (i checked)
-	bash_wrapper.sh 24 "sort --parallel 24 -u -k1,2 $< > $@ "
+	$(BASH_WRAPPER) 24 "sort --parallel 24 -u -k1,2 $< > $@ "
 
 $(DATA_PATH)/bioqc_success.csv:
 	# list of GSM on which the bioqc-run was successful. Serves as 'background' for 
@@ -180,7 +182,7 @@ test_for_normalization: results/gse_lists/annotated_esets.txt
 	rm -fr $(CHUNKSUB_PATH)/test_for_normalization
 	rm -fr $(DATA_PATH)/test_for_normalization
 	mkdir -p $(DATA_PATH)/test_for_normalization
-	awk '{print "$(DATA_PATH)/geo_annot/"$$0}' < $< | $(CHUNKSUB) -d $(CWD) -s 50 -t /pstore/home/sturmg/.chunksub/roche_chunk.template -X y -N test_for_normalization -j $(CHUNKSUB_PATH) "$(CWD)/scripts/test_for_normalization.R $(DATA_PATH)/test_for_normalization/ {}" 
+	awk '{print "$(DATA_PATH)/geo_annot/"$$0}' < $< | $(CHUNKSUB) -c $(CHUNKSUB_CONFIG) -d $(CWD) -s 50 -t /pstore/data/bioinfo/users/zhangj83/sturmg_data_migration_201704/BioQC_GEO_analysis/data/chunksub_conf/roche_chunk.template -X y -N test_for_normalization -j $(CHUNKSUB_PATH) "$(CWD)/scripts/test_for_normalization.R $(DATA_PATH)/test_for_normalization/ {}" 
 
 $(DATA_PATH)/study_stats.txt: 
 	find $(DATA_PATH)/test_for_normalization/ -iname "*.txt" | head -n 1 | xargs awk 'FNR==1{print "filename\t" $$0}' > $@ 
