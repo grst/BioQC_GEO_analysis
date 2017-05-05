@@ -5,7 +5,7 @@ source("lib/db/.db_creds.R")
 drv <- RJDBC::JDBC("oracle.jdbc.OracleDriver", system.file("drivers", 
                                                            "ojdbc14.jar", package = "ribiosAnnotation"))
 str <- paste("jdbc:oracle:thin:", pg_user, "/", pg_pass, 
-             "@", pg_dbname, ".kau.roche.com:", pg_port, sep = "")
+             "@", pg_host, pg_port, sep = "")
 mydb <- dbConnect(drv, str)
 
 #' Wapper for \code{\link{dbWriteTable}}.
