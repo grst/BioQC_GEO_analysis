@@ -43,7 +43,7 @@ process run_bioqc {
 }
 
 process concat {
-    publishDir params.out_dir
+    publishDir params.out_dir, mode: "link"
     input:
         file chunks from bioqc_res_chunk.collect()
 
@@ -52,7 +52,10 @@ process concat {
 
     script:
         """
-        cat *.tsv > bioqc_res_all.tsv
+        head -n1 <(cat *.rda.tsv) > bioqc_res_all.tsv
+        for f in *.rda.tsv ; do
+          tail -n+2 \$f >> bioqc_res_all.tsv
+        done
         """
 
 }
