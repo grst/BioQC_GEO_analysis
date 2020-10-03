@@ -12,3 +12,4 @@ _book
 _main*
 Thumbs.db
 _notebooks
+.nextflow*
