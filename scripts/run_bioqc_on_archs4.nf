@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-params.chunk_path = "./data/archs4/processed/**/chunk*.rda"
+params.chunk_path = "./data/archs4/processed/**/*chunk*.rda"
 params.signature_table = "./data/bioqc_geo_oracle_dump/BIOQC_SIGNATURES_DATA_TABLE.csv"
 params.out_dir = "./data/archs4/processed"
 

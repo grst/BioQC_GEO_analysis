@@ -1,16 +1,50 @@
+#!/usr/bin/env Rscript
+#$ -pe smp 2
+#$ -cwd
+#$ -V
+#$ -l h_vmem 100G
+
 ###############################################################
 # Run BioQC on Archs 4 data
+# ./run_bioqc_on_archs4.R SPECIES
+# where SPECIES = human|mouse
 ###############################################################
 
-ARHCS4_META = "data/archs4/human_gsm_meta.rda"
-ARCHS4_COUNTS = "./data/archs4/human_matrix.rda"
-GENE_LENGTHS = "./data/ensembl_v90/gene_length_human.bed"
-ENSG_TO_SYMBOL = "./data/ensembl_v90/ensg_to_symbol_human.tsv"
+args  = commandArgs(trailingOnly=TRUE)
+if (length(args) != 1) {
+  stop("Specify either 'human' or 'mouse' as command line argument. ")
+} else if(args[1] == "human") {
 
-NORMALIZE_TISSUE_TABLE = "./data/bioqc_geo_oracle_dump/BIOQC_NORMALIZE_TISSUES_DATA_TABLE.csv"
-TISSUE_SET_TABLE = "./data/bioqc_geo_oracle_dump/BIOQC_TISSUE_SET_DATA_TABLE.csv"
-CHUNK_SIZE = 200
-OUT_DIR = "./data/archs4/processed/human_chunks"
+  ARCHS4_META = "data/archs4/human_gsm_meta.rda"
+  ARCHS4_COUNTS = "./data/archs4/human_matrix.rda"
+  GENE_LENGTHS = "./data/ensembl_v90/gene_length_human.bed"
+  ENSG_TO_SYMBOL = "./data/ensembl_v90/ensg_to_symbol_human.tsv"
+
+  NORMALIZE_TISSUE_TABLE = "./data/bioqc_geo_oracle_dump/BIOQC_NORMALIZE_TISSUES_DATA_TABLE.csv"
+  TISSUE_SET_TABLE = "./data/bioqc_geo_oracle_dump/BIOQC_TISSUE_SET_DATA_TABLE.csv"
+  CHUNK_SIZE = 200
+  OUT_DIR = "./data/archs4/processed/human_chunks"
+  MOUSE = FALSE
+  HOMOLOGENE = "./manual_annotation/homologene.data"
+
+} else if(args[1] == "mouse") {
+  ARCHS4_META = "data/archs4/mouse_gsm_meta.rda"
+  ARCHS4_COUNTS = "./data/archs4/mouse_matrix.rda"
+  GENE_LENGTHS = "./data/ensembl_v90/gene_length_mouse.bed"
+  ENSG_TO_SYMBOL = "./data/ensembl_v90/ensg_to_symbol_mouse.tsv"
+
+  NORMALIZE_TISSUE_TABLE = "./data/bioqc_geo_oracle_dump/BIOQC_NORMALIZE_TISSUES_DATA_TABLE.csv"
+  TISSUE_SET_TABLE = "./data/bioqc_geo_oracle_dump/BIOQC_TISSUE_SET_DATA_TABLE.csv"
+  CHUNK_SIZE = 200
+  OUT_DIR = "./data/archs4/processed/mouse_chunks"
+  MOUSE = TRUE
+  HOMOLOGENE = "./manual_annotation/homologene.data"
+
+} else {
+  stop("Invalid arguments. ")
+}
+
+dir.create(OUT_DIR, showWarnings = FALSE)
 
 #' Convert counts to TPM, the simple way (not as accurate)
 #'
@@ -48,9 +82,20 @@ bioqc_tissue_set = read_csv(TISSUE_SET_TABLE) %>%
 load(ARCHS4_META)
 load(ARCHS4_COUNTS)
 
-# met metadata
+# get metadata
 sample_df = lapply(gsmMeta, function(x) {
-  tibble_row(GSM=x$Sample_geo_accession, GPL=x$Sample_platform_id, source_name_ch1=x$Sample_source_name_ch1)
+  tibble_row(
+    GSM = x$Sample_geo_accession,
+    GPL = x$Sample_platform_id,
+    source_name_ch1 = x$Sample_source_name_ch1,
+    library_strategy = x$Sample_library_strategy,
+    library_source = x$Sample_library_source,
+    instrument_model = x$Sample_instrument_model,
+    contact_country = x$Sample_contact_country,
+    submission_date = x$Sample_submission_date,
+    last_update_date = x$Sample_last_update_date,
+    molecule_ch1 = x$Sample_molecule_ch1,
+  )
 }) %>% bind_rows()
 
 archs4_meta = sample_df %>%
@@ -58,6 +103,9 @@ archs4_meta = sample_df %>%
   inner_join(normalize_tissue, by=c("source_name_ch1"="TISSUE_ORIG")) %>%
   inner_join(bioqc_tissue_set) %>%
   select(-source_name_ch1)
+
+archs4_meta %>%
+  write_tsv(file.path(OUT_DIR, "archs4_meta.tsv"))
 
 # Select samples with tissue from archs4 matrix.
 exp = exp[, archs4_meta$GSM %>% unique()]
@@ -76,15 +124,46 @@ tmp_gene_lengths = gene_lengths %>%
 
 exp_tpm = counts_to_tpm_simple(exp[rownames(tmp_gene_lengths),], tmp_gene_lengths$gene_length)
 
-# Build eset
-fdata = data.frame(gene_symbol=rownames(exp_tpm))
-rownames(fdata) = fdata$gene_symbol
-eset = ExpressionSet(exp_tpm, featureData = AnnotatedDataFrame(fdata))
+# load homologene
+if (MOUSE) {
+  homologene = read_tsv("./manual_annotation/homologene.data",
+                        col_names=c("HID", "Taxonomy ID", "Gene ID", "Gene Symbol", "Protein gi", "Protein accession"))
+  homologene_hsa_mmu = homologene %>% filter(`Taxonomy ID` %in% c(10090, 9606)) %>%
+    mutate(species = if_else(`Taxonomy ID` == 10090, "mmu", "hsa")) %>%
+    select(`HID`, species, `Gene Symbol`) %>%
+    pivot_wider(names_from="species", values_from="Gene Symbol", values_fn=function(x) x[[1]])
+}
 
 
-## run BioQC
-lapply(seq(1, ncol(eset), CHUNK_SIZE), function(i) {
-  tmp_eset = eset[, i:min(ncol(eset), (i+CHUNK_SIZE))]
+## Export expression sets
+lapply(seq(1, ncol(exp_tpm), CHUNK_SIZE), function(i) {
+  start = i
+  stop = min(ncol(exp_tpm), (i+CHUNK_SIZE-1))
+  message(paste0("Processing range ", start, ":", stop))
+  tmp_exp_tpm = exp_tpm[, start:stop]
+
+  # Build eset
+  fdata = data.frame(gene_symbol=rownames(tmp_exp_tpm))
+  rownames(fdata) = fdata$gene_symbol
+
+  if (MOUSE) {
+    fdata = fdata %>% left_join(homologene_hsa_mmu, by=c("gene_symbol"="mmu"))
+
+    tmp_exp_tpm = tmp_exp_tpm %>%
+      as_tibble()
+
+    tmp_exp_tpm$gene_symbol = fdata$hsa
+
+    tmp_exp_tpm = tmp_exp_tpm %>%
+      filter(!is.na(gene_symbol))
+
+    tmp_exp_tpm = tmp_exp_tpm %>% as.data.frame() %>% arrange(gene_symbol) %>% column_to_rownames("gene_symbol") %>% as.matrix()
+    fdata = data.frame(gene_symbol=rownames(tmp_exp_tpm)) %>% arrange(gene_symbol)
+    rownames(fdata) = fdata$gene_symbol
+  }
+
+  tmp_eset = ExpressionSet(tmp_exp_tpm, featureData = AnnotatedDataFrame(fdata))
+
   save(tmp_eset, file = file.path(OUT_DIR, paste0("chunk_", i, ".rda")), compress = FALSE)
 })
 
