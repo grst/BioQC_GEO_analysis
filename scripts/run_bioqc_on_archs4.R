@@ -31,7 +31,7 @@ if(species == "human") {
   MOUSE = FALSE
   HOMOLOGENE = "./manual_annotation/homologene.data"
 
-} else if(args[1] == "mouse") {
+} else if(species == "mouse") {
   ARCHS4_META = "data/archs4/mouse_gsm_meta.rda"
   ARCHS4_COUNTS = "./data/archs4/mouse_matrix.rda"
   GENE_LENGTHS = "./data/ensembl_v90/gene_length_mouse.bed"
@@ -48,7 +48,7 @@ if(species == "human") {
   stop("Invalid arguments. ")
 }
 
-dir.create(OUT_DIR, showWarnings = FALSE)
+dir.create(OUT_DIR, showWarnings = FALSE, recursive=TRUE)
 
 #' Convert counts to TPM, the simple way (not as accurate)
 #'
@@ -100,13 +100,13 @@ sample_df = lapply(gsmMeta, function(x) {
     last_update_date = x$Sample_last_update_date,
     molecule_ch1 = x$Sample_molecule_ch1,
     sample_title = x$Sample_title,
-    sample_characteristics_ch1 = paste0(x$Sample_characteristics_ch1, collapse="\n"),
-    sample_description = paste0(x$Sample_description, collapse="\n"),
-    sample_data_processing = paste0(x$Sample_data_processing, collapse="\n")
+    sample_characteristics_ch1 = paste0(x$Sample_characteristics_ch1, collapse=";"),
+    sample_description = paste0(x$Sample_description, collapse=";"),
+    sample_data_processing = paste0(x$Sample_data_processing, collapse=";"),
+    sample_extraction_protocol = paste0(x$Sample_extract_protocol_ch1, collapse=";"),
+    sample_growth_protocol = paste0(x$Sample_growth_protocol_ch1, collapse=";")
   )
 }) %>% bind_rows()
-
-sample_df = read_rds("/home/sturm/Downloads/human_sample_df.rds")
 
 filtering_stats = list()
 filtering_stats[[1]] = tibble_row(step="unfiltered", n_samples=nrow(sample_df))
@@ -118,7 +118,9 @@ filtering_stats[[2]] = tibble_row(step="library_type", n_samples=nrow(sample_df)
 sample_df = sample_df %>% filter(!str_detect(str_to_lower(sample_df$sample_title), "single cell|single-cell|smart-seq|smartseq"),
                                  !str_detect(str_to_lower(sample_df$sample_characteristics_ch1), "single cell|single-cell|smart-seq|smartseq"),
                                  !str_detect(str_to_lower(sample_df$sample_description), "single cell|single-cell|smart-seq|smartseq"),
-                                 !str_detect(str_to_lower(sample_df$sample_data_processing), "single cell|single-cell|smart-seq|smartseq"))
+                                 !str_detect(str_to_lower(sample_df$sample_data_processing), "single cell|single-cell|smart-seq|smartseq"),
+                                 !str_detect(str_to_lower(sample_df$sample_extraction_protocol), "single cell|single-cell|smart-seq|smartseq"),
+                                 !str_detect(str_to_lower(sample_df$sample_growth_protocol), "single cell|single-cell|smart-seq|smartseq"))
 
 filtering_stats[[3]] = tibble_row(step="no_single_cells", n_samples=nrow(sample_df))
 
@@ -197,7 +199,7 @@ lapply(seq(1, ncol(exp_tpm), CHUNK_SIZE), function(i) {
 
   tmp_eset = ExpressionSet(tmp_exp_tpm, featureData = AnnotatedDataFrame(fdata))
 
-  save(tmp_eset, file = file.path(OUT_DIR, paste0("chunk_", i, ".rda")), compress = FALSE)
+  save(tmp_eset, file = file.path(OUT_DIR, paste0(species, "_chunk_", i, ".rda")), compress = FALSE)
 })
 
 # Run this in a jobscript:
