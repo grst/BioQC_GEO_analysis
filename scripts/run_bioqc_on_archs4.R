@@ -13,7 +13,11 @@
 args  = commandArgs(trailingOnly=TRUE)
 if (length(args) != 1) {
   stop("Specify either 'human' or 'mouse' as command line argument. ")
-} else if(args[1] == "human") {
+} else {
+  species = args[1]
+}
+
+if(species == "human") {
 
   ARCHS4_META = "data/archs4/human_gsm_meta.rda"
   ARCHS4_COUNTS = "./data/archs4/human_matrix.rda"
@@ -95,17 +99,46 @@ sample_df = lapply(gsmMeta, function(x) {
     submission_date = x$Sample_submission_date,
     last_update_date = x$Sample_last_update_date,
     molecule_ch1 = x$Sample_molecule_ch1,
+    sample_title = x$Sample_title,
+    sample_characteristics_ch1 = paste0(x$Sample_characteristics_ch1, collapse="\n"),
+    sample_description = paste0(x$Sample_description, collapse="\n"),
+    sample_data_processing = paste0(x$Sample_data_processing, collapse="\n")
   )
 }) %>% bind_rows()
+
+sample_df = read_rds("/home/sturm/Downloads/human_sample_df.rds")
+
+filtering_stats = list()
+filtering_stats[[1]] = tibble_row(step="unfiltered", n_samples=nrow(sample_df))
+
+sample_df = sample_df %>% filter(library_strategy == "RNA-Seq", library_source == "transcriptomic", molecule_ch1 %in% c("total RNA", "polyA RNA"))
+
+filtering_stats[[2]] = tibble_row(step="library_type", n_samples=nrow(sample_df))
+
+sample_df = sample_df %>% filter(!str_detect(str_to_lower(sample_df$sample_title), "single cell|single-cell|smart-seq|smartseq"),
+                                 !str_detect(str_to_lower(sample_df$sample_characteristics_ch1), "single cell|single-cell|smart-seq|smartseq"),
+                                 !str_detect(str_to_lower(sample_df$sample_description), "single cell|single-cell|smart-seq|smartseq"),
+                                 !str_detect(str_to_lower(sample_df$sample_data_processing), "single cell|single-cell|smart-seq|smartseq"))
+
+filtering_stats[[3]] = tibble_row(step="no_single_cells", n_samples=nrow(sample_df))
+
+read_counts = colSums(exp)
+sample_df = sample_df %>% filter(GSM %in% names(read_counts[read_counts > 500000]))
+
+filtering_stats[[4]] = tibble_row(step="200k_reads", n_samples=nrow(sample_df))
+
 
 archs4_meta = sample_df %>%
   mutate(source_name_ch1 = tolower(source_name_ch1)) %>%
   inner_join(normalize_tissue, by=c("source_name_ch1"="TISSUE_ORIG")) %>%
-  inner_join(bioqc_tissue_set) %>%
-  select(-source_name_ch1)
+  inner_join(bioqc_tissue_set)
+
+filtering_stats[[5]] = tibble_row(step="tissue_in_cv", n_samples=length(unique(archs4_meta$GSM)))
 
 archs4_meta %>%
   write_tsv(file.path(OUT_DIR, "archs4_meta.tsv"))
+
+filtering_stats %>% bind_rows() %>% write_tsv(file.path(OUT_DIR, "filtering_stats.tsv"))
 
 # Select samples with tissue from archs4 matrix.
 exp = exp[, archs4_meta$GSM %>% unique()]
