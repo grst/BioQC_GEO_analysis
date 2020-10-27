@@ -91,6 +91,7 @@ sample_df = lapply(gsmMeta, function(x) {
   tibble_row(
     GSM = x$Sample_geo_accession,
     GPL = x$Sample_platform_id,
+    GSE = x$Sample_series_id[1],
     source_name_ch1 = x$Sample_source_name_ch1,
     library_strategy = x$Sample_library_strategy,
     library_source = x$Sample_library_source,
@@ -109,11 +110,11 @@ sample_df = lapply(gsmMeta, function(x) {
 }) %>% bind_rows()
 
 filtering_stats = list()
-filtering_stats[[1]] = tibble_row(step="unfiltered", n_samples=nrow(sample_df))
+filtering_stats[[1]] = tibble_row(step="unfiltered", n_samples=nrow(sample_df), n_studies=length(unique(sample_df$GSE)))
 
 sample_df = sample_df %>% filter(library_strategy == "RNA-Seq", library_source == "transcriptomic", molecule_ch1 %in% c("total RNA", "polyA RNA"))
 
-filtering_stats[[2]] = tibble_row(step="library_type", n_samples=nrow(sample_df))
+filtering_stats[[2]] = tibble_row(step="library_type", n_samples=nrow(sample_df), n_studies=length(unique(sample_df$GSE)))
 
 sample_df = sample_df %>% filter(!str_detect(str_to_lower(sample_df$sample_title), "single cell|single-cell|smart-seq|smartseq"),
                                  !str_detect(str_to_lower(sample_df$sample_characteristics_ch1), "single cell|single-cell|smart-seq|smartseq"),
@@ -122,12 +123,12 @@ sample_df = sample_df %>% filter(!str_detect(str_to_lower(sample_df$sample_title
                                  !str_detect(str_to_lower(sample_df$sample_extraction_protocol), "single cell|single-cell|smart-seq|smartseq"),
                                  !str_detect(str_to_lower(sample_df$sample_growth_protocol), "single cell|single-cell|smart-seq|smartseq"))
 
-filtering_stats[[3]] = tibble_row(step="no_single_cells", n_samples=nrow(sample_df))
+filtering_stats[[3]] = tibble_row(step="no_single_cells", n_samples=nrow(sample_df), n_studies=length(unique(sample_df$GSE)))
 
 read_counts = colSums(exp)
 sample_df = sample_df %>% filter(GSM %in% names(read_counts[read_counts > 500000]))
 
-filtering_stats[[4]] = tibble_row(step="200k_reads", n_samples=nrow(sample_df))
+filtering_stats[[4]] = tibble_row(step="200k_reads", n_samples=nrow(sample_df), n_studies=length(unique(sample_df$GSE)))
 
 
 archs4_meta = sample_df %>%
@@ -135,7 +136,7 @@ archs4_meta = sample_df %>%
   inner_join(normalize_tissue, by=c("source_name_ch1"="TISSUE_ORIG")) %>%
   inner_join(bioqc_tissue_set)
 
-filtering_stats[[5]] = tibble_row(step="tissue_in_cv", n_samples=length(unique(archs4_meta$GSM)))
+filtering_stats[[5]] = tibble_row(step="tissue_in_cv", n_samples=length(unique(archs4_meta$GSM)), n_studies=length(unique(archs4_meta$GSE)))
 
 archs4_meta %>%
   write_tsv(file.path(OUT_DIR, "archs4_meta.tsv"))
