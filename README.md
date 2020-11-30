@@ -1,6 +1,6 @@
 # A prevalence of tissue heterogeneity in gene expression studies
 
-See [grst/bioqc_geo](https://github.com/grst/bioqc_geo) or [grst.github.io/bioqc_geo](https://grst.github.io/bioqc_geo) for mor details. 
+See [grst/bioqc_geo](https://github.com/grst/bioqc_geo) for more details. 
 
 ## Purpose of this repository
 Unlike [grst/bioqc_geo](https://github.com/grst/bioqc_geo), which provides the results as a reproducible pipeline, 
