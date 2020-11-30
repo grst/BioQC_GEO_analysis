@@ -7,8 +7,9 @@ sig_table
 
 def make_gmt(df, out_path):
     gmt = df.loc[:, ["NAME", "DESCRIPTION", "GENE_SYMBOLS"]]
+    gmt.sort_values("NAME", inplace=True)
     gmt["GENE_SYMBOLS"] = [",".join(g for g in x.split(",") if g !="") for x in gmt["GENE_SYMBOLS"]]
-    gmt.to_csv(out_path, header=False, index=False)
+    gmt.to_csv(out_path, header=False, index=False, sep="\t")
 
 
 for filename, df_group in sig_table.groupby("SOURCE"):
