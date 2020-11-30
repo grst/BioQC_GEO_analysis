@@ -138,6 +138,14 @@ archs4_meta = sample_df %>%
 
 filtering_stats[[5]] = tibble_row(step="tissue_in_cv", n_samples=length(unique(archs4_meta$GSM)), n_studies=length(unique(archs4_meta$GSE)))
 
+
+# for stats only
+solid_signatures = c("testis", "skin", "skeletal muscle", "pancreas", "liver", "kidney",
+                     "heart", "brain", "blood")
+tmp_archs4_meta = archs4_meta %>% filter(TGROUP %in% solid_signatures)
+filtering_stats[[6]] = tibble_row(step="solid_signature", n_samples=length(unique(tmp_archs4_meta$GSM)),
+                                  n_studies=length(unique(tmp_archs4_meta$GSE)))
+
 archs4_meta %>%
   write_tsv(file.path(OUT_DIR, "archs4_meta.tsv"))
 
